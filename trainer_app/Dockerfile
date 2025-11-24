@@ -1,33 +1,35 @@
-# Dockerfile para trainer_app en Cloud Run
+# Usa una imagen base de Python
 FROM python:3.11-slim
 
-# Instalar dependencias del sistema
+# Instala dependencias del sistema necesarias para la base de datos
 RUN apt-get update && apt-get install -y \
     gcc \
     default-libmysqlclient-dev \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Establecer directorio de trabajo
+# Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar requirements
+# Copia los archivos de requerimientos e instala las dependencias de Python
 COPY requirements.txt .
-
-# Instalar dependencias de Python
 RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
-# Copiar código de la aplicación
+# Copia todo el código de la aplicación (solo la subcarpeta trainer_app)
 COPY . .
 
-# Crear directorios necesarios
-RUN mkdir -p /app/media /app/logs /app/static
+# Crea los directorios para archivos estáticos, media y logs
+RUN mkdir -p /app/media/qr_codes /app/media/exports /app/logs /app/static
 
-# Colectar archivos estáticos
+# Recopila archivos estáticos (asegurando que manage.py se ejecute en el contexto correcto)
+# Aquí está la clave: Django necesita saber dónde está su settings.
+# Asegúrate de que el módulo settings esté configurado correctamente para la app.
+# En tu settings.py ya manejamos la variable DJANGO_SETTINGS_MODULE
+ENV DJANGO_SETTINGS_MODULE=trainer_app.settings
 RUN python manage.py collectstatic --noinput
 
-# Exponer puerto
-EXPOSE 8080
+# Expone el puerto que usará Gunicorn
+EXPOSE 8000
 
-# Comando para ejecutar la aplicación
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 entrenador_app.wsgi:application
+# Comando para ejecutar Gunicorn cuando el contenedor se inicie
+CMD ["gunicorn", "--bind", ":8000", "trainer_app.wsgi:application"]
