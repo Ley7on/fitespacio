@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/media
+/staticfiles
+/static_root
+
+# Entornos virtuales
+venv/
+ENV/
+env/
+.venv
+
+# Variables de entorno SENSIBLES
+.env
+.env.local
+.env.production
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups
+*.bak
+*.backup
+*.json.backup
+backup_*.json
+
+# Logs
+logs/
+*.log
+
+# QR Codes generados
+media/qr_codes/*
+!media/qr_codes/.gitkeep
+
+# Exports
+media/exports/*
+!media/exports/.gitkeep
+
+# Cloud SQL Proxy
+cloud_sql_proxy.exe
+cloud_sql_proxy
+
+# Credenciales de Google Cloud
+*.json
+!package.json
+!package-lock.json
+credentials.json
+service-account.json

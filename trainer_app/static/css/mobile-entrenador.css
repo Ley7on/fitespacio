@@ -1,0 +1,29 @@
+/* Mobile-specific tweaks for entrenador pages
+   This file was intentionally kept minimal to avoid overriding
+   existing responsive rules. It exists to prevent 404s and to
+   provide a safe place for small PWA/mobile fixes.
+*/
+
+/* Ensure large tappable areas for critical buttons on phones */
+@media (max-width: 767px) {
+  .btn, .btn-group .btn {
+    min-height: 44px;
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+  }
+
+  /* Navbar compact spacing on small screens */
+  .navbar .navbar-brand { font-size: 1rem; }
+
+  /* Make floating action / create buttons slightly larger */
+  .fab, .create-rutina-btn {
+    min-width: 48px; min-height: 48px; border-radius: 999px;
+  }
+}
+
+/* Safe-area for PWA on iOS/modern Android */
+@media (display-mode: standalone) {
+  body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* No-op default so adding this file is low-risk */

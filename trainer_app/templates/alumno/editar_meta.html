@@ -1,0 +1,49 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Editar Meta - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="glass p-4">
+                <h3 class="text-white mb-3">Editar Meta</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label text-white">Título</label>
+                        <input type="text" name="titulo" class="form-control" required value="{{ meta.titulo }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Descripción</label>
+                        <textarea name="descripcion" class="form-control" rows="4">{{ meta.descripcion }}</textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-white">Categoría</label>
+                            <select name="categoria" class="form-select">
+                                {% for value,label in categorias %}
+                                <option value="{{ value }}" {% if value == meta.categoria %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-white">Fecha Objetivo</label>
+                            <input type="date" name="fecha_objetivo" class="form-control" value="{{ meta.fecha_objetivo }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Valor Objetivo</label>
+                        <input type="text" name="valor_objetivo" class="form-control" value="{{ meta.valor_objetivo }}">
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'alumno:detalle_meta' meta.id %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

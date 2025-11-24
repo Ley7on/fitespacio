@@ -1,0 +1,270 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}{{ meta.titulo }} - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <button class="btn btn-glass me-3" onclick="history.back()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="flex-grow-1">
+                        <h1 class="h4 text-white mb-1">{{ meta.titulo }}</h1>
+                        <p class="text-light-70 mb-0">{{ meta.categoria }}</p>
+                    </div>
+                    <div class="text-end">
+                        <div class="h2 text-success mb-0">{{ porcentaje_progreso }}%</div>
+                        <small class="text-light-70">Completado</small>
+                    </div>
+                </div>
+                
+                <div class="progress mb-3" style="height: 12px;">
+                    <div class="progress-bar bg-success" style="width: {{ meta.progreso }}%"></div>
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="info-stat">
+                            <div class="stat-value">{{ meta.valor_objetivo }}</div>
+                            <div class="stat-label">Objetivo</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-stat">
+                            <div class="stat-value">{% if ultimo_progreso %}{{ ultimo_progreso.valor_actual }}{% else %}—{% endif %}</div>
+                            <div class="stat-label">Actual</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-stat">
+                            <div class="stat-value">{{ meta.fecha_objetivo }}</div>
+                            <div class="stat-label">Fecha Límite</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Descripción y Acciones -->
+        <div class="col-lg-8">
+            <!-- Descripción -->
+            <div class="glass p-4 mb-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-info-circle me-2"></i>Descripción
+                </h5>
+                <p class="text-light-70">{{ meta.descripcion }}</p>
+            </div>
+
+            <!-- Acciones para Conseguir la Meta -->
+            <div class="glass p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">
+                        <i class="fa-solid fa-tasks me-2"></i>Acciones para Conseguirla
+                    </h5>
+                    <button class="btn btn-success btn-sm" onclick="mostrarFormularioAccion()">
+                        <i class="fa-solid fa-plus me-1"></i>Nueva Acción
+                    </button>
+                </div>
+                
+                <div class="acciones-lista">
+                    {% for accion in acciones %}
+                    <div class="accion-item {% if accion.completada %}accion-completada{% endif %}">
+                        <div class="d-flex align-items-center">
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="checkbox" 
+                                       {% if accion.completada %}checked{% endif %}
+                                       onchange="toggleAccion({{ accion.id }})">
+                            </div>
+                            <div class="flex-grow-1">
+                                <span class="{% if accion.completada %}text-light-50 text-decoration-line-through{% else %}text-white{% endif %}">
+                                    {{ accion.descripcion }}
+                                </span>
+                            </div>
+                            {% if accion.completada %}
+                                <i class="fa-solid fa-check text-success"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fa-solid fa-tasks text-light-50 fa-3x mb-3"></i>
+                        <p class="text-light-70">No hay acciones definidas</p>
+                        <button class="btn btn-success" onclick="mostrarFormularioAccion()">
+                            <i class="fa-solid fa-plus me-2"></i>Añadir Primera Acción
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Lateral -->
+        <div class="col-lg-4">
+            <!-- Registrar Progreso -->
+            <div class="glass p-4 mb-4">
+                <h6 class="text-white mb-3">
+                    <i class="fa-solid fa-chart-line me-2"></i>Registrar Progreso
+                </h6>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="registrar_progreso" value="1">
+                    <div class="mb-3">
+                        <label class="form-label text-white">Valor Actual</label>
+                        <input type="text" class="form-control" name="valor_progreso" 
+                               placeholder="Ej: 77kg, 95kg" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-white">Notas (opcional)</label>
+                        <textarea class="form-control" name="notas_progreso" rows="3" 
+                                  placeholder="¿Cómo te sientes? ¿Qué has notado?"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fa-solid fa-save me-2"></i>Registrar
+                    </button>
+                </form>
+            </div>
+
+            <!-- Historial de Progreso -->
+            <div class="glass p-4">
+                <h6 class="text-white mb-3">
+                    <i class="fa-solid fa-history me-2"></i>Historial de Progreso
+                </h6>
+                
+                {% for progreso in historial_progreso %}
+                <div class="progreso-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-white fw-bold">{{ progreso.valor_actual }}</div>
+                            <div class="text-light-70 small">{{ progreso.fecha }}</div>
+                        </div>
+                    </div>
+                    {% if progreso.notas %}
+                    <div class="text-light-50 small mt-1">{{ progreso.notas }}</div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center py-3">
+                    <i class="fa-solid fa-chart-line text-light-50 fa-2x mb-2"></i>
+                    <p class="text-light-70 small mb-0">No hay registros aún</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nueva Acción -->
+<div class="modal fade" id="nuevaAccionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content glass">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white">
+                    <i class="fa-solid fa-plus me-2"></i>Nueva Acción
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="nueva_accion" value="1">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-white">¿Qué vas a hacer para conseguir tu meta?</label>
+                        <input type="text" class="form-control" name="descripcion_accion" required 
+                               placeholder="Ej: Entrenar 4 veces por semana, Comer 5 porciones de verduras">
+                    </div>
+                    <small class="text-light-50">
+                        Sé específico y realista. Las acciones concretas son más fáciles de seguir.
+                    </small>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Añadir Acción</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function mostrarFormularioAccion() {
+    new bootstrap.Modal(document.getElementById('nuevaAccionModal')).show();
+}
+
+function toggleAccion(accionId) {
+    fetch(`/alumno/acciones/${accionId}/completar/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+
+<style>
+.info-stat {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #00d4aa;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.accion-item {
+    padding: 1rem;
+    border-bottom: 1px solid #333;
+    transition: all 0.3s ease;
+}
+
+.accion-item:last-child {
+    border-bottom: none;
+}
+
+.accion-completada {
+    background: rgba(25, 135, 84, 0.1);
+}
+
+.progreso-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #333;
+}
+
+.progreso-item:last-child {
+    border-bottom: none;
+}
+
+.form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+</style>
+{% endblock %}

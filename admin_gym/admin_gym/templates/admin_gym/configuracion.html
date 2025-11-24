@@ -1,0 +1,87 @@
+{% extends "admin_gym/base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Configuración del Sistema</h1>
+        <p class="mt-2 text-gray-600">Ajusta las configuraciones del gimnasio</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Configuración General -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Configuración General</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h3 class="font-medium text-gray-900">Horario de Apertura</h3>
+                        <p class="text-sm text-gray-500">06:00 - 23:00</p>
+                    </div>
+                    <button class="text-blue-600 hover:text-blue-800 font-medium">Editar</button>
+                </div>
+                
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h3 class="font-medium text-gray-900">Capacidad Máxima</h3>
+                        <p class="text-sm text-gray-500">500 personas</p>
+                    </div>
+                    <button class="text-blue-600 hover:text-blue-800 font-medium">Editar</button>
+                </div>
+                
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h3 class="font-medium text-gray-900">Notificaciones</h3>
+                        <p class="text-sm text-gray-500">Activadas</p>
+                    </div>
+                    <button class="text-blue-600 hover:text-blue-800 font-medium">Editar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Sistema -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Información del Sistema</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h3 class="font-medium text-blue-900">Versión del Sistema</h3>
+                    <p class="text-sm text-blue-700">Fitspace Admin v1.0</p>
+                </div>
+                
+                <div class="p-4 bg-green-50 rounded-lg">
+                    <h3 class="font-medium text-green-900">Estado del Sistema</h3>
+                    <p class="text-sm text-green-700">Operativo</p>
+                </div>
+                
+                <div class="p-4 bg-yellow-50 rounded-lg">
+                    <h3 class="font-medium text-yellow-900">Último Backup</h3>
+                    <p class="text-sm text-yellow-700">{{ "now"|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones del Sistema -->
+    <div class="mt-8 bg-white rounded-xl shadow-lg border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">Acciones del Sistema</h2>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200">
+                    Crear Backup
+                </button>
+                <button class="bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200">
+                    Limpiar Cache
+                </button>
+                <button class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200">
+                    Verificar Sistema
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

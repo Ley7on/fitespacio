@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>{% block title %}Fitspace - Alumno{% endblock %}</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/ui-alumno.css' %}">
+    <link rel="stylesheet" href="{% static 'css/ui-alumno-extra.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mobile-responsive.css' %}">
+    {% block extra_css %}{% endblock %}
+    
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#007bff">
+</head>
+<body class="body-overlay-alumno">
+    {% include "alumno/navbar_alumno.html" %}
+    <!-- Contenido Principal -->
+    <main class="main-content-alumno">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-alumno glass-footer mt-5">
+        <div class="container text-center py-3">
+            <small class="text-light-50">Fitspace </small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Notification System -->
+    <script src="{% static 'js/notification-system.fixed.js' %}"></script>
+    
+    <!-- PWA Scripts -->
+    <script src="{% static 'js/pwa-register.js' %}" defer></script>
+    <script src="{% static 'js/pwa-diagnostic.js' %}" defer></script>
+    
+    <script>
+            if (window.showNotification) {
+                window.showNotification(
+                    'Ayuda Solicitada',
+                    'Tu entrenador ha sido notificado y se acercará pronto',
+                    'success'
+                );
+            }
+        }
+        
+        function proximamente() {
+            if (window.showNotification) {
+                window.showNotification(
+                    'Próximamente',
+                    'Esta funcionalidad estará disponible pronto',
+                    'info'
+                );
+            }
+        }
+        
+        // Sistema de Mensajes Motivacionales
+        function cargarMensajesNoLeidos() {
+            fetch('/alumno/api/mensajes-no-leidos/')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('mensajesBadge');
+                    const lista = document.getElementById('mensajesLista');
+
+                    if (badge) {
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.style.display = 'block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+
+                    // Si existe un contenedor de lista (anterior dropdown), actualizarlo. No es obligatorio.
+                    if (lista) {
+                        if (data.count > 0) {
+                            lista.innerHTML = data.mensajes.map(msg => `
+                                <div class="dropdown-item-text mensaje-item" data-tipo="${msg.tipo}">
+                                    <div class="d-flex align-items-start">
+                                        <div class="mensaje-icon me-2">
+                                            ${getMensajeIcon(msg.tipo)}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold text-white small">${msg.titulo}</div>
+                                            <div class="text-light-70 small">${msg.contenido.substring(0, 50)}...</div>
+                                            <div class="text-light-50 small">${msg.fecha}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('');
+                        } else {
+                            lista.innerHTML = `
+                                <div class="text-center py-3">
+                                    <i class="fa-solid fa-heart text-light-50 fa-2x mb-2"></i>
+                                    <p class="text-light-70 small mb-0">No hay mensajes nuevos</p>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    // Actualizar panel de notificaciones del dashboard si está presente
+                    const dashboardContainer = document.getElementById('dashboardNotificaciones');
+                    if (dashboardContainer) {
+                        // Si el servidor renderizó el contenido inicialmente, evitamos sobrescribir
+                        // con el estado "sin mensajes" proveniente del API para evitar parpadeos.
+                        const serverRendered = dashboardContainer.dataset.serverRendered === 'true';
+
+                        if (data.count > 0) {
+                            // Mostrar hasta 3 mensajes (sobrescribimos siempre cuando hay mensajes)
+                            const msgs = data.mensajes.slice(0, 3);
+                            dashboardContainer.dataset.serverRendered = 'false';
+                            dashboardContainer.innerHTML = msgs.map(msg => `
+                                <div class="notification-card ${msg.prioridad && msg.prioridad > 2 ? 'notification-unread' : ''}">
+                                    <div class="notification-title">${msg.titulo}</div>
+                                    <div class="notification-message">${msg.contenido}</div>
+                                    <div class="notification-date">${msg.fecha}</div>
+                                </div>
+                            `).join('');
+                        } else {
+                            // Si el servidor ya mostró notificaciones (contenido renderizado), no
+                            // sobrescribimos con el mensaje vacío para evitar que desaparezcan.
+                            if (!serverRendered) {
+                                dashboardContainer.innerHTML = `
+                                    <div class="text-center py-4 flex-grow-1">
+                                        <i class="fa-solid fa-bell-slash text-light-50 fa-3x mb-3"></i>
+                                        <p class="text-light-70">No hay notificaciones nuevas</p>
+                                    </div>
+                                `;
+                            }
+                        }
+                    }
+                })
+                .catch(error => console.error('Error cargando mensajes:', error));
+        }
+        
+        function getMensajeIcon(tipo) {
+            const iconos = {
+                'asistencia': '<i class="fa-solid fa-dumbbell text-info"></i>',
+                'habitos': '<i class="fa-solid fa-droplet text-primary"></i>',
+                'progreso': '<i class="fa-solid fa-chart-line text-success"></i>',
+                'motivacion': '<i class="fa-solid fa-star text-warning"></i>',
+                'salud_mental': '<i class="fa-solid fa-heart text-danger"></i>'
+            };
+            return iconos[tipo] || '<i class="fa-solid fa-bell text-light"></i>';
+        }
+        
+        // Cargar mensajes al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarMensajesNoLeidos();
+            
+            // Actualizar con mayor frecuencia para comportamiento "casi en tiempo real" (30s)
+            setInterval(cargarMensajesNoLeidos, 30000);
+            
+            // Animaciones específicas del alumno
+            initAlumnoAnimations();
+            // Bind click on mensajesLink to mark all as read then navigate
+            const mensajesLink = document.getElementById('mensajesLink');
+            if (mensajesLink) {
+                mensajesLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const href = mensajesLink.getAttribute('href');
+
+                    // Obtener CSRF token desde cookie (fallback) o campo oculto
+                    function getCookie(name) {
+                        const value = `; ${document.cookie}`;
+                        const parts = value.split(`; ${name}=`);
+                        if (parts.length === 2) return parts.pop().split(';').shift();
+                    }
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken') || '';
+
+                    fetch('/alumno/api/marcar-todos-leidos/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken
+                        }
+                    })
+                    .catch(err => console.error('Error marcando todos leídos:', err))
+                    .finally(() => {
+                        // Ir a la vista de mensajes en cualquier caso
+                        window.location.href = href;
+                    });
+                });
+            }
+        });
+        
+        function initAlumnoAnimations() {
+            // Animación para stats cards
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px) scale(0.9)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0) scale(1)';
+                }, index * 150);
+            });
+            
+            // Animación para quick actions
+            const quickActions = document.querySelectorAll('.quick-action');
+            quickActions.forEach((action, index) => {
+                action.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                    this.style.transition = 'all 0.3s ease';
+                    this.style.boxShadow = '0 10px 25px rgba(0, 212, 170, 0.2)';
+                });
+                action.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = 'none';
+                });
+            });
+            
+            // Animación para progress bars
+            const progressBars = document.querySelectorAll('.progress-bar');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.transition = 'width 1.5s ease-out';
+                    bar.style.width = width;
+                }, 500);
+            });
+            
+            // Animación para water glasses
+            const waterGlasses = document.querySelectorAll('.water-glass');
+            waterGlasses.forEach((glass, index) => {
+                if (glass.classList.contains('filled')) {
+                    setTimeout(() => {
+                        glass.style.animation = 'fillWater 0.6s ease';
+                    }, index * 200);
+                }
+            });
+            
+            // Hover effect para FABs
+            const fabs = document.querySelectorAll('.fab');
+            fabs.forEach(fab => {
+                fab.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.1) rotate(5deg)';
+                    this.style.transition = 'all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                });
+                fab.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1) rotate(0deg)';
+                });
+            });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

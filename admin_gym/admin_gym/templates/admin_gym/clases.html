@@ -1,0 +1,186 @@
+{% extends "admin_gym/base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Enhanced Header -->
+    <div class="mb-8 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl p-8 text-white shadow-xl">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold mb-2">
+                    <i class="fas fa-calendar-alt mr-3"></i>Gestión de Clases
+                </h1>
+                <p class="text-indigo-100 text-lg">Programa, organiza y administra todas las clases del gimnasio</p>
+                <div class="flex items-center mt-3 space-x-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock mr-2 text-indigo-200"></i>
+                        <span class="text-sm text-indigo-200">Horarios flexibles</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-users mr-2 text-indigo-200"></i>
+                        <span class="text-sm text-indigo-200">Control de cupos</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hidden md:block">
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <i class="fas fa-running text-4xl text-white/80"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Form -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 mb-8 overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
+            <div class="flex items-center">
+                <div class="bg-indigo-100 rounded-full p-2 mr-3">
+                    <i class="fas fa-plus-circle text-indigo-600"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Programar Nueva Clase</h2>
+                    <p class="text-gray-600 text-sm">Crea una nueva sesión de entrenamiento</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-8">
+            <form method="post" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {% csrf_token %}
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-dumbbell mr-2 text-indigo-600"></i>Nombre de la Clase
+                    </label>
+                    {{ form.nombre }}
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-user-tie mr-2 text-indigo-600"></i>Profesor Asignado
+                    </label>
+                    {{ form.profesor }}
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-clock mr-2 text-indigo-600"></i>Fecha y Horario
+                    </label>
+                    {{ form.horario }}
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-users mr-2 text-indigo-600"></i>Cupo Máximo
+                    </label>
+                    {{ form.cupo }}
+                </div>
+                <div class="md:col-span-3 space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-align-left mr-2 text-indigo-600"></i>Descripción de la Clase
+                    </label>
+                    {{ form.descripcion }}
+                </div>
+                <div class="md:col-span-3 pt-4">
+                    <button type="submit" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-calendar-plus mr-2"></i>Programar Clase
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enhanced Class List -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="bg-indigo-100 rounded-full p-2 mr-3">
+                        <i class="fas fa-calendar-check text-indigo-600"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Clases Programadas</h2>
+                        <p class="text-gray-600 text-sm">{{ clases|length }} clase{{ clases|length|pluralize }} en el calendario</p>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-200 transition-colors">
+                        <i class="fas fa-calendar-week mr-2"></i>Vista Semanal
+                    </button>
+                    <button class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-200 transition-colors">
+                        <i class="fas fa-filter mr-2"></i>Filtrar
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            {% if clases %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for clase in clases %}
+                    <div class="bg-gradient-to-br from-indigo-500 via-purple-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="bg-white/20 backdrop-blur-sm rounded-lg p-2">
+                                <i class="fas fa-dumbbell text-xl"></i>
+                            </div>
+                            <div class="text-right">
+                                <span class="bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium">
+                                    {{ clase.cupo }} cupos
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-xl font-bold mb-3 group-hover:text-yellow-200 transition-colors">{{ clase.nombre }}</h3>
+                        
+                        <div class="space-y-3 text-indigo-100">
+                            <div class="flex items-center">
+                                <i class="fas fa-user-tie mr-3 text-white/80"></i>
+                                <span class="font-medium">{{ clase.profesor.nombre }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-clock mr-3 text-white/80"></i>
+                                <span>{{ clase.horario|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar mr-3 text-white/80"></i>
+                                <span>{{ clase.horario|date:"H:i" }} hrs</span>
+                            </div>
+                            {% if clase.descripcion %}
+                                <div class="mt-4 pt-3 border-t border-white/20">
+                                    <p class="text-sm text-white/90 line-clamp-2">{{ clase.descripcion }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-6 flex space-x-2">
+                            <button class="flex-1 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white py-2 px-4 rounded-lg transition-all duration-300 text-sm font-medium">
+                                <i class="fas fa-edit mr-1"></i>Editar
+                            </button>
+                            <button class="flex-1 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white py-2 px-4 rounded-lg transition-all duration-300 text-sm font-medium">
+                                <i class="fas fa-users mr-1"></i>Ver Inscritos
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <div class="bg-gray-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-calendar-times text-3xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No hay clases programadas</h3>
+                    <p class="text-gray-500">Programa la primera clase usando el formulario de arriba</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    input, select, textarea {
+        @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-50 hover:bg-white;
+    }
+    input:focus, select:focus, textarea:focus {
+        @apply bg-white shadow-lg transform scale-105;
+    }
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}

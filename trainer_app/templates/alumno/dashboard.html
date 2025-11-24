@@ -1,0 +1,641 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header con QR -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4 text-center">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="stat-icon me-3">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 text-white mb-1">¡Hola, {{ user.get_full_name|default:user.username }}!</h1>
+                        <p class="text-light-70 mb-0">Listo para entrenar hoy</p>
+                    </div>
+                </div>
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex gap-2 mb-3">
+                            <span class="badge badge-{{ perfil.plan }}">{{ perfil.get_plan_display }}</span>
+                            <span class="badge badge-{{ perfil.estado }}">{{ perfil.get_estado_display }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-primary-alumno" onclick="generarQR()">
+                            <i class="fa-solid fa-qrcode me-2"></i>Acceso QR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="modal fade" id="qrModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-white">
+                        <i class="fa-solid fa-qrcode me-2"></i>Código QR de Acceso
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="qr-container">
+                        <div id="qrCodeDisplay" class="qr-code-display">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Generando...</span>
+                            </div>
+                        </div>
+                        <div class="qr-timer" id="qrTimer">Válido por: 5:00</div>
+                        <p class="text-muted small mt-2">Presenta este código en la entrada del gimnasio</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div class="stat-value">{{ total_visitas }}</div>
+                <div class="stat-label">Entrenamientos</div>
+                <div class="stat-change">¡Empieza tu rutina!</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-fire"></i>
+                </div>
+                <div class="stat-value">0</div>
+                <div class="stat-label">Racha Días</div>
+                <div class="stat-change">¡Comienza hoy!</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-weight-hanging"></i>
+                </div>
+                <div class="stat-value">{% if info_alumno.peso_actual %}{{ info_alumno.peso_actual }}{% else %}--{% endif %}</div>
+                <div class="stat-label">Peso (kg)</div>
+                <div class="stat-change">{% if info_alumno.peso_actual %}Peso inicial{% else %}Sin registros{% endif %}</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div class="stat-value">0</div>
+                <div class="stat-label">PR's</div>
+                <div class="stat-change">¡A por el primero!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="row g-4">
+        <!-- Accesos Recientes -->
+        <div class="col-md-6 d-flex">
+            <div class="glass p-4 d-flex flex-column w-100 h-100">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-clock-rotate-left me-2"></i>Accesos Recientes
+                </h5>
+                {% if accesos_recientes %}
+                    <div class="flex-grow-1">
+                        <div class="table-responsive">
+                        <table class="table table-glass table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for acceso in accesos_recientes %}
+                                <tr>
+                                    <td>{{ acceso.fecha_acceso|date:"d/m" }}</td>
+                                    <td>{{ acceso.fecha_acceso|time:"H:i" }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ acceso.tipo_acceso }}">
+                                            {{ acceso.get_tipo_acceso_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'alumno:historial' %}" class="btn btn-glass btn-sm">
+                            Ver Historial Completo
+                        </a>
+                    </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 flex-grow-1">
+                        <i class="fa-solid fa-clock text-light-50 fa-3x mb-3"></i>
+                        <p class="text-light-70">No hay accesos registrados</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Notificaciones -->
+        <div class="col-md-6 d-flex">
+            <div class="glass p-4 d-flex flex-column w-100 h-100">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-bell me-2"></i>Notificaciones
+                    {% if notificaciones %}
+                        <span class="badge bg-primary">{{ notificaciones|length }}</span>
+                    {% endif %}
+                </h5>
+                {% if notificaciones %}
+                    <div class="flex-grow-1" id="dashboardNotificaciones" data-server-rendered="true">
+                    {% for notif in notificaciones %}
+                    <div class="notification-card {% if not notif.leido %}notification-unread{% endif %}">
+                        <div class="notification-title">{{ notif.titulo }}</div>
+                        <div class="notification-message">{{ notif.contenido|truncatewords:15 }}</div>
+                        <div class="notification-date">{{ notif.fecha_envio|timesince }} atrás</div>
+                    </div>
+                    {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'alumno:mensajes_motivacionales' %}" class="btn btn-glass btn-sm">
+                            Ver Todos los Mensajes
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 flex-grow-1" id="dashboardNotificaciones">
+                        <i class="fa-solid fa-bell-slash text-light-50 fa-3x mb-3"></i>
+                        <p class="text-light-70">No hay notificaciones nuevas</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-3 mt-4">
+        <div class="col-6 col-md-3">
+            <a href="{% url 'alumno:rutinas' %}" class="quick-action">
+                <div class="quick-action-icon">
+                    <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <div class="quick-action-title">Rutina Entrenador</div>
+                <div class="quick-action-desc">Asignada por tu coach</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'alumno:rutinas' %}" class="quick-action">
+                <div class="quick-action-icon">
+                    <i class="fa-solid fa-dumbbell"></i>
+                </div>
+                <div class="quick-action-title">Mi Rutina</div>
+                <div class="quick-action-desc">Rutina personal</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'alumno:habitos_buenos' %}" class="quick-action">
+                <div class="quick-action-icon">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+                <div class="quick-action-title">Hábitos Buenos</div>
+                <div class="quick-action-desc">Agua, sueño, ejercicio</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'alumno:habitos_malos' %}" class="quick-action quick-action-warning">
+                <div class="quick-action-icon">
+                    <i class="fa-solid fa-exclamation-triangle"></i>
+                </div>
+                <div class="quick-action-title">Hábitos a Mejorar</div>
+                <div class="quick-action-desc">Autocrítica constructiva</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Sección de Hábitos Rápidos -->
+    <div class="row g-4 mt-4">
+        <div class="col-md-6">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-droplet me-2 text-info"></i>Tracker de Agua
+                </h5>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="water-progress">
+                        <div class="progress" style="height: 20px; width: 100%; max-width: 200px;">
+                            <div class="progress-bar bg-info" style="width: 0%; min-width: 0; height:100%; transition: width .3s;"></div>
+                        </div>
+                        <small class="text-light-70 mt-1 d-block">0 / 8 vasos</small>
+                    </div>
+                    <button class="btn btn-info btn-sm" onclick="registrarAgua()">
+                        <i class="fa-solid fa-plus"></i> Vaso
+                    </button>
+                </div>
+                <div class="d-flex gap-1">
+                    <div class="water-glass empty"></div>
+                    <div class="water-glass empty"></div>
+                    <div class="water-glass empty"></div>
+                    <div class="water-glass empty"></div>
+                    <div class="water-glass empty"></div>
+                    <div class="water-glass empty"></div>
+                    <div class="water-glass empty"></div>
+                    <div class="water-glass empty"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-bed me-2 text-purple"></i>Tracker de Sueño
+                </h5>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <div id="sleepHoras" class="h4 text-white mb-1">--h</div>
+                        <small id="sleepStatus" class="text-light-70">Sin registros</small>
+                    </div>
+                    <button class="btn btn-purple btn-sm" onclick="registrarSueno()">
+                        <i class="fa-solid fa-moon"></i> Registrar
+                    </button>
+                </div>
+                <div class="sleep-quality">
+                    <small class="text-light-70">Calidad:</small>
+                    <div class="d-flex gap-1 mt-1">
+                        <i class="fa-regular fa-star text-light-50"></i>
+                        <i class="fa-regular fa-star text-light-50"></i>
+                        <i class="fa-regular fa-star text-light-50"></i>
+                        <i class="fa-regular fa-star text-light-50"></i>
+                        <i class="fa-regular fa-star text-light-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="fab-container">
+        <button class="fab fab-water" onclick="registrarAgua()" title="Registrar vaso de agua">
+            <i class="fa-solid fa-droplet"></i>
+        </button>
+        <button class="fab fab-qr" onclick="generarQR()" title="Acceso rápido QR">
+            <i class="fa-solid fa-qrcode"></i>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let qrTimer;
+let qrModal;
+
+function sanitizeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function generarQR() {
+    qrModal = new bootstrap.Modal(document.getElementById('qrModal'));
+    qrModal.show();
+    
+    fetch('{% url "alumno:generar_qr" %}', {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById('qrCodeDisplay').innerHTML = 
+                `<div class="alert alert-danger">${sanitizeHTML(data.error)}</div>`;
+            return;
+        }
+        
+        document.getElementById('qrCodeDisplay').innerHTML = 
+            `<img src="data:image/png;base64,${data.qr_code}" alt="QR Code" class="img-fluid">`;
+        
+        startTimer(300); // 5 minutos
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('qrCodeDisplay').innerHTML = 
+            '<div class="alert alert-danger">Error al generar QR</div>';
+    });
+}
+
+function startTimer(seconds) {
+    let timeLeft = seconds;
+    const timerElement = document.getElementById('qrTimer');
+    
+    qrTimer = setInterval(() => {
+        const minutes = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        timerElement.textContent = `Válido por: ${minutes}:${secs.toString().padStart(2, '0')}`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(qrTimer);
+            timerElement.textContent = 'QR Expirado';
+            timerElement.classList.add('qr-expired');
+            document.getElementById('qrCodeDisplay').innerHTML = 
+                '<div class="alert alert-warning">QR expirado. Genera uno nuevo.</div>';
+        }
+        
+        timeLeft--;
+    }, 1000);
+}
+
+// Limpiar timer al cerrar modal
+document.getElementById('qrModal').addEventListener('hidden.bs.modal', function () {
+    if (qrTimer) {
+        clearInterval(qrTimer);
+    }
+});
+
+function proximamente() {
+    if (window.showNotification) {
+        window.showNotification(
+            'Próximamente',
+            'Esta funcionalidad estará disponible pronto',
+            'info'
+        );
+    }
+}
+
+// Cargar datos al iniciar
+document.addEventListener('DOMContentLoaded', function() {
+    cargarDatosTrackers();
+});
+
+// IDs de hábitos proporcionados por el servidor (null si no existen)
+const HABITO_AGUA_ID = {{ habito_agua_id|default:'null' }};
+const HABITO_AGUA_META = {{ habito_agua_meta|default:'null' }};
+const HABITO_SUENO_ID = {{ habito_sueno_id|default:'null' }};
+const HABITO_SUENO_META = {{ habito_sueno_meta|default:'null' }};
+
+function cargarDatosTrackers() {
+    const hoy = new Date().toDateString();
+    const aguaData = JSON.parse(localStorage.getItem('agua_tracker') || '{}');
+    const suenoData = JSON.parse(localStorage.getItem('sueno_tracker') || '{}');
+    
+    // Cargar agua
+    const aguaHoy = aguaData[hoy] || 0;
+    actualizarVisualizacionAgua(aguaHoy);
+    
+    // Cargar sueño
+    const suenoHoy = suenoData[hoy];
+    if (suenoHoy) {
+        actualizarVisualizacionSueno(suenoHoy.horas, suenoHoy.calidad);
+    }
+}
+
+function actualizarVisualizacionAgua(cantidad) {
+    // Actualizar vasos
+    const glasses = document.querySelectorAll('.water-glass');
+    glasses.forEach((glass, index) => {
+        if (index < cantidad) {
+            glass.classList.remove('empty');
+            glass.classList.add('filled');
+        } else {
+            glass.classList.remove('filled');
+            glass.classList.add('empty');
+        }
+    });
+    
+    // Ensure numeric and sane range
+    const num = parseInt(cantidad, 10) || 0;
+    const clamped = Math.max(0, Math.min(8, num));
+
+    // Actualizar contador y barra
+    const counter = document.querySelector('.water-progress small');
+    if (counter) {
+        counter.textContent = `${clamped} / 8 vasos`;
+    }
+
+    const progressBar = document.querySelector('.water-progress .progress-bar');
+    if (progressBar) {
+        const percent = Math.round((clamped / 8) * 100);
+        progressBar.style.width = isFinite(percent) ? `${percent}%` : '0%';
+    }
+}
+
+function actualizarVisualizacionSueno(horas, calidad) {
+    // Target the specific elements for the sleep tracker using IDs
+    const horasElement = document.getElementById('sleepHoras');
+    if (horasElement) {
+        horasElement.textContent = `${horas}h`;
+    }
+
+    const statusElement = document.getElementById('sleepStatus');
+    if (statusElement) {
+        statusElement.textContent = `Registrado hoy`;
+    }
+    
+    // Actualizar estrellas de calidad
+    const stars = document.querySelectorAll('.sleep-quality i');
+    stars.forEach((star, index) => {
+        if (index < calidad) {
+            star.classList.remove('fa-regular');
+            star.classList.add('fa-solid', 'text-warning');
+        } else {
+            star.classList.remove('fa-solid', 'text-warning');
+            star.classList.add('fa-regular');
+        }
+    });
+}
+
+function registrarAgua() {
+    const hoy = new Date().toDateString();
+    const aguaData = JSON.parse(localStorage.getItem('agua_tracker') || '{}');
+    const actual = aguaData[hoy] || 0;
+    
+    if (actual < 8) {
+        const nuevo = actual + 1;
+        aguaData[hoy] = nuevo;
+        localStorage.setItem('agua_tracker', JSON.stringify(aguaData));
+        
+        actualizarVisualizacionAgua(nuevo);
+        
+        // Intentar registrar también en el servidor si hay un hábito configurado
+        if (HABITO_AGUA_ID) {
+            try {
+                const fd = new FormData();
+                fd.append('cantidad', 1);
+                fd.append('notas', 'Registrado desde dashboard');
+
+                fetch(`/alumno/habitos-buenos/${HABITO_AGUA_ID}/registrar/`, {
+                    method: 'POST',
+                    body: fd,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    }
+                })
+                .then(r => r.json())
+                .then(data => {
+                        if (data && data.completado) {
+                            // Mostrar notificación basada en el mensaje generado por el servidor (si existe)
+                            if (data.mensaje_generado && window.showNotification) {
+                                window.showNotification(data.mensaje_generado.titulo, data.mensaje_generado.contenido, 'success');
+                                try {
+                                    if (window.handleIncomingMensaje) window.handleIncomingMensaje(data.mensaje_generado);
+                                    if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                                } catch (e) {
+                                    if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                                }
+                            } else if (window.showNotification) {
+                                window.showNotification('💧 ¡Excelente!', 'Has completado tu objetivo de agua hoy. ¡Buen trabajo!', 'success');
+                                if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                            }
+                        }
+                })
+                .catch(err => console.error('Error registrando agua en servidor:', err));
+            } catch (e) {
+                console.error('Error enviando registro de agua al servidor', e);
+            }
+        }
+
+        if (window.showNotification) {
+            window.showNotification(
+                '💧 ¡Bien hecho!',
+                `Vaso ${nuevo}/8 registrado`,
+                'success'
+            );
+        }
+    } else {
+        if (window.showNotification) {
+            window.showNotification(
+                '💧 ¡Meta alcanzada!',
+                'Ya completaste tus 8 vasos de hoy',
+                'info'
+            );
+        }
+    }
+}
+
+function registrarSueno() {
+    const horas = prompt('¿Cuántas horas dormiste? (ej: 7.5)');
+    const calidad = prompt('Calidad del sueño del 1 al 5:');
+    
+    if (horas && calidad && !isNaN(horas) && !isNaN(calidad)) {
+        const horasNum = parseFloat(horas);
+        const calidadNum = parseInt(calidad);
+        
+        if (horasNum > 0 && horasNum <= 24 && calidadNum >= 1 && calidadNum <= 5) {
+            const hoy = new Date().toDateString();
+            const suenoData = JSON.parse(localStorage.getItem('sueno_tracker') || '{}');
+            
+            suenoData[hoy] = {
+                horas: horasNum,
+                calidad: calidadNum
+            };
+            
+            localStorage.setItem('sueno_tracker', JSON.stringify(suenoData));
+            actualizarVisualizacionSueno(horasNum, calidadNum);
+            
+            // Enviar registro al servidor si existe el hábito de sueño
+            if (HABITO_SUENO_ID) {
+                try {
+                    const fd = new FormData();
+                    fd.append('cantidad', Math.round(horasNum));
+                    fd.append('notas', `Calidad:${calidadNum}`);
+
+                    fetch(`/alumno/habitos-buenos/${HABITO_SUENO_ID}/registrar/`, {
+                        method: 'POST',
+                        body: fd,
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                        }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        // Siempre actualizar la visualización desde la respuesta del servidor cuando sea posible
+                        if (data && typeof data.cantidad_actual !== 'undefined') {
+                            // usar la cantidad que devolvió el servidor (entero)
+                            actualizarVisualizacionSueno(data.cantidad_actual, calidadNum);
+                        } else {
+                            // fallback a lo que ingresó el usuario
+                            actualizarVisualizacionSueno(horasNum, calidadNum);
+                        }
+
+                        if (data && data.completado) {
+                            if (data.mensaje_generado && window.showNotification) {
+                                window.showNotification(data.mensaje_generado.titulo, data.mensaje_generado.contenido, 'success');
+                                try {
+                                    if (window.handleIncomingMensaje) window.handleIncomingMensaje(data.mensaje_generado);
+                                    if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                                } catch (e) {
+                                    if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                                }
+                            } else if (window.showNotification) {
+                                window.showNotification('🌙 Buen descanso', `Has alcanzado tu objetivo de sueño: ${data.cantidad_actual || horasNum}/${data.meta || HABITO_SUENO_META}`, 'success');
+                                if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                            }
+                        } else {
+                            // Mensaje local según horas para feedback inmediato si no vino mensaje del servidor
+                            if (data && data.mensaje_generado && window.showNotification) {
+                                window.showNotification(data.mensaje_generado.titulo, data.mensaje_generado.contenido, 'warning');
+                                try {
+                                    if (window.handleIncomingMensaje) window.handleIncomingMensaje(data.mensaje_generado);
+                                    if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                                } catch (e) {
+                                    if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                                }
+                            } else if (horasNum < 5) {
+                                if (window.showNotification) {
+                                    window.showNotification('😴 Dormiste poco', 'Recuerda que el descanso es importante para tu rendimiento. Procura priorizarlo cuando puedas.', 'warning');
+                                }
+                            } else if (HABITO_SUENO_META && horasNum >= HABITO_SUENO_META) {
+                                if (window.showNotification) {
+                                    window.showNotification('👍 Buen trabajo', 'Has dormido un tiempo adecuado. Mantén la constancia.', 'success');
+                                }
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error registrando sueño en servidor:', err);
+                        // Mostrar feedback al usuario si la petición falla
+                        if (window.showNotification) {
+                            window.showNotification('Error guardando sueño', 'No se pudo registrar en el servidor. Tu dato quedó guardado localmente.', 'error');
+                        }
+                        // Mantener la visualización con el valor local
+                        actualizarVisualizacionSueno(horasNum, calidadNum);
+                    });
+                } catch (e) {
+                    console.error('Error enviando registro de sueño al servidor', e);
+                }
+            }
+
+            if (window.showNotification) {
+                window.showNotification(
+                    '🌙 Sueño registrado',
+                    `${horasNum}h - Calidad: ${calidadNum}/5`,
+                    'success'
+                );
+            }
+        } else {
+            if (window.showNotification) {
+                window.showNotification(
+                    'Error',
+                    'Valores inválidos. Horas: 0-24, Calidad: 1-5',
+                    'error'
+                );
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

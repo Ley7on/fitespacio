@@ -1,0 +1,52 @@
+/* Dark theme for entrenador profile to match dashboard_simple */
+.glass-card {
+  background: rgba(31,41,55,0.82);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  box-shadow: 0 10px 32px rgba(0,0,0,0.45);
+}
+.gradient-bg {
+  background: linear-gradient(135deg,#1f2937 0%,#111827 100%);
+  min-height: 100vh;
+}
+.profile-card { transition: all 0.28s ease; }
+.profile-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.32); }
+
+/* Text / labels */
+.gradient-bg, .gradient-bg .container, .glass-card { color: #e6eef6; }
+.gradient-bg label { color: #cfe0ff; }
+.gradient-bg .text-blue-200, .gradient-bg .text-white { color: #e6eef6 !important; }
+
+/* Inputs / selects / textareas inside profile */
+.gradient-bg input, .gradient-bg select, .gradient-bg textarea {
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  color: #f8fafc !important;
+}
+.gradient-bg input::placeholder, .gradient-bg textarea::placeholder { color: rgba(255,255,255,0.5) !important; }
+
+/* Utility class overrides used in template (bg-white/10 etc) */
+.gradient-bg .bg-white\/10 { background: rgba(255,255,255,0.06) !important; }
+.gradient-bg .bg-white\/20 { background: rgba(255,255,255,0.08) !important; }
+.gradient-bg .hover\:bg-white\/30:hover { background: rgba(255,255,255,0.10) !important; }
+
+/* Buttons inside profile */
+.gradient-bg .btn { background: #0ea5a4; color: #ffffff !important; border-radius: 8px; padding: .55rem .9rem; }
+.gradient-bg .btn:hover { background: #089e98; }
+
+/* Small panels and stat cards */
+.gradient-bg .glass-card .bg-blue-500\/30 { background: rgba(59,130,246,0.12) !important; }
+.gradient-bg .glass-card .bg-purple-500\/30 { background: rgba(139,92,246,0.10) !important; }
+.gradient-bg .glass-card .bg-green-500\/30 { background: rgba(16,185,129,0.10) !important; }
+
+/* Modal visibility helpers used by template */
+.hidden { display: none; }
+.show { display: block; }
+
+/* Make sure profile header has subtle border */
+.glass-card.p-6.mb-6 { border-radius: 12px; }
+
+@media (max-width: 768px) {
+  .container.mx-auto.px-4.py-8 { padding-left: 0.75rem; padding-right: 0.75rem; }
+}

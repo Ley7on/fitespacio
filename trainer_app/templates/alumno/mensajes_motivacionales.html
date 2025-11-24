@@ -1,0 +1,273 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Mensajes Motivacionales - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-3">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="text-white">Mensajes Motivacionales</h3>
+                <p class="text-light-70 mb-0">Tus mensajes y sugerencias personalizadas.</p>
+            </div>
+            <div>
+                <button id="btnRefreshMensajes" class="btn btn-glass btn-sm">Actualizar</button>
+                <a href="#" id="btnMarcarTodos" class="btn btn-glass btn-sm ms-2">Marcar todos leídos</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12" id="mensajesContainer">
+            {% if mensajes %}
+                {% for mensaje in mensajes %}
+                    <div class="mensaje-card mb-3 {% if not mensaje.leido %}mensaje-no-leido{% endif %}" data-mensaje-id="{{ mensaje.id }}" data-mensaje-origen="{{ mensaje.origen }}">
+                        <div class="glass p-4">
+                            <div class="d-flex align-items-start">
+                                <div class="mensaje-icon me-3">
+                                    {% if mensaje.tipo == 'asistencia' %}
+                                        <i class="fa-solid fa-dumbbell fa-2x text-info"></i>
+                                    {% elif mensaje.tipo == 'habitos' %}
+                                        <i class="fa-solid fa-droplet fa-2x text-primary"></i>
+                                    {% elif mensaje.tipo == 'progreso' %}
+                                        <i class="fa-solid fa-chart-line fa-2x text-success"></i>
+                                    {% elif mensaje.tipo == 'motivacion' %}
+                                        <i class="fa-solid fa-star fa-2x text-warning"></i>
+                                    {% elif mensaje.tipo == 'salud_mental' %}
+                                        <i class="fa-solid fa-heart fa-2x text-danger"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-bell fa-2x text-secondary"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="text-white mb-1">{{ mensaje.titulo }}</h5>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge badge-{{ mensaje.tipo }}">{{ mensaje.get_tipo_display }}</span>
+                                            {% if mensaje.prioridad == 3 %}
+                                                <span class="badge bg-danger">Alta Prioridad</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <p class="text-light-70 mb-3">{{ mensaje.contenido }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-light-50"><i class="fa-solid fa-clock me-1"></i>{{ mensaje.fecha_envio|timesince }} atrás</small>
+                                        <div class="mensaje-acciones">
+                                            {% if not mensaje.leido %}
+                                                <button class="btn btn-glass btn-sm ms-2 btn-marcar-leido"> <i class="fa-solid fa-check me-1"></i>Marcar como leído</button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                {# No server-rendered messages; keep container empty and let client populate via API #}
+            {% endif %}
+            <!-- Compact placeholder shown by JS if API returns empty -->
+            <div id="mensajesEmpty" class="d-none text-center py-4">
+                <p class="text-light-70 mb-0">No hay mensajes recientes. El sistema está analizando tus patrones.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+function crearCardMensaje(m) {
+    // m: objeto {id, orig_id, titulo, contenido, tipo, prioridad, leido, fecha_envio, origen}
+    const div = document.createElement('div');
+    div.className = 'mensaje-card mb-3' + (m.leido ? '' : ' mensaje-no-leido');
+    // Use orig_id if available, otherwise fallback to id
+    const msgId = m.orig_id || m.id;
+    div.setAttribute('data-mensaje-id', msgId);
+    div.setAttribute('data-mensaje-origen', m.origen || 'mensaje');
+
+    // Map tipo to icon
+    const iconoMap = {
+        'asistencia': 'fa-dumbbell text-info',
+        'habitos': 'fa-droplet text-primary',
+        'progreso': 'fa-chart-line text-success',
+        'motivacion': 'fa-star text-warning',
+        'sueno': 'fa-moon text-info',
+        'salud_mental': 'fa-heart text-danger',
+    };
+    const icono = iconoMap[m.tipo] || 'fa-bell text-secondary';
+
+    // Format fecha_envio
+    const fecha = new Date(m.fecha_envio);
+    const ahora = new Date();
+    const diffMs = ahora - fecha;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHoras = Math.floor(diffMs / 3600000);
+    const diffDias = Math.floor(diffMs / 86400000);
+    let tiempoStr = 'Ahora';
+    if (diffMins < 1) tiempoStr = 'Justo ahora';
+    else if (diffMins < 60) tiempoStr = `${diffMins}m atrás`;
+    else if (diffHoras < 24) tiempoStr = `${diffHoras}h atrás`;
+    else if (diffDias < 7) tiempoStr = `${diffDias}d atrás`;
+    else tiempoStr = fecha.toLocaleDateString('es-ES');
+
+    const tipoBadge = m.tipo || 'motivacion';
+    const tipoDisplay = m.tipo ? m.tipo.replace('_', ' ').toUpperCase() : 'MOTIVACIÓN';
+
+    div.innerHTML = `
+        <div class="glass p-4">
+            <div class="d-flex align-items-start">
+                <div class="mensaje-icon me-3"><i class="fa-solid ${icono} fa-2x"></i></div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="text-white mb-1">${m.titulo || ''}</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-${tipoBadge}">${tipoDisplay}</span>
+                            ${m.prioridad === 3 ? '<span class="badge bg-danger">Alta Prioridad</span>' : ''}
+                        </div>
+                    </div>
+                    <p class="text-light-70 mb-3">${m.contenido || ''}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-light-50"><i class="fa-solid fa-clock me-1"></i>${tiempoStr}</small>
+                        <div class="mensaje-acciones">
+                            ${!m.leido ? '<button class="btn btn-glass btn-sm ms-2 btn-marcar-leido"><i class="fa-solid fa-check me-1"></i>Marcar como leído</button>' : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    return div;
+}
+
+function marcarLeidoFromElement(el) {
+    const card = el.closest('.mensaje-card');
+    if (!card) return;
+    const id = card.getAttribute('data-mensaje-id');
+    const origen = card.getAttribute('data-mensaje-origen') || 'mensaje';
+
+    let url;
+    if (origen === 'legacy' && id && id.startsWith('notif-')) {
+        const notifId = id.split('notif-')[1];
+        url = `/alumno/mensajes/notif/${notifId}/leido/`;
+    } else {
+        // msg id could be 'msg-<id>' or numeric
+        const raw = String(id).replace('msg-', '');
+        url = `/alumno/mensajes/${raw}/leido/`;
+    }
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data && data.success) {
+            card.classList.remove('mensaje-no-leido');
+            const btn = card.querySelector('.btn-marcar-leido'); if (btn) btn.remove();
+            if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+            if (window.showNotification) window.showNotification('Mensaje marcado como leído', '', 'success');
+        }
+    })
+    .catch(err => console.error('Error marcando leido:', err));
+}
+
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.btn-marcar-leido')) {
+        e.preventDefault();
+        marcarLeidoFromElement(e.target.closest('.btn-marcar-leido'));
+    }
+});
+
+function cargarMensajes() {
+    const container = document.getElementById('mensajesContainer');
+    const placeholder = document.getElementById('mensajesEmpty');
+    // show loading state
+    if (placeholder) { placeholder.classList.remove('d-none'); placeholder.textContent = 'Cargando mensajes...'; }
+
+    fetch('/alumno/api/mensajes/')
+        .then(r => r.json())
+        .then(data => {
+            if (!data || !Array.isArray(data.mensajes)) {
+                if (placeholder) { placeholder.textContent = 'No hay mensajes recientes.'; }
+                return;
+            }
+
+            // Build set of existing orig_id (numeric IDs) to avoid duplicates
+            const existing = new Set();
+            container.querySelectorAll('.mensaje-card').forEach(el => {
+                const id = el.getAttribute('data-mensaje-id');
+                // Strip 'msg-' or 'notif-' prefix if present to get numeric ID
+                const numId = String(id).replace(/^(msg-|notif-)/, '');
+                existing.add(numId);
+            });
+
+            // Sort messages by fecha_envio descending (newest first)
+            const sorted = [...data.mensajes].sort((a, b) => {
+                const dateA = new Date(a.fecha_envio);
+                const dateB = new Date(b.fecha_envio);
+                return dateB - dateA;
+            });
+
+            // Clear container and rebuild from sorted list (prevents duplicates and ordering issues)
+            container.innerHTML = '';
+
+            sorted.forEach(m => {
+                const numId = String(m.orig_id || m.id).replace(/^(msg-|notif-)/, '');
+                // Always add from API since we cleared container
+                const card = crearCardMensaje(m);
+                container.appendChild(card);
+            });
+
+            // show/hide placeholder
+            if (container.querySelectorAll('.mensaje-card').length === 0) {
+                if (placeholder) { placeholder.classList.remove('d-none'); placeholder.textContent = 'No hay mensajes recientes.'; }
+            } else {
+                if (placeholder) placeholder.classList.add('d-none');
+            }
+        })
+        .catch(err => {
+            console.error('Error actualizando mensajes:', err);
+            if (placeholder) placeholder.textContent = 'Error cargando mensajes.';
+        });
+}
+
+document.getElementById('btnRefreshMensajes')?.addEventListener('click', function(e){
+    e.preventDefault();
+    cargarMensajes();
+});
+
+// Cargar mensajes al cargar la página
+document.addEventListener('DOMContentLoaded', function(){
+    try { cargarMensajes(); } catch(e) { console.error('Error iniciando carga de mensajes:', e); }
+});
+
+// Marcar todos leídos (usa endpoint existente)
+document.getElementById('btnMarcarTodos')?.addEventListener('click', function(e){
+    e.preventDefault();
+    fetch('/alumno/api/marcar-todos-leidos/', { method: 'POST', headers: { 'X-CSRFToken': csrftoken } })
+        .then(r => r.json())
+        .then(d => {
+            if (d && d.success) {
+                document.querySelectorAll('.mensaje-card.mensaje-no-leido').forEach(c => {
+                    c.classList.remove('mensaje-no-leido');
+                    const btn = c.querySelector('.btn-marcar-leido'); if (btn) btn.remove();
+                });
+                if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                if (window.showNotification) window.showNotification('Todos los mensajes marcados como leídos', '', 'success');
+            }
+        })
+        .catch(err => console.error('Error marcando todos:', err));
+});
+</script>
+
+<style>
+.mensaje-card { transition: all .25s ease; }
+.mensaje-no-leido { border-left: 4px solid #00d4aa; }
+.mensaje-icon { min-width:60px; text-align:center }
+</style>
+{% endblock %}

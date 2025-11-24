@@ -1,0 +1,39 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Nueva Rutina Asignada - FitSpace{% endblock %}
+
+{% block content %}
+<h2>¡Hola {{ cliente.nombre }}!</h2>
+
+<p>Tu entrenador <strong>{{ entrenador.get_full_name }}</strong> te ha asignado una nueva rutina personalizada.</p>
+
+<div class="highlight">
+    <h3>💪 Detalles de tu nueva rutina:</h3>
+    <ul>
+        <li><strong>Nombre:</strong> {{ rutina.nombre }}</li>
+        <li><strong>Objetivo:</strong> {{ rutina.get_objetivo_display }}</li>
+        <li><strong>Descripción:</strong> {{ rutina.descripcion|truncatewords:20 }}</li>
+        <li><strong>Fecha de inicio:</strong> Hoy</li>
+    </ul>
+</div>
+
+<p>Esta rutina ha sido diseñada específicamente para ti, considerando tus objetivos y nivel actual de entrenamiento.</p>
+
+<div style="text-align: center;">
+    <a href="http://localhost:8000/alumno/rutinas/" class="button">Ver mi rutina</a>
+</div>
+
+<p><strong>💡 Consejos importantes:</strong></p>
+<ul>
+    <li>Sigue las indicaciones de series y repeticiones</li>
+    <li>Registra tu progreso después de cada sesión</li>
+    <li>No dudes en consultar a tu entrenador si tienes dudas</li>
+    <li>Mantén la constancia para ver resultados</li>
+</ul>
+
+<p>¡Estamos seguros de que alcanzarás tus objetivos!</p>
+
+<p>¡A entrenar!<br>
+<strong>{{ entrenador.get_full_name }}</strong><br>
+<em>Tu entrenador personal</em></p>
+{% endblock %}

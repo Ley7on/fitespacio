@@ -1,0 +1,105 @@
+/* Extensión de tema oscuro para admin */
+
+/* Componentes adicionales */
+.card {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-light) !important;
+}
+
+.form-control, .form-select {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-light);
+}
+
+.form-control:focus, .form-select:focus {
+  background: var(--card-bg);
+  border-color: var(--primary-color);
+  color: var(--text-light);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.table {
+  background: var(--card-bg);
+  color: var(--text-light);
+  border-color: var(--border-color);
+}
+
+.table td, .table th {
+  border-color: var(--border-color);
+}
+
+.table tbody tr:hover {
+  background: rgba(13,110,253,.15);
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-light);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-color);
+}
+
+.dropdown-menu {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+.dropdown-item {
+  color: var(--text-light);
+}
+
+.dropdown-item:hover {
+  background: var(--sidebar-hover);
+  color: var(--text-light);
+}
+
+/* Texto y enlaces */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-light) !important;
+}
+
+a {
+  color: #b3e6ff;
+}
+
+a:hover {
+  color: #e7f5ff;
+}
+
+.text-muted {
+  color: rgba(255,255,255,.7) !important;
+}
+
+/* Alertas */
+.alert-success {
+  background: rgba(25, 135, 84, 0.2);
+  border-color: rgba(25, 135, 84, 0.3);
+  color: #75b798;
+}
+
+.alert-danger {
+  background: rgba(220, 53, 69, 0.2);
+  border-color: rgba(220, 53, 69, 0.3);
+  color: #f1aeb5;
+}
+
+.alert-warning {
+  background: rgba(255, 193, 7, 0.2);
+  border-color: rgba(255, 193, 7, 0.3);
+  color: #ffda6a;
+}
+
+.alert-info {
+  background: rgba(13, 202, 240, 0.2);
+  border-color: rgba(13, 202, 240, 0.3);
+  color: #86cfda;
+}

@@ -1,0 +1,253 @@
+{% extends 'alumno/base_alumno.html' %}
+{% load static %}
+
+{% block title %}Información Inicial - Fitspace{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    body {
+        background-color: #1a1a1a;
+        color: #ffffff;
+    }
+    
+    .setup-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .setup-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .setup-header h1 {
+        color: #4a90e2;
+        margin-bottom: 1rem;
+    }
+    
+    .setup-header p {
+        color: #b0b0b0;
+        font-size: 1.1rem;
+    }
+    
+    .form-section {
+        background: #2d2d2d;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid #404040;
+    }
+    
+    .section-title {
+        color: #4a90e2;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-control, .form-select {
+        background-color: #3a3a3a;
+        border: 1px solid #555;
+        color: #ffffff;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background-color: #3a3a3a;
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        color: #ffffff;
+    }
+    
+    .form-label {
+        color: #ffffff;
+        font-weight: 500;
+    }
+    
+    .input-group-text {
+        background-color: #404040;
+        border-color: #555;
+        color: #b0b0b0;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #4a90e2, #357abd);
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #357abd, #2968a3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
+    }
+    
+    .text-muted {
+        color: #b0b0b0 !important;
+    }
+    
+    .alert-info {
+        background-color: #1e3a5f;
+        border-color: #2e5a8a;
+        color: #b3d4fc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="setup-header text-center mb-5">
+        <h1 class="display-4 mb-3">¡Bienvenido a FitSpace! 🎉</h1>
+        <p class="lead">Para personalizar tu experiencia, necesitamos conocerte un poco mejor. Esta información nos ayudará a crear rutinas y recomendaciones específicas para ti.</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Datos Personales -->
+        <div class="form-section">
+            <h3 class="section-title">🧾 Datos Personales Básicos</h3>
+            
+            <div class="mb-3">
+                <label for="nombre_completo" class="form-label">Nombre Completo *</label>
+                <input type="text" class="form-control" id="nombre_completo" name="nombre_completo" 
+                       value="{{ info_alumno.nombre_completo|default:'' }}" required>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+                    <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" 
+                           value="{{ info_alumno.fecha_nacimiento|date:'Y-m-d'|default:'' }}">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="genero" class="form-label">Género *</label>
+                    <select class="form-select" id="genero" name="genero" required>
+                        <option value="">Seleccionar...</option>
+                        {% for value, label in generos %}
+                            <option value="{{ value }}" {% if info_alumno.genero == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="telefono" class="form-label">Teléfono</label>
+                    <input type="tel" class="form-control" id="telefono" name="telefono" 
+                           value="{{ info_alumno.telefono|default:'' }}" 
+                           placeholder="+56 9 1234 5678">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                    <small class="text-muted">Este campo no se puede modificar aquí</small>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="direccion" class="form-label">Dirección <span class="text-muted">(opcional)</span></label>
+                <textarea class="form-control" id="direccion" name="direccion" rows="2" 
+                          placeholder="Calle, número, comuna, ciudad">{{ info_alumno.direccion|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <!-- Datos Físicos -->
+        <div class="form-section">
+            <h3 class="section-title">⚖️ Datos Físicos Iniciales</h3>
+            
+            <p class="text-muted mb-4">
+                Estos datos nos ayudan a crear rutinas personalizadas y medir tu progreso a lo largo del tiempo.
+            </p>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="altura" class="form-label">Altura</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="altura" name="altura" 
+                               value="{{ info_alumno.altura|default:'' }}" 
+                               step="0.1" min="100" max="250" 
+                               placeholder="170">
+                        <span class="input-group-text">cm</span>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="peso_actual" class="form-label">Peso Actual</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="peso_actual" name="peso_actual" 
+                               value="{{ info_alumno.peso_actual|default:'' }}" 
+                               step="0.1" min="30" max="300" 
+                               placeholder="70">
+                        <span class="input-group-text">kg</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="porcentaje_grasa" class="form-label">Porcentaje de Grasa Corporal <span class="text-muted">(si lo conoces)</span></label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="porcentaje_grasa" name="porcentaje_grasa" 
+                           value="{{ info_alumno.porcentaje_grasa|default:'' }}" 
+                           step="0.1" min="5" max="50" 
+                           placeholder="15">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <strong>💡 Información:</strong> El IMC (Índice de Masa Corporal) se calculará automáticamente cuando ingreses tu altura y peso. Esto nos ayuda a personalizar mejor tus rutinas y objetivos.
+            </div>
+        </div>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">
+                Completar Configuración y Continuar 🚀
+            </button>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Calcular IMC en tiempo real
+function calcularIMC() {
+    const altura = document.getElementById('altura').value;
+    const peso = document.getElementById('peso_actual').value;
+    
+    if (altura && peso) {
+        const alturaM = altura / 100;
+        const imc = (peso / (alturaM * alturaM)).toFixed(1);
+        console.log('IMC calculado:', imc);
+    }
+}
+
+document.getElementById('altura').addEventListener('input', calcularIMC);
+document.getElementById('peso_actual').addEventListener('input', calcularIMC);
+
+// Validación del formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const nombreCompleto = document.getElementById('nombre_completo').value.trim();
+    const genero = document.getElementById('genero').value;
+    
+    if (!nombreCompleto) {
+        e.preventDefault();
+        alert('Por favor, ingresa tu nombre completo.');
+        return;
+    }
+    
+    if (!genero) {
+        e.preventDefault();
+        alert('Por favor, selecciona tu género.');
+        return;
+    }
+});
+</script>
+{% endblock %}

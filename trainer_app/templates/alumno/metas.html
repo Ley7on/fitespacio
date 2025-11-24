@@ -1,0 +1,336 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Mis Metas - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h4 text-white mb-2">
+                            <i class="fa-solid fa-bullseye me-2"></i>Mis Metas
+                        </h1>
+                        <p class="text-light-70 mb-0">Define y sigue tus objetivos de fitness</p>
+                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-outline-light" onclick="location.href='{% url "alumno:export_metas_csv" %}'">
+                                            <i class="fa-solid fa-file-csv me-1"></i>CSV
+                                        </button>
+                                        <button class="btn btn-outline-light" onclick="location.href='{% url "alumno:export_metas_pdf" %}'">
+                                            <i class="fa-solid fa-file-pdf me-1"></i>PDF
+                                        </button>
+                                        <button class="btn btn-primary" onclick="mostrarFormularioMeta()">
+                                            <i class="fa-solid fa-plus me-2"></i>Nueva Meta
+                                        </button>
+                                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metas Activas -->
+    <div class="row g-4">
+        {% for item in metas_con_progreso %}
+        {% with meta=item.meta %}
+        <div class="col-md-6 col-lg-4">
+            <div class="meta-card" role="button" tabindex="0" onclick="verMeta({{ meta.id }})" onkeypress="if(event.key==='Enter'){ verMeta({{ meta.id }}) }">
+                <div class="meta-header">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="text-white mb-0">{{ meta.titulo }}</h5>
+                        <div class="d-flex align-items-start gap-2">
+                            <span class="badge badge-{{ meta.categoria }}">{{ meta.get_categoria_display|default:meta.categoria|title }}</span>
+                            <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); completarMeta({{ meta.id }}, this)">
+                                <i class="fa-solid fa-check me-1"></i>
+                                {% if meta.estado == 'completada' %}Desmarcar{% else %}Marcar completa{% endif %}
+                            </button>
+                                <a href="{% url 'alumno:editar_meta' meta.id %}" class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation();">
+                                    <i class="fa-solid fa-pen me-1"></i>Editar
+                                </a>
+                                <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); eliminarMeta({{ meta.id }}, this)">
+                                    <i class="fa-solid fa-trash me-1"></i>Eliminar
+                                </button>
+                        </div>
+                    </div>
+                    <p class="text-light-70 small mb-3">{{ meta.descripcion|truncatewords:15 }}</p>
+                </div>
+                
+                <div class="meta-objetivo mb-3">
+                    <div class="d-flex justify-content-between text-sm mb-1">
+                        <span class="text-light-70">Objetivo:</span>
+                        <span class="text-white">{{ meta.valor_objetivo }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-sm">
+                        <span class="text-light-70">Fecha límite:</span>
+                        <span class="text-light-50">{{ meta.fecha_objetivo }}</span>
+                    </div>
+                </div>
+                
+                <!-- Progreso -->
+                <div class="meta-progreso mb-3">
+                    <div class="d-flex justify-content-between text-sm mb-2">
+                        <span class="text-light-70">Progreso</span>
+                        <span class="text-success">{{ item.progreso }}%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {{ item.progreso }}%"></div>
+                    </div>
+                </div>
+                
+                <!-- Acciones -->
+                <div class="meta-acciones">
+                    <div class="d-flex justify-content-between text-sm">
+                        <span class="text-light-70">Acciones:</span>
+                        <span class="text-info">{{ item.acciones_completadas }}/{{ item.total_acciones }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+        {% empty %}
+        <div class="col-12">
+            <div class="glass p-5 text-center">
+                <i class="fa-solid fa-bullseye fa-4x text-light-50 mb-3"></i>
+                <h5 class="text-white mb-2">No tienes metas aún</h5>
+                <p class="text-light-70 mb-3">Crea tu primera meta para comenzar a alcanzar tus objetivos</p>
+                <button class="btn btn-primary" onclick="mostrarFormularioMeta()">
+                    <i class="fa-solid fa-plus me-2"></i>Crear Mi Primera Meta
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Consejos para Metas -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="glass p-4 border-info">
+                <h5 class="text-info mb-3">
+                    <i class="fa-solid fa-lightbulb me-2"></i>Consejos para Metas Efectivas
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="consejo-card">
+                            <h6 class="text-white">🎯 Específicas</h6>
+                            <p class="text-light-70 small">Define exactamente qué quieres lograr. "Perder 5kg" es mejor que "bajar de peso".</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="consejo-card">
+                            <h6 class="text-white">📏 Medibles</h6>
+                            <p class="text-light-70 small">Usa números y fechas. Así podrás seguir tu progreso objetivamente.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="consejo-card">
+                            <h6 class="text-white">🚀 Alcanzables</h6>
+                            <p class="text-light-70 small">Sé ambicioso pero realista. Metas imposibles solo generan frustración.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="consejo-card">
+                            <h6 class="text-white">⏰ Con Plazo</h6>
+                            <p class="text-light-70 small">Establece una fecha límite. Esto crea urgencia y enfoque.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nueva Meta -->
+<div class="modal fade" id="nuevaMetaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content glass">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white">
+                    <i class="fa-solid fa-bullseye me-2"></i>Nueva Meta
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-white">Título de la Meta</label>
+                        <input type="text" class="form-control" name="titulo" required placeholder="Ej: Perder 5kg, Press de banca 100kg">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-white">Descripción</label>
+                        <textarea class="form-control" name="descripcion" rows="3" required 
+                                  placeholder="Describe por qué es importante esta meta para ti"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Categoría</label>
+                            <select class="form-select" name="categoria" required>
+                                {% for value, label in categorias %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Fecha Objetivo</label>
+                            <input type="date" class="form-control" name="fecha_objetivo" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 mt-3">
+                        <label class="form-label text-white">Valor Objetivo (opcional)</label>
+                        <input type="text" class="form-control" name="valor_objetivo" 
+                               placeholder="Ej: 75kg, 100kg, 30 minutos">
+                        <small class="text-light-50">Especifica el valor numérico que quieres alcanzar</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear Meta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function mostrarFormularioMeta() {
+    new bootstrap.Modal(document.getElementById('nuevaMetaModal')).show();
+}
+
+function verMeta(metaId) {
+    window.location.href = `/alumno/metas/${metaId}/`;
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function completarMeta(metaId, btn) {
+    if (!confirm('¿Marcar esta meta como completada?')) return;
+    btn.disabled = true;
+    const csrftoken = getCookie('csrftoken');
+
+    fetch(`/alumno/metas/${metaId}/completar/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({})
+    }).then(r => r.json()).then(data => {
+        if (data && data.success) {
+            // mostrar notificación si el servidor generó un mensaje motivacional
+            if (data.mensaje_generado && window.showNotification) {
+                window.showNotification(data.mensaje_generado.titulo, data.mensaje_generado.contenido, 'success');
+                try {
+                    if (window.handleIncomingMensaje) window.handleIncomingMensaje(data.mensaje_generado);
+                    if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                    // actualizar estado del botón y el UI localmente
+                    btn.disabled = false;
+                } catch (e) {
+                    setTimeout(() => location.reload(), 600);
+                }
+            } else {
+                // simple feedback: reload to refresh progress and state
+                setTimeout(() => location.reload(), 600);
+            }
+        } else {
+            alert(data.error || 'Error al marcar la meta');
+            btn.disabled = false;
+        }
+    }).catch(err => {
+        console.error(err);
+        alert('Error de red al marcar la meta');
+        btn.disabled = false;
+    });
+}
+
+function eliminarMeta(metaId, btn) {
+    if (!confirm('¿Eliminar esta meta? Se marcará como cancelada y quedará en historial.')) return;
+    btn.disabled = true;
+    const csrftoken = getCookie('csrftoken');
+
+    fetch(`/alumno/metas/${metaId}/eliminar/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({})
+    }).then(r => r.json()).then(data => {
+        if (data && data.success) {
+            // eliminar visualmente la meta del DOM y mostrar feedback
+            try {
+                const card = btn.closest('.meta-card');
+                if (card) card.remove();
+                if (data.mensaje_generado && window.showNotification) {
+                    window.showNotification(data.mensaje_generado.titulo, data.mensaje_generado.contenido, 'success');
+                    if (window.handleIncomingMensaje) window.handleIncomingMensaje(data.mensaje_generado);
+                    if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                }
+            } catch (e) {
+                location.reload();
+            }
+        } else {
+            alert(data.error || 'Error al eliminar la meta');
+            btn.disabled = false;
+        }
+    }).catch(err => {
+        console.error(err);
+        alert('Error de red al eliminar la meta');
+        btn.disabled = false;
+    });
+}
+</script>
+
+<style>
+.meta-card {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.meta-card:hover {
+    border-color: #00d4aa;
+    transform: translateY(-2px);
+}
+
+.badge-peso { background-color: #0dcaf0; color: #000; }
+.badge-fuerza { background-color: #dc3545; }
+.badge-resistencia { background-color: #198754; }
+.badge-habitos { background-color: #ffc107; color: #000; }
+.badge-general { background-color: #6f42c1; }
+
+.consejo-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.border-info {
+    border-left: 4px solid #0dcaf0 !important;
+}
+</style>
+{% endblock %}

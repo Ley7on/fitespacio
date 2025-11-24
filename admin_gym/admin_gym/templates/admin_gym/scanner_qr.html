@@ -1,0 +1,309 @@
+{% extends "admin_gym/base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Escáner QR - Control de Acceso</h1>
+        <p class="mt-2 text-gray-600">Escanea el código QR del cliente para marcar asistencia automáticamente</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Cámara QR -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Cámara QR</h2>
+            </div>
+            <div class="p-6">
+                <div id="qr-reader" class="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div class="text-center p-4">
+                        <div class="animate-pulse">
+                            <div class="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-4"></div>
+                        </div>
+                        <p class="text-gray-600 mb-3">Presiona "Iniciar Escáner" para comenzar</p>
+                        <div class="text-xs text-gray-500 space-y-2">
+                            <div class="bg-blue-50 p-3 rounded-lg mb-2">
+                                <p class="font-semibold text-blue-700 mb-1">📷 Cómo escanear:</p>
+                                <p>• Centra el código QR en el recuadro</p>
+                                <p>• Mantén el teléfono estable</p>
+                                <p>• Asegúrate de tener buena luz</p>
+                            </div>
+                            <div class="bg-yellow-50 p-3 rounded-lg">
+                                <p class="font-semibold text-yellow-700 mb-1">⚠️ Si no funciona:</p>
+                                <p>• Permite el acceso a la cámara</p>
+                                <p>• Usa Chrome o Edge</p>
+                                <p>• Recarga la página (F5)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-center space-x-4">
+                    <button id="start-scan" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                        Iniciar Escáner
+                    </button>
+                    <button id="stop-scan" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg" disabled>
+                        Detener Escáner
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registro de Asistencias -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Asistencias Recientes</h2>
+                <p class="text-sm text-gray-500">Últimas 12 horas - Actualizaciones en tiempo real</p>
+            </div>
+            <div class="p-6">
+                <div id="asistencias-hoy" class="space-y-3 max-h-96 overflow-y-auto">
+                    <!-- Se carga dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado del escáner -->
+    <div id="scanner-status" class="mt-6 p-4 rounded-lg bg-blue-50 border border-blue-200">
+        <p class="text-blue-800">
+            <span class="font-semibold">Estado:</span> 
+            <span id="status-text">Listo para escanear</span>
+        </p>
+    </div>
+</div>
+
+<!-- Notificaciones flotantes -->
+<div id="notifications" class="fixed top-4 right-4 z-50 space-y-2"></div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+#qr-reader {
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    width: 100% !important;
+    height: 400px !important;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+#qr-reader video {
+    border-radius: 6px;
+    object-fit: cover !important;
+}
+
+#qr-reader canvas {
+    border-radius: 6px;
+}
+
+#qr-reader__scan_region {
+    background: rgba(0, 0, 0, 0.6) !important;
+}
+
+#qr-reader__dashboard {
+    background: #f9fafb !important;
+    border-top: 1px solid #e5e7eb !important;
+    padding: 8px !important;
+}
+
+#qr-reader__dashboard_section {
+    color: #374151 !important;
+    font-size: 12px !important;
+}
+
+/* Forzar cuadrado perfecto */
+#qr-reader__camera_selection {
+    margin: 5px 0 !important;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+let html5QrCode;
+let isScanning = false;
+
+// Función para mostrar notificaciones
+function mostrarNotificacion(mensaje, tipo = 'success') {
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = `${colors[tipo]} text-white px-6 py-3 rounded-lg shadow-lg animate-slide-up max-w-md`;
+    notification.innerHTML = `
+        <div class="flex items-center justify-between">
+            <span class="text-sm font-medium">${mensaje}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    document.getElementById('notifications').appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Función para procesar QR escaneado
+async function procesarQR(qrCode) {
+    try {
+        document.getElementById('status-text').textContent = 'Procesando QR...';
+        
+        const response = await fetch('/api/validar-qr/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ qr_code: qrCode })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            mostrarNotificacion(`✅ ${data.cliente_nombre} - Asistencia registrada`, 'success');
+            cargarAsistenciasRecientes();
+            
+            // Sonido de éxito (opcional)
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+            audio.play().catch(() => {}); // Ignorar errores de audio
+        } else {
+            mostrarNotificacion(`❌ ${data.message}`, 'error');
+        }
+        
+        document.getElementById('status-text').textContent = 'Listo para escanear';
+        
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error de conexión', 'error');
+        document.getElementById('status-text').textContent = 'Error - Listo para escanear';
+    }
+}
+
+// Función para cargar asistencias recientes (últimas 12 horas)
+async function cargarAsistenciasRecientes() {
+    try {
+        const response = await fetch('/api/asistencias-hoy/');
+        const data = await response.json();
+        
+        const container = document.getElementById('asistencias-hoy');
+        container.innerHTML = '';
+        
+        if (data.asistencias.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center">No hay asistencias en las últimas 12 horas</p>';
+            return;
+        }
+        
+        data.asistencias.forEach(asistencia => {
+            const div = document.createElement('div');
+            div.className = 'flex items-center p-3 bg-green-50 rounded-lg border border-green-200';
+            div.innerHTML = `
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                        <span class="text-sm font-medium text-white">${asistencia.cliente_nombre.charAt(0).toUpperCase()}</span>
+                    </div>
+                </div>
+                <div class="ml-3 flex-1">
+                    <p class="text-sm font-medium text-gray-900">${asistencia.cliente_nombre}</p>
+                    <p class="text-xs text-gray-500">${asistencia.hora} - ${asistencia.fecha}</p>
+                    ${asistencia.tiempo_transcurrido ? `<p class="text-xs text-blue-600">Hace ${asistencia.tiempo_transcurrido}</p>` : ''}
+                </div>
+                <div class="flex-shrink-0">
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        Activa
+                    </span>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        
+    } catch (error) {
+        console.error('Error cargando asistencias:', error);
+    }
+}
+
+// Inicializar escáner
+function iniciarEscaner() {
+    html5QrCode = new Html5Qrcode("qr-reader");
+    
+    const config = {
+        fps: 10,
+        qrbox: { width: 300, height: 300 },
+        aspectRatio: 1.0,
+        disableFlip: false
+    };
+    
+    html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText, decodedResult) => {
+            if (!isScanning) return;
+            
+            isScanning = false;
+            procesarQR(decodedText);
+            
+            setTimeout(() => {
+                isScanning = true;
+            }, 3000);
+        },
+        (errorMessage) => {
+            // Ignorar errores normales de lectura
+        }
+    ).then(() => {
+        isScanning = true;
+        document.getElementById('start-scan').disabled = true;
+        document.getElementById('stop-scan').disabled = false;
+        document.getElementById('status-text').textContent = 'Escaneando... Centra el QR en el recuadro';
+        mostrarNotificacion('✅ Cámara iniciada correctamente', 'success');
+    }).catch(err => {
+        console.error('Error:', err);
+        mostrarNotificacion('❌ Error de cámara. Verifica permisos.', 'error');
+        document.getElementById('status-text').textContent = 'Error de cámara';
+    });
+}
+
+// Detener escáner
+function detenerEscaner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            isScanning = false;
+            document.getElementById('start-scan').disabled = false;
+            document.getElementById('stop-scan').disabled = true;
+            document.getElementById('status-text').textContent = 'Escáner detenido';
+        });
+    }
+}
+
+// Event listeners
+document.getElementById('start-scan').addEventListener('click', iniciarEscaner);
+document.getElementById('stop-scan').addEventListener('click', detenerEscaner);
+
+// Cargar asistencias al iniciar
+document.addEventListener('DOMContentLoaded', function() {
+    cargarAsistenciasRecientes();
+    
+    // Actualizar asistencias cada 30 segundos
+    setInterval(cargarAsistenciasRecientes, 30000);
+});
+
+// CSRF Token
+document.addEventListener('DOMContentLoaded', function() {
+    if (!document.querySelector('[name=csrfmiddlewaretoken]')) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = '{{ csrf_token }}';
+        document.body.appendChild(csrfInput);
+    }
+});
+</script>
+{% endblock %}

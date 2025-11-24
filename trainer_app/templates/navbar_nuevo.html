@@ -1,0 +1,383 @@
+<nav class="navbar-custom">
+    <div class="navbar-container">
+        <!-- Brand -->
+        <div class="navbar-brand-section">
+            <a href="{% url 'dashboard' %}" class="navbar-brand">
+                <i class="bi bi-speedometer2"></i>
+                <span class="brand-text">Entrenador</span>
+            </a>
+        </div>
+
+        <!-- Toggle Button (Mobile) -->
+        <button class="navbar-toggle" id="navToggle" aria-label="Toggle navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- Navigation Menu -->
+        <ul class="navbar-menu" id="navbarMenu">
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'alumnos_list' %}" class="nav-link {% if request.resolver_match.url_name == 'alumnos_list' %}active{% endif %}">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Alumnos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'calendario' %}" class="nav-link {% if request.resolver_match.url_name == 'calendario' %}active{% endif %}">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Calendario</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'rutinas_plantillas' %}" class="nav-link {% if request.resolver_match.url_name == 'rutinas_plantillas' %}active{% endif %}">
+                    <i class="bi bi-list-check"></i>
+                    <span>Plantillas</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'perfil' %}" class="nav-link {% if request.resolver_match.url_name == 'perfil' %}active{% endif %}">
+                    <i class="bi bi-person-circle"></i>
+                    <span>Mi Perfil</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <form method="post" action="{% url 'logout' %}" style="display: inline; margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-link logout-link">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Cerrar Sesión</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<style>
+    :root {
+        --primary-color: #00d4aa;
+        --bg-primary: #1a1a2e;
+        --bg-secondary: #0f0f1a;
+        --text-primary: #fff;
+        --text-secondary: #b3b3b3;
+        --border-color: #0d9488;
+    }
+
+    body {
+        padding-top: 70px !important;
+    }
+
+    /* Navbar Base */
+    .navbar-custom {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        background-color: var(--bg-primary) !important;
+        border-bottom: 2px solid var(--border-color) !important;
+        z-index: 9999 !important;
+        display: flex !important;
+        visibility: visible !important;
+    }
+
+    .navbar-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        height: 70px;
+        width: 100%;
+    }
+
+    /* Brand */
+    .navbar-brand-section {
+        flex-shrink: 0;
+        display: flex !important;
+    }
+
+    .navbar-brand {
+        display: flex !important;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-primary);
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 1.2rem;
+        transition: all 0.3s;
+    }
+
+    .navbar-brand:hover {
+        color: var(--primary-color);
+    }
+
+    .navbar-brand i {
+        color: var(--primary-color);
+        font-size: 1.5rem;
+    }
+
+    .brand-text {
+        display: inline;
+    }
+
+    /* Toggle Button */
+    .navbar-toggle {
+        display: none;
+        flex-direction: column;
+        gap: 6px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 10px;
+        z-index: 10001;
+    }
+
+    .navbar-toggle span {
+        width: 30px;
+        height: 3px;
+        background-color: var(--primary-color);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+        display: block !important;
+    }
+
+    .navbar-toggle.active span:nth-child(1) {
+        transform: rotate(45deg) translate(9px, 9px);
+    }
+
+    .navbar-toggle.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .navbar-toggle.active span:nth-child(3) {
+        transform: rotate(-45deg) translate(9px, -9px);
+    }
+
+    /* Menu */
+    .navbar-menu {
+        display: flex !important;
+        list-style: none;
+        gap: 5px;
+        align-items: center;
+        flex: 1;
+        margin: 0;
+        padding: 0;
+        margin-left: 30px;
+    }
+
+    .nav-item {
+        position: relative;
+        display: flex !important;
+    }
+
+    .nav-link {
+        display: flex !important;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.7rem 1.2rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.95rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+        font-family: inherit;
+    }
+
+    .nav-link:hover {
+        color: var(--primary-color);
+        background-color: rgba(0, 212, 170, 0.1);
+    }
+
+    .nav-link.active {
+        color: var(--primary-color);
+        border-bottom: 3px solid var(--primary-color);
+    }
+
+    .nav-link i {
+        min-width: 22px;
+        font-size: 1.1rem;
+    }
+
+    .logout-link {
+        color: #dc2626 !important;
+    }
+
+    .logout-link:hover {
+        color: #ff5555 !important;
+        background-color: rgba(220, 38, 38, 0.1) !important;
+    }
+
+    /* Desktop */
+    @media (min-width: 992px) {
+        .navbar-toggle {
+            display: none !important;
+        }
+    }
+
+    /* Tablet/Mobile */
+    @media (max-width: 991px) {
+        body {
+            padding-top: 65px !important;
+        }
+
+        .navbar-custom {
+            display: flex !important;
+        }
+
+        .navbar-container {
+            height: 65px;
+            padding: 0 15px;
+        }
+
+        .navbar-brand {
+            font-size: 1.1rem;
+        }
+
+        .navbar-toggle {
+            display: flex !important;
+        }
+
+        .navbar-menu {
+            position: fixed;
+            top: 65px;
+            left: 0;
+            right: 0;
+            flex-direction: column;
+            gap: 0;
+            background-color: var(--bg-secondary);
+            border-top: 2px solid var(--border-color);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-left: 0;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+        }
+
+        .navbar-menu.active {
+            max-height: calc(100vh - 65px);
+            overflow-y: auto;
+            display: flex !important;
+        }
+
+        .nav-item {
+            width: 100%;
+            border-bottom: 1px solid rgba(13, 148, 136, 0.2);
+            display: block !important;
+        }
+
+        .nav-link {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            border-bottom: none;
+            border-left: 4px solid transparent;
+            justify-content: flex-start;
+            font-size: 1rem;
+        }
+
+        .nav-link.active {
+            border-left: 4px solid var(--primary-color);
+            border-bottom: none;
+            background-color: rgba(13, 148, 136, 0.15);
+        }
+
+        .nav-link:hover {
+            background-color: rgba(13, 148, 136, 0.1);
+        }
+
+        .nav-link i {
+            font-size: 1.3rem;
+        }
+    }
+
+    /* Small devices */
+    @media (max-width: 480px) {
+        body {
+            padding-top: 60px !important;
+        }
+
+        .navbar-container {
+            height: 60px;
+            padding: 0 12px;
+        }
+
+        .navbar-menu {
+            top: 60px;
+        }
+
+        .navbar-brand {
+            font-size: 1rem;
+        }
+
+        .nav-link {
+            padding: 1rem 1.2rem;
+            font-size: 0.95rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const navToggle = document.getElementById('navToggle');
+        const navbarMenu = document.getElementById('navbarMenu');
+
+        if (!navToggle || !navbarMenu) {
+            console.error('Navbar elements not found');
+            return;
+        }
+
+        // Toggle menu
+        navToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            this.classList.toggle('active');
+            navbarMenu.classList.toggle('active');
+            
+            console.log('Menu toggled, active:', navbarMenu.classList.contains('active'));
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const isNavbar = e.target.closest('.navbar-custom');
+            
+            if (!isNavbar && navbarMenu.classList.contains('active')) {
+                navToggle.classList.remove('active');
+                navbarMenu.classList.remove('active');
+            }
+        });
+
+        // Close menu when clicking a link on mobile
+        const navLinks = navbarMenu.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 992) {
+                    navToggle.classList.remove('active');
+                    navbarMenu.classList.remove('active');
+                }
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 992) {
+                navToggle.classList.remove('active');
+                navbarMenu.classList.remove('active');
+            }
+        });
+
+        console.log('Navbar initialized successfully');
+    });
+</script>

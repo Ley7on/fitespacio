@@ -1,0 +1,298 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Hábitos Buenos - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <h1 class="h4 text-white mb-2">
+                    <i class="fa-solid fa-heart me-2"></i>Hábitos Saludables
+                </h1>
+                <p class="text-light-70 mb-0">Registra y sigue tus hábitos positivos diarios</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hábitos Activos -->
+    <div class="row g-4 mb-4">
+        {% for item in habitos_con_progreso %}
+        {% with habito=item.habito %}
+        <div class="col-md-6 col-lg-4">
+            <div class="glass p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="text-white mb-1">{{ habito.nombre }}</h6>
+                        <small class="text-light-70">Meta: {{ habito.meta_diaria }} {{ habito.unidad }}/día</small>
+                    </div>
+                    <div class="habit-icon">
+                        {% if habito.tipo == 'agua' %}
+                            <i class="fa-solid fa-droplet text-info"></i>
+                        {% elif habito.tipo == 'sueno' %}
+                            <i class="fa-solid fa-bed text-purple"></i>
+                        {% elif habito.tipo == 'ejercicio' %}
+                            <i class="fa-solid fa-dumbbell text-success"></i>
+                        {% else %}
+                            <i class="fa-solid fa-star text-warning"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Progreso del día -->
+                <div class="progress mb-3" style="height: 8px;">
+                    <div class="progress-bar bg-success" style="width: {{ item.porcentaje }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between text-sm mb-3">
+                    <span class="text-light-70">Hoy: {{ item.progreso_hoy }}/{{ habito.meta_diaria }}</span>
+                    <span class="text-success">{{ item.porcentaje }}%</span>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success btn-sm flex-fill" onclick="registrarHabito({{ habito.id }}, '{{ habito.nombre }}')">
+                        <i class="fa-solid fa-plus me-1"></i>Registrar
+                    </button>
+                    <button class="btn btn-glass btn-sm" onclick="verHistorial({{ habito.id }})">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </button>
+                    <div class="btn-group">
+                        <a href="{% url 'alumno:editar_habito_bueno' habito.id %}" class="btn btn-sm btn-outline-light">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <form method="post" action="{% url 'alumno:eliminar_habito_bueno' habito.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Eliminar hábito?')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+        
+        <!-- Añadir nuevo hábito -->
+        <div class="col-md-6 col-lg-4">
+            <div class="glass p-4 text-center add-habit-card" onclick="mostrarFormulario()">
+                <i class="fa-solid fa-plus fa-2x text-light-50 mb-3"></i>
+                <h6 class="text-light-70">Añadir Hábito</h6>
+                <p class="text-light-50 small mb-0">Crea un nuevo hábito saludable</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen Semanal -->
+    <div class="row">
+        <div class="col-12">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-calendar-week me-2"></i>Resumen Semanal
+                </h5>
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card-small">
+                            <div class="stat-value text-success">{{ resumen_semanal.cumplimiento_percent|default:0 }}%</div>
+                            <div class="stat-label">Cumplimiento</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card-small">
+                            <div class="stat-value text-info">{{ resumen_semanal.dias_activos|default:0 }}</div>
+                            <div class="stat-label">Días Activos</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card-small">
+                            <div class="stat-value text-warning">{{ resumen_semanal.racha_actual|default:0 }}</div>
+                            <div class="stat-label">Racha Actual</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card-small">
+                            <div class="stat-value text-purple">{{ resumen_semanal.mejor_racha|default:0 }}</div>
+                            <div class="stat-label">Mejor Racha</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Registrar Hábito -->
+<div class="modal fade" id="registrarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content glass">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white">
+                    <i class="fa-solid fa-plus me-2"></i>Registrar Hábito
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="registrarForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-white">Cantidad</label>
+                        <input type="number" class="form-control" name="cantidad" min="1" value="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Notas (opcional)</label>
+                        <textarea class="form-control" name="notas" rows="3" placeholder="¿Cómo te sientes? ¿Alguna observación?"></textarea>
+                    </div>
+                        {% csrf_token %}
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Hábito -->
+<div class="modal fade" id="nuevoHabitoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content glass">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white">
+                    <i class="fa-solid fa-heart me-2"></i>Nuevo Hábito Saludable
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-white">Tipo de Hábito</label>
+                        <select class="form-select" name="tipo" required>
+                            {% for value, label in tipos_habito %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Nombre del Hábito</label>
+                        <input type="text" class="form-control" name="nombre" required placeholder="Ej: Tomar 8 vasos de agua">
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <label class="form-label text-white">Meta Diaria</label>
+                            <input type="number" class="form-control" name="meta_diaria" min="1" value="1" required>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label text-white">Unidad</label>
+                            <input type="text" class="form-control" name="unidad" value="veces" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Crear Hábito</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentHabitoId = null;
+
+function mostrarFormulario() {
+    new bootstrap.Modal(document.getElementById('nuevoHabitoModal')).show();
+}
+
+function registrarHabito(habitoId, habitoNombre) {
+    currentHabitoId = habitoId;
+    document.querySelector('#registrarModal .modal-title').innerHTML = 
+        `<i class="fa-solid fa-plus me-2"></i>Registrar: ${habitoNombre}`;
+    new bootstrap.Modal(document.getElementById('registrarModal')).show();
+}
+
+document.getElementById('registrarForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(`/alumno/habitos-buenos/${currentHabitoId}/registrar/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('registrarModal')).hide();
+            // Si el backend devolvió un mensaje generado, mostrar notificación emergente
+                if (data.mensaje_generado && window.showNotification) {
+                    try {
+                        window.showNotification(data.mensaje_generado.titulo, data.mensaje_generado.contenido, 'success');
+                    } catch (e) {}
+                    // Insertar el mensaje en caliente en la UI sin recargar
+                    try {
+                        if (window.handleIncomingMensaje) window.handleIncomingMensaje(data.mensaje_generado);
+                        if (typeof cargarMensajesNoLeidos === 'function') cargarMensajesNoLeidos();
+                    } catch (e) {
+                        // fallback: recargar si algo falla
+                        setTimeout(() => location.reload(), 900);
+                    }
+                } else {
+                    // fallback visual si no hay mensaje generado: recargar para actualizar progreso
+                    location.reload();
+                }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+function verHistorial(habitoId) {
+    // Implementar vista de historial
+    if (window.showNotification) {
+        window.showNotification('Historial', 'Funcionalidad en desarrollo', 'info');
+    }
+}
+</script>
+
+<style>
+.add-habit-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px dashed rgba(255,255,255,0.2);
+}
+
+.add-habit-card:hover {
+    border-color: rgba(255,255,255,0.4);
+    transform: translateY(-2px);
+}
+
+.habit-icon {
+    font-size: 1.5rem;
+}
+
+.stat-card-small {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
+
+.stat-card-small .stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.stat-card-small .stat-label {
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.7);
+}
+</style>
+{% endblock %}

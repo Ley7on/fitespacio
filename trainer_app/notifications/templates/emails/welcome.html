@@ -1,0 +1,37 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}¡Bienvenido a FitSpace!{% endblock %}
+
+{% block content %}
+<h2>¡Hola {{ user.get_full_name|default:user.username }}!</h2>
+
+<p>¡Bienvenido a <strong>FitSpace</strong>! Estamos emocionados de tenerte como parte de nuestra comunidad fitness.</p>
+
+<div class="highlight">
+    <h3>🎯 ¿Qué puedes hacer ahora?</h3>
+    <ul>
+        <li>✅ Acceder a tu panel personalizado</li>
+        <li>💪 Ver tus rutinas asignadas</li>
+        <li>📊 Registrar tu progreso</li>
+        <li>💬 Comunicarte con tu entrenador</li>
+        <li>📅 Reservar clases grupales</li>
+    </ul>
+</div>
+
+<p>Tu entrenador personal te contactará pronto para crear tu plan de entrenamiento personalizado.</p>
+
+<div style="text-align: center;">
+    <a href="http://localhost:8000/login/" class="button">Acceder a mi cuenta</a>
+</div>
+
+<p><strong>Datos de tu cuenta:</strong></p>
+<ul>
+    <li><strong>Usuario:</strong> {{ user.username }}</li>
+    <li><strong>Email:</strong> {{ user.email }}</li>
+</ul>
+
+<p>¡Comencemos este viaje hacia una vida más saludable juntos!</p>
+
+<p>Saludos,<br>
+<strong>El equipo de FitSpace</strong></p>
+{% endblock %}

@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Eventos Disponibles{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+.evento-card {
+    transition: all 0.3s ease;
+}
+.evento-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.inscrito {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+.disponible {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+.completo {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Eventos y Clases</h1>
+                    <p class="text-gray-600">Inscríbete a las clases y eventos disponibles</p>
+                </div>
+                <a href="{% url 'dashboard' %}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver al Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+            <div class="flex flex-wrap gap-4 items-center">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filtrar por tipo:</label>
+                    <select id="filtroTipo" class="border border-gray-300 rounded-lg px-3 py-2">
+                        <option value="">Todos los eventos</option>
+                        <option value="clase">Clases Grupales</option>
+                        <option value="entrenamiento">Entrenamientos</option>
+                        <option value="evaluacion">Evaluaciones</option>
+                        <option value="evento">Eventos Especiales</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Estado:</label>
+                    <select id="filtroEstado" class="border border-gray-300 rounded-lg px-3 py-2">
+                        <option value="">Todos</option>
+                        <option value="disponible">Disponibles</option>
+                        <option value="inscrito">Mis Inscripciones</option>
+                        <option value="completo">Completos</option>
+                    </select>
+                </div>
+                <div class="flex-1"></div>
+                <button onclick="cargarEventos()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                    <i class="fas fa-sync-alt"></i>
+                    Actualizar
+                </button>
+            </div>
+        </div>
+
+        <!-- Lista de Eventos -->
+        <div id="listaEventos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Los eventos se cargarán aquí -->
+        </div>
+
+        <!-- Estado de carga -->
+        <div id="loadingEventos" class="text-center py-12">
+            <i class="fas fa-spinner fa-spin text-3xl text-blue-500 mb-4"></i>
+            <p class="text-gray-600">Cargando eventos...</p>
+        </div>
+
+        <!-- Sin eventos -->
+        <div id="sinEventos" class="text-center py-12 hidden">
+            <i class="fas fa-calendar-times text-6xl text-gray-400 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">No hay eventos disponibles</h3>
+            <p class="text-gray-500">Vuelve más tarde para ver nuevos eventos y clases</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmación -->
+<div id="modalConfirmacion" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div class="text-center">
+            <i id="iconoModal" class="fas fa-question-circle text-4xl text-blue-500 mb-4"></i>
+            <h3 id="tituloModal" class="text-lg font-semibold mb-2"></h3>
+            <p id="mensajeModal" class="text-gray-600 mb-6"></p>
+            <div class="flex gap-3">
+                <button onclick="cerrarModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg">
+                    Cancelar
+                </button>
+                <button id="btnConfirmar" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let eventos = [];
+let eventoSeleccionado = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    cargarEventos();
+    
+    // Event listeners para filtros
+    document.getElementById('filtroTipo').addEventListener('change', filtrarEventos);
+    document.getElementById('filtroEstado').addEventListener('change', filtrarEventos);
+});
+
+function cargarEventos() {
+    document.getElementById('loadingEventos').classList.remove('hidden');
+    document.getElementById('listaEventos').innerHTML = '';
+    document.getElementById('sinEventos').classList.add('hidden');
+    
+    fetch('/api/eventos/')
+        .then(response => response.json())
+        .then(data => {
+            eventos = data || [];
+            mostrarEventos(eventos);
+        })
+        .catch(error => {
+            console.error('Error cargando eventos:', error);
+            mostrarError('Error cargando eventos');
+        })
+        .finally(() => {
+            document.getElementById('loadingEventos').classList.add('hidden');
+        });
+}
+
+function mostrarEventos(eventosAMostrar) {
+    const container = document.getElementById('listaEventos');
+    
+    if (eventosAMostrar.length === 0) {
+        document.getElementById('sinEventos').classList.remove('hidden');
+        return;
+    }
+    
+    container.innerHTML = eventosAMostrar.map(evento => {
+        const fechaInicio = new Date(evento.start);
+        const fechaFin = new Date(evento.end);
+        const ahora = new Date();
+        
+        // Determinar estado del evento
+        let estado = 'disponible';
+        let claseEstado = 'disponible';
+        let textoEstado = 'Disponible';
+        let iconoEstado = 'fa-calendar-check';
+        
+        if (evento.inscrito) {
+            estado = 'inscrito';
+            claseEstado = 'inscrito';
+            textoEstado = 'Inscrito';
+            iconoEstado = 'fa-check-circle';
+        } else if (evento.capacidad && evento.inscritos >= evento.capacidad) {
+            estado = 'completo';
+            claseEstado = 'completo';
+            textoEstado = 'Completo';
+            iconoEstado = 'fa-times-circle';
+        } else if (fechaInicio < ahora) {
+            estado = 'pasado';
+            claseEstado = 'completo';
+            textoEstado = 'Finalizado';
+            iconoEstado = 'fa-clock';
+        }
+        
+        return `
+            <div class="evento-card bg-white rounded-lg shadow-md overflow-hidden" data-tipo="${evento.type}" data-estado="${estado}">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-semibold text-gray-800">${evento.title}</h3>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${claseEstado} text-white">
+                            <i class="fas ${iconoEstado} mr-1"></i>
+                            ${textoEstado}
+                        </span>
+                    </div>
+                    
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-calendar mr-2"></i>
+                            <span>${fechaInicio.toLocaleDateString()}</span>
+                        </div>
+                        <div class="flex items-center text-gray-600">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>${fechaInicio.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${fechaFin.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                        ${evento.ubicacion ? `
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                <span>${evento.ubicacion}</span>
+                            </div>
+                        ` : ''}
+                        ${evento.capacidad ? `
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-users mr-2"></i>
+                                <span>${evento.inscritos || 0} / ${evento.capacidad} participantes</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    ${evento.description ? `
+                        <p class="text-gray-600 mb-4">${evento.description}</p>
+                    ` : ''}
+                    
+                    <div class="flex gap-2">
+                        ${estado === 'disponible' ? `
+                            <button onclick="inscribirseEvento('${evento.id}')" 
+                                    class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2">
+                                <i class="fas fa-user-plus"></i>
+                                Inscribirse
+                            </button>
+                        ` : ''}
+                        
+                        ${estado === 'inscrito' ? `
+                            <button onclick="cancelarInscripcion('${evento.id}')" 
+                                    class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2">
+                                <i class="fas fa-user-minus"></i>
+                                Cancelar Inscripción
+                            </button>
+                        ` : ''}
+                        
+                        <button onclick="verDetalles('${evento.id}')" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center gap-2">
+                            <i class="fas fa-info-circle"></i>
+                            Detalles
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function filtrarEventos() {
+    const tipoFiltro = document.getElementById('filtroTipo').value;
+    const estadoFiltro = document.getElementById('filtroEstado').value;
+    
+    let eventosFiltrados = eventos;
+    
+    if (tipoFiltro) {
+        eventosFiltrados = eventosFiltrados.filter(evento => evento.type === tipoFiltro);
+    }
+    
+    if (estadoFiltro) {
+        eventosFiltrados = eventosFiltrados.filter(evento => {
+            const fechaInicio = new Date(evento.start);
+            const ahora = new Date();
+            
+            switch(estadoFiltro) {
+                case 'disponible':
+                    return !evento.inscrito && fechaInicio > ahora && (!evento.capacidad || evento.inscritos < evento.capacidad);
+                case 'inscrito':
+                    return evento.inscrito;
+                case 'completo':
+                    return evento.capacidad && evento.inscritos >= evento.capacidad;
+                default:
+                    return true;
+            }
+        });
+    }
+    
+    mostrarEventos(eventosFiltrados);
+}
+
+function inscribirseEvento(eventoId) {
+    const evento = eventos.find(e => e.id == eventoId);
+    if (!evento) return;
+    
+    eventoSeleccionado = evento;
+    
+    document.getElementById('iconoModal').className = 'fas fa-user-plus text-4xl text-green-500 mb-4';
+    document.getElementById('tituloModal').textContent = 'Confirmar Inscripción';
+    document.getElementById('mensajeModal').textContent = `¿Deseas inscribirte al evento "${evento.title}"?`;
+    document.getElementById('btnConfirmar').onclick = confirmarInscripcion;
+    document.getElementById('btnConfirmar').className = 'flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg';
+    
+    document.getElementById('modalConfirmacion').classList.remove('hidden');
+    document.getElementById('modalConfirmacion').classList.add('flex');
+}
+
+function cancelarInscripcion(eventoId) {
+    const evento = eventos.find(e => e.id == eventoId);
+    if (!evento) return;
+    
+    eventoSeleccionado = evento;
+    
+    document.getElementById('iconoModal').className = 'fas fa-user-minus text-4xl text-red-500 mb-4';
+    document.getElementById('tituloModal').textContent = 'Cancelar Inscripción';
+    document.getElementById('mensajeModal').textContent = `¿Deseas cancelar tu inscripción al evento "${evento.title}"?`;
+    document.getElementById('btnConfirmar').onclick = confirmarCancelacion;
+    document.getElementById('btnConfirmar').className = 'flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg';
+    
+    document.getElementById('modalConfirmacion').classList.remove('hidden');
+    document.getElementById('modalConfirmacion').classList.add('flex');
+}
+
+function confirmarInscripcion() {
+    if (!eventoSeleccionado) return;
+    
+    fetch(`/api/sesiones/${eventoSeleccionado.id}/inscribir/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarMensaje('¡Inscripción exitosa!', 'success');
+            cargarEventos(); // Recargar eventos
+        } else {
+            mostrarMensaje('Error: ' + (data.message || 'No se pudo completar la inscripción'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarMensaje('Error de conexión', 'error');
+    })
+    .finally(() => {
+        cerrarModal();
+    });
+}
+
+function confirmarCancelacion() {
+    if (!eventoSeleccionado) return;
+    
+    fetch(`/api/sesiones/${eventoSeleccionado.id}/rechazar/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarMensaje('Inscripción cancelada', 'success');
+            cargarEventos(); // Recargar eventos
+        } else {
+            mostrarMensaje('Error: ' + (data.message || 'No se pudo cancelar la inscripción'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarMensaje('Error de conexión', 'error');
+    })
+    .finally(() => {
+        cerrarModal();
+    });
+}
+
+function verDetalles(eventoId) {
+    const evento = eventos.find(e => e.id == eventoId);
+    if (!evento) return;
+    
+    const fechaInicio = new Date(evento.start);
+    const fechaFin = new Date(evento.end);
+    
+    let detalles = `
+        Evento: ${evento.title}
+        Tipo: ${evento.type}
+        Fecha: ${fechaInicio.toLocaleDateString()}
+        Hora: ${fechaInicio.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${fechaFin.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+    `;
+    
+    if (evento.description) {
+        detalles += `\nDescripción: ${evento.description}`;
+    }
+    
+    if (evento.ubicacion) {
+        detalles += `\nUbicación: ${evento.ubicacion}`;
+    }
+    
+    if (evento.capacidad) {
+        detalles += `\nCapacidad: ${evento.inscritos || 0} / ${evento.capacidad} participantes`;
+    }
+    
+    alert(detalles);
+}
+
+function cerrarModal() {
+    document.getElementById('modalConfirmacion').classList.add('hidden');
+    document.getElementById('modalConfirmacion').classList.remove('flex');
+    eventoSeleccionado = null;
+}
+
+function mostrarMensaje(mensaje, tipo) {
+    const color = tipo === 'success' ? 'green' : 'red';
+    const icono = tipo === 'success' ? 'check-circle' : 'exclamation-triangle';
+    
+    // Crear elemento de mensaje
+    const mensajeDiv = document.createElement('div');
+    mensajeDiv.className = `fixed top-4 right-4 bg-${color}-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2`;
+    mensajeDiv.innerHTML = `
+        <i class="fas fa-${icono}"></i>
+        <span>${mensaje}</span>
+    `;
+    
+    document.body.appendChild(mensajeDiv);
+    
+    // Remover después de 3 segundos
+    setTimeout(() => {
+        if (mensajeDiv.parentNode) {
+            mensajeDiv.parentNode.removeChild(mensajeDiv);
+        }
+    }, 3000);
+}
+
+function mostrarError(mensaje) {
+    document.getElementById('listaEventos').innerHTML = `
+        <div class="col-span-full text-center py-12">
+            <i class="fas fa-exclamation-triangle text-6xl text-red-400 mb-4"></i>
+            <h3 class="text-xl font-semibold text-red-600 mb-2">Error</h3>
+            <p class="text-red-500">${mensaje}</p>
+            <button onclick="cargarEventos()" class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                Reintentar
+            </button>
+        </div>
+    `;
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modalConfirmacion').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarModal();
+    }
+});
+</script>
+{% csrf_token %}
+{% endblock %}

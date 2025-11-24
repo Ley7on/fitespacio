@@ -1,0 +1,199 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-teal" 
+    style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      z-index: 9999;
+      background-color: #1a1a2e !important;
+      border-bottom: 2px solid #0d9488 !important;
+      padding: 0.5rem 0;
+    ">
+    <div class="container-fluid px-3">
+        <!-- Brand -->
+        <a class="navbar-brand" href="{% url 'dashboard' %}" style="font-size: 0.95rem; margin: 0; padding: 0; display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
+            <i class="bi bi-speedometer2" style="color: #00d4aa; font-size: 1.3rem;"></i>
+            <span class="fw-bold d-none d-lg-inline">Entrenador</span>
+        </a>
+        
+        <!-- Toggle Button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"
+                style="border: 1px solid #0d9488; padding: 0.25rem 0.5rem; margin-left: auto;">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <!-- Navbar Items -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                       href="{% url 'dashboard' %}" style="font-size: 0.9rem; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.8rem;">
+                        <i class="bi bi-speedometer2" style="color: #00d4aa; min-width: 20px;"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                
+                <!-- Alumnos -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'alumnos_list' %}active{% endif %}" 
+                       href="{% url 'alumnos_list' %}" style="font-size: 0.9rem; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.8rem;">
+                        <i class="bi bi-people-fill" style="color: #a78bfa; min-width: 20px;"></i>
+                        <span>Alumnos</span>
+                    </a>
+                </li>
+                
+                <!-- Calendario -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'calendario' %}active{% endif %}" 
+                       href="{% url 'calendario' %}" style="font-size: 0.9rem; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.8rem;">
+                        <i class="bi bi-calendar-check" style="color: #f87171; min-width: 20px;"></i>
+                        <span>Calendario</span>
+                    </a>
+                </li>
+
+                <!-- Plantillas -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'rutinas_plantillas' %}active{% endif %}" 
+                       href="{% url 'rutinas_plantillas' %}" style="font-size: 0.9rem; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.8rem;">
+                        <i class="bi bi-list-check" style="color: #fbbf24; min-width: 20px;"></i>
+                        <span>Plantillas</span>
+                    </a>
+                </li>
+
+                <!-- Profile Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+                       data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.9rem; padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.8rem;">
+                        <i class="bi bi-person-circle" style="color: #06b6d4; min-width: 20px;"></i>
+                        <span>
+                            {% if user.is_authenticated %}
+                                {{ user.first_name|default:user.username|truncatechars:15 }}
+                            {% else %}
+                                Perfil
+                            {% endif %}
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown" style="background-color: #0a0a0a; border-color: #0d9488;">
+                        {% if user.is_staff %}
+                        <li><a class="dropdown-item" href="{% url 'perfil' %}" style="color: #b3b3b3; font-size: 0.9rem; padding: 0.5rem 1rem;">Mi Perfil</a></li>
+                        <li><hr class="dropdown-divider" style="border-color: #0d9488; margin: 0;"></li>
+                        {% endif %}
+                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}" style="font-size: 0.9rem; padding: 0.5rem 1rem;">Cerrar Sesión</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+  body {
+    padding-top: 65px;
+  }
+
+  /* Navbar Brand */
+  .navbar-brand {
+    color: #fff !important;
+    text-decoration: none;
+  }
+
+  /* Nav Link Styles */
+  .navbar-nav .nav-link {
+    color: #b3b3b3 !important;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+
+  .navbar-nav .nav-link:hover {
+    color: #00d4aa !important;
+  }
+
+  /* Active Link - Desktop */
+  .navbar-nav .nav-link.active {
+    color: #00d4aa !important;
+    border-bottom: 2px solid #00d4aa;
+    padding-bottom: calc(0.6rem - 2px) !important;
+  }
+
+  /* Dropdown Menu */
+  .dropdown-menu {
+    background-color: #0a0a0a !important;
+    border: 1px solid #0d9488 !important;
+  }
+
+  .dropdown-item {
+    color: #b3b3b3 !important;
+  }
+
+  .dropdown-item:hover {
+    background-color: #0d9488 !important;
+    color: #fff !important;
+  }
+
+  /* Mobile: Navbar Collapse */
+  @media (max-width: 991px) {
+    body {
+      padding-top: 60px;
+    }
+
+    .navbar-collapse {
+      background-color: #0f0f1a;
+      border-top: 1px solid #0d9488;
+      padding: 0.5rem 0;
+    }
+
+    .navbar-nav {
+      flex-direction: column;
+    }
+
+    .nav-item {
+      border-bottom: 1px solid #0d9488;
+    }
+
+    .navbar-nav .nav-link {
+      padding-left: 1rem !important;
+      border-left: 3px solid transparent;
+      border-bottom: none;
+    }
+
+    .navbar-nav .nav-link:hover {
+      border-left-color: #00d4aa;
+    }
+
+    .navbar-nav .nav-link.active {
+      border-left: 3px solid #00d4aa;
+      border-bottom: none;
+      background-color: rgba(13, 148, 136, 0.1);
+      padding-bottom: 0.6rem !important;
+    }
+
+    .dropdown-menu {
+      position: static;
+      border: none !important;
+      background-color: transparent;
+      padding: 0 !important;
+    }
+  }
+
+  /* Very Small Devices */
+  @media (max-width: 480px) {
+    body {
+      padding-top: 55px;
+    }
+
+    .navbar-brand {
+      font-size: 0.85rem;
+    }
+
+    .navbar-brand i {
+      font-size: 1.1rem;
+    }
+
+    .nav-link span {
+      font-size: 0.85rem;
+    }
+  }
+</style>

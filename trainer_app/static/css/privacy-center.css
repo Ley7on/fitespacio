@@ -1,0 +1,275 @@
+/* Privacy Center Styles */
+.privacy-page {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.privacy-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.privacy-section:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 212, 170, 0.1);
+}
+
+.privacy-icon {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #00d4aa, #007bff);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0, 212, 170, 0.3);
+}
+
+.data-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #00d4aa;
+    transition: all 0.3s ease;
+}
+
+.data-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-left-color: #007bff;
+}
+
+.btn-privacy {
+    background: linear-gradient(135deg, #00d4aa, #007bff);
+    border: none;
+    color: white;
+    padding: 0.875rem 1.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-privacy:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 212, 170, 0.4);
+    color: white;
+    background: linear-gradient(135deg, #00e6c0, #0088ff);
+}
+
+.btn-danger-privacy {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    border: none;
+    color: white;
+    padding: 0.875rem 1.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-danger-privacy:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+    color: white;
+    background: linear-gradient(135deg, #e74c3c, #d63031);
+}
+
+.privacy-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.privacy-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #00d4aa, #007bff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.privacy-header p {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.rights-list {
+    list-style: none;
+    padding: 0;
+}
+
+.rights-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rights-list li:last-child {
+    border-bottom: none;
+}
+
+.rights-list li::before {
+    content: "✓";
+    color: #00d4aa;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.contact-info {
+    background: rgba(0, 212, 170, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.contact-info .contact-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.contact-info .contact-item:last-child {
+    margin-bottom: 0;
+}
+
+.modal-content.bg-dark {
+    background: rgba(26, 26, 46, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header.border-secondary {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.modal-footer.border-secondary {
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 8px;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #00d4aa;
+    box-shadow: 0 0 0 0.2rem rgba(0, 212, 170, 0.25);
+    color: white;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.alert {
+    border-radius: 12px;
+    border: none;
+}
+
+.alert-danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #ff6b7a;
+    border-left: 4px solid #dc3545;
+}
+
+.alert-success {
+    background: rgba(0, 212, 170, 0.1);
+    color: #00d4aa;
+    border-left: 4px solid #00d4aa;
+}
+
+.alert-warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border-left: 4px solid #ffc107;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .privacy-section {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .privacy-header h1 {
+        font-size: 2rem;
+    }
+    
+    .btn-privacy,
+    .btn-danger-privacy {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .data-item {
+        padding: 1rem;
+    }
+}
+
+/* Animation for notifications */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.alert.position-fixed {
+    animation: slideInRight 0.3s ease-out;
+}
+
+/* Loading states */
+.btn-privacy:disabled,
+.btn-danger-privacy:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-privacy.loading::after,
+.btn-danger-privacy.loading::after {
+    content: "";
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 0.5rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

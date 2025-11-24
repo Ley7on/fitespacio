@@ -1,0 +1,1347 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Mi Rutina - FitSpace{% endblock %}
+
+{% block content %}
+<div class="routine-container">
+    <!-- Header Responsivo -->
+    <div class="routine-header">
+        <div class="header-content">
+            <div class="routine-info">
+                <div class="routine-icon">
+                    <i class="fa-solid fa-dumbbell"></i>
+                </div>
+                <div class="routine-details">
+                    <h1 class="routine-title">Mi Rutina</h1>
+                    <div class="routine-meta">
+                        <span class="routine-badge">Entrenador</span>
+                        <span class="routine-duration">
+                            <i class="fa-solid fa-clock"></i>45-60 min
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-action btn-secondary" onclick="verProgreso()">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span class="btn-text">Progreso</span>
+                </button>
+                <button class="btn-action btn-primary" onclick="iniciarRutina()">
+                    <i class="fa-solid fa-play"></i>
+                    <span class="btn-text">Iniciar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selector de Rutinas Responsivo -->
+    <div class="routine-selector">
+        <div class="selector-header">
+            <h2 class="selector-title">
+                <i class="fa-solid fa-list"></i>
+                Selecciona tu Rutina
+            </h2>
+        </div>
+        <div class="routine-cards">
+            <div class="routine-card active" onclick="selectRoutine('trainer')">
+                <div class="card-header">
+                    <div class="card-icon trainer">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div class="card-badge recommended">Recomendada</div>
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">Rutina del Entrenador</h3>
+                    <p class="card-description">Rutina personalizada diseñada específicamente para ti</p>
+                    <div class="card-stats">
+                        <span class="stat">
+                            <i class="fa-solid fa-dumbbell"></i>
+                            6 ejercicios
+                        </span>
+                        <span class="stat">
+                            <i class="fa-solid fa-clock"></i>
+                            45-60 min
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="routine-card" onclick="selectRoutine('personal')">
+                <div class="card-header">
+                    <div class="card-icon personal">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="card-badge personal">Tu Creación</div>
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">Mi Rutina Personal</h3>
+                    <p class="card-description">Rutina creada por ti según tus preferencias</p>
+                    <div class="card-stats">
+                        <span class="stat">
+                            <i class="fa-solid fa-plus"></i>
+                            Crear nueva
+                        </span>
+                        <span class="stat">
+                            <i class="fa-solid fa-edit"></i>
+                            Personalizable
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rutina Activa -->
+    <div id="rutinaTrainer" class="routine-content">
+        <div class="exercises-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fa-solid fa-list"></i>
+                    Ejercicios de Hoy
+                </h2>
+                <div class="progress-indicator">
+                    <span class="progress-text">0/6 completados</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ejercicios Responsivos -->
+            <div class="exercises-list">
+                <div class="exercise-card">
+                    <div class="exercise-header">
+                        <div class="exercise-number">1</div>
+                        <div class="exercise-info">
+                            <h3 class="exercise-name">Press de Banca</h3>
+                            <div class="exercise-meta">
+                                <span class="meta-item">4 series</span>
+                                <span class="meta-item">8-10 reps</span>
+                                <span class="meta-item">80kg</span>
+                            </div>
+                        </div>
+                        <div class="exercise-progress">
+                            <div class="progress-circle">
+                                <svg viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+                                    <circle cx="18" cy="18" r="16" fill="none" stroke="#00d4aa" stroke-width="2" 
+                                            stroke-dasharray="0 100" class="progress-ring"/>
+                                </svg>
+                                <span class="progress-count">0/4</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sets-container">
+                        <div class="sets-grid">
+                            <div class="set-item" onclick="toggleSet(this)">
+                                <div class="set-header">
+                                    <span class="set-number">Serie 1</span>
+                                </div>
+                                <div class="set-inputs">
+                                    <div class="input-group">
+                                        <input type="number" placeholder="80" class="weight-input">
+                                        <label>kg</label>
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="number" placeholder="10" class="reps-input">
+                                        <label>reps</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="set-item" onclick="toggleSet(this)">
+                                <div class="set-header">
+                                    <span class="set-number">Serie 2</span>
+                                </div>
+                                <div class="set-inputs">
+                                    <div class="input-group">
+                                        <input type="number" placeholder="80" class="weight-input">
+                                        <label>kg</label>
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="number" placeholder="10" class="reps-input">
+                                        <label>reps</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="set-item" onclick="toggleSet(this)">
+                                <div class="set-header">
+                                    <span class="set-number">Serie 3</span>
+                                </div>
+                                <div class="set-inputs">
+                                    <div class="input-group">
+                                        <input type="number" placeholder="80" class="weight-input">
+                                        <label>kg</label>
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="number" placeholder="8" class="reps-input">
+                                        <label>reps</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="set-item" onclick="toggleSet(this)">
+                                <div class="set-header">
+                                    <span class="set-number">Serie 4</span>
+                                </div>
+                                <div class="set-inputs">
+                                    <div class="input-group">
+                                        <input type="number" placeholder="80" class="weight-input">
+                                        <label>kg</label>
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="number" placeholder="8" class="reps-input">
+                                        <label>reps</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise-notes">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <span>Mantén la espalda pegada al banco. Controla el descenso.</span>
+                    </div>
+                </div>
+
+                <div class="exercise-card">
+                    <div class="exercise-header">
+                        <div class="exercise-number">2</div>
+                        <div class="exercise-info">
+                            <h3 class="exercise-name">Sentadillas</h3>
+                            <div class="exercise-meta">
+                                <span class="meta-item">4 series</span>
+                                <span class="meta-item">12-15 reps</span>
+                                <span class="meta-item">100kg</span>
+                            </div>
+                        </div>
+                        <div class="exercise-progress">
+                            <div class="progress-circle">
+                                <svg viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+                                    <circle cx="18" cy="18" r="16" fill="none" stroke="#00d4aa" stroke-width="2" 
+                                            stroke-dasharray="0 100" class="progress-ring"/>
+                                </svg>
+                                <span class="progress-count">0/4</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sets-container">
+                        <div class="sets-grid">
+                            <div class="set-item" onclick="toggleSet(this)">
+                                <div class="set-header">
+                                    <span class="set-number">Serie 1</span>
+                                </div>
+                                <div class="set-inputs">
+                                    <div class="input-group">
+                                        <input type="number" placeholder="100" class="weight-input">
+                                        <label>kg</label>
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="number" placeholder="15" class="reps-input">
+                                        <label>reps</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="set-item" onclick="toggleSet(this)">
+                                <div class="set-header">
+                                    <span class="set-number">Serie 2</span>
+                                </div>
+                                <div class="set-inputs">
+                                    <div class="input-group">
+                                        <input type="number" placeholder="100" class="weight-input">
+                                        <label>kg</label>
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="number" placeholder="15" class="reps-input">
+                                        <label>reps</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="set-item" onclick="toggleSet(this)">
+                                <div class="set-header">
+                                    <span class="set-number">Serie 3</span>
+                                </div>
+                                <div class="set-inputs">
+                                    <div class="input-group">
+                                        <input type="number" placeholder="100" class="weight-input">
+                                        <label>kg</label>
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="number" placeholder="12" class="reps-input">
+                                        <label>reps</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="set-item" onclick="toggleSet(this)">
+                                <div class="set-header">
+                                    <span class="set-number">Serie 4</span>
+                                </div>
+                                <div class="set-inputs">
+                                    <div class="input-group">
+                                        <input type="number" placeholder="100" class="weight-input">
+                                        <label>kg</label>
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="number" placeholder="12" class="reps-input">
+                                        <label>reps</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise-notes">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <span>Baja hasta que los muslos estén paralelos al suelo.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rutina Personal -->
+    <div id="rutinaPersonal" class="routine-content" style="display: none;">
+        <div class="glass p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h5 class="text-white mb-0">
+                    <i class="fa-solid fa-user me-2"></i>Mi Rutina Personal
+                </h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-glass btn-sm" onclick="editarRutina()">
+                        <i class="fa-solid fa-edit me-1"></i>Editar
+                    </button>
+                    <button class="btn btn-primary-alumno btn-sm" onclick="crearNuevaRutina()">
+                        <i class="fa-solid fa-plus me-1"></i>Nueva
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Rutina Existente -->
+            <div id="miRutinaExistente" style="display: none;">
+                <div class="personal-routine-header mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="routine-icon-personal">
+                            <i class="fa-solid fa-dumbbell"></i>
+                        </div>
+                        <div>
+                            <h6 class="routine-name">Mi Rutina de Fuerza</h6>
+                            <div class="routine-meta">
+                                <span class="routine-exercises">5 ejercicios</span>
+                                <span class="routine-duration">50-60 min</span>
+                                <span class="routine-level">Intermedio</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="exercises-grid">
+                    <div class="exercise-card-personal">
+                        <div class="exercise-header">
+                            <div class="exercise-number">1</div>
+                            <div class="exercise-info">
+                                <h6 class="exercise-name">Press de Banca</h6>
+                                <div class="exercise-meta">
+                                    <span class="exercise-sets">4 series</span>
+                                    <span class="exercise-reps">8-12 reps</span>
+                                    <span class="exercise-weight">75kg</span>
+                                </div>
+                            </div>
+                            <div class="exercise-actions">
+                                <button class="btn btn-glass btn-sm" onclick="editarEjercicio(1)">
+                                    <i class="fa-solid fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="eliminarEjercicio(1)">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="exercise-card-personal">
+                        <div class="exercise-header">
+                            <div class="exercise-number">2</div>
+                            <div class="exercise-info">
+                                <h6 class="exercise-name">Sentadillas</h6>
+                                <div class="exercise-meta">
+                                    <span class="exercise-sets">4 series</span>
+                                    <span class="exercise-reps">10-15 reps</span>
+                                    <span class="exercise-weight">90kg</span>
+                                </div>
+                            </div>
+                            <div class="exercise-actions">
+                                <button class="btn btn-glass btn-sm" onclick="editarEjercicio(2)">
+                                    <i class="fa-solid fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="eliminarEjercicio(2)">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button class="btn btn-primary-alumno" onclick="iniciarRutinaPersonal()">
+                        <i class="fa-solid fa-play me-2"></i>Iniciar Mi Rutina
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Estado Vacío -->
+            <div id="miRutinaVacia">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <h5 class="empty-title">Crea tu Primera Rutina</h5>
+                    <p class="empty-desc">Diseña una rutina personalizada según tus objetivos y preferencias</p>
+                    <button class="btn btn-primary-alumno" onclick="mostrarCreadorRutina()">
+                        <i class="fa-solid fa-plus me-2"></i>Crear Rutina Personal
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Creador de Rutina -->
+        <div id="creadorRutina" class="glass p-4" style="display: none;">
+            <div class="creator-header mb-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="text-white mb-0">
+                        <i class="fa-solid fa-plus me-2"></i>Crear Nueva Rutina
+                    </h5>
+                    <button class="btn btn-glass btn-sm" onclick="cancelarCreacion()">
+                        <i class="fa-solid fa-times me-1"></i>Cancelar
+                    </button>
+                </div>
+            </div>
+            
+            <form id="formCrearRutina">
+                <!-- Información Básica -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label text-white">Nombre de la Rutina</label>
+                        <input type="text" class="form-control form-control-glass" id="nombreRutina" 
+                               placeholder="Ej: Mi Rutina de Fuerza" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white">Objetivo Principal</label>
+                        <select class="form-control form-control-glass" id="objetivoRutina">
+                            <option value="fuerza">Ganar Fuerza</option>
+                            <option value="masa">Ganar Masa Muscular</option>
+                            <option value="resistencia">Mejorar Resistencia</option>
+                            <option value="perdida">Pérdida de Peso</option>
+                            <option value="general">Acondicionamiento General</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Ejercicios -->
+                <div class="mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="text-white mb-0">Ejercicios</h6>
+                        <button type="button" class="btn btn-primary-alumno btn-sm" onclick="agregarEjercicio()">
+                            <i class="fa-solid fa-plus me-1"></i>Agregar Ejercicio
+                        </button>
+                    </div>
+                    
+                    <div id="ejerciciosContainer">
+                        <!-- Ejercicios se añaden dinámicamente -->
+                    </div>
+                </div>
+                
+                <!-- Botones -->
+                <div class="text-center">
+                    <button type="button" class="btn btn-glass me-2" onclick="cancelarCreacion()">
+                        <i class="fa-solid fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary-alumno">
+                        <i class="fa-solid fa-save me-2"></i>Guardar Rutina
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Botón Flotante de Ayuda -->
+    <div class="help-fab">
+        <button class="fab-button" onclick="solicitarAyuda()" title="Solicitar ayuda del entrenador">
+            <i class="fa-solid fa-hand-paper"></i>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* PWA Responsive Styles */
+.routine-container {
+    padding: 1rem;
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+/* Header Responsivo */
+.routine-header {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(0, 212, 170, 0.2);
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.routine-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.routine-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    background: linear-gradient(135deg, #00d4aa, #00c49a);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #000;
+    flex-shrink: 0;
+}
+
+.routine-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.routine-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.routine-badge {
+    background: linear-gradient(135deg, #00d4aa, #00c49a);
+    color: #000;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.routine-duration {
+    color: #888;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00d4aa, #00c49a);
+    color: #000;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Selector de Rutinas Responsivo */
+.routine-selector {
+    margin-bottom: 1.5rem;
+}
+
+.selector-header {
+    margin-bottom: 1rem;
+}
+
+.selector-title {
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.routine-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.routine-card {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    border: 2px solid #333;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.routine-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00d4aa, #00c49a);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.routine-card.active::before,
+.routine-card:hover::before {
+    opacity: 1;
+}
+
+.routine-card.active {
+    border-color: #00d4aa;
+    background: linear-gradient(135deg, #1f2626, #2a3333);
+}
+
+.routine-card:hover {
+    border-color: #555;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.card-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.card-icon.trainer {
+    background: linear-gradient(135deg, #00d4aa, #00c49a);
+    color: #000;
+}
+
+.card-icon.personal {
+    background: linear-gradient(135deg, #ff6b6b, #ff5252);
+    color: #fff;
+}
+
+.card-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.card-badge.recommended {
+    background: linear-gradient(135deg, #00d4aa, #00c49a);
+    color: #000;
+}
+
+.card-badge.personal {
+    background: linear-gradient(135deg, #ff6b6b, #ff5252);
+    color: #fff;
+}
+
+.card-title {
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.card-description {
+    color: #888;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.card-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.stat {
+    color: #aaa;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Sección de Ejercicios */
+.exercises-section {
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(0, 212, 170, 0.2);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.section-title {
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.progress-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.progress-text {
+    color: #888;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.progress-bar {
+    width: 100px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00d4aa, #00c49a);
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+/* Lista de Ejercicios Responsiva */
+.exercises-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.exercise-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.exercise-card:hover {
+    border-color: rgba(0, 212, 170, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.exercise-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.exercise-number {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, #00d4aa, #00c49a);
+    color: #000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.exercise-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.exercise-name {
+    color: #fff;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.exercise-meta {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    color: #888;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.exercise-progress {
+    flex-shrink: 0;
+}
+
+.progress-circle {
+    position: relative;
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.progress-circle svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.progress-count {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #888;
+}
+
+/* Sets Container Responsivo */
+.sets-container {
+    margin-bottom: 1rem;
+}
+
+.sets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.set-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.set-item:hover {
+    border-color: rgba(0, 212, 170, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.set-item.completed {
+    border-color: #00d4aa;
+    background: rgba(0, 212, 170, 0.1);
+}
+
+.set-header {
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+
+.set-number {
+    color: #888;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.set-inputs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.weight-input,
+.reps-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    color: #fff;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.weight-input:focus,
+.reps-input:focus {
+    outline: none;
+    border-color: #00d4aa;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.input-group label {
+    color: #888;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.exercise-notes {
+    color: #888;
+    font-size: 0.85rem;
+    padding: 0.75rem;
+    background: rgba(0, 212, 170, 0.05);
+    border-radius: 0.5rem;
+    border-left: 3px solid #00d4aa;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    line-height: 1.4;
+}
+
+/* Botón de Ayuda Flotante */
+.help-fab {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+}
+
+.fab-button {
+    width: 3.5rem;
+    height: 3.5rem;
+    background: linear-gradient(135deg, #00d4aa, #00c49a);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.fab-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 212, 170, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .routine-container {
+        padding: 0.75rem;
+    }
+    
+    .routine-header {
+        padding: 1rem;
+    }
+    
+    .header-content {
+        gap: 1rem;
+    }
+    
+    .routine-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .routine-icon {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1.25rem;
+    }
+    
+    .routine-title {
+        font-size: 1.25rem;
+    }
+    
+    .header-actions {
+        width: 100%;
+    }
+    
+    .btn-action {
+        flex: 1;
+        justify-content: center;
+        min-width: auto;
+    }
+    
+    .routine-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .progress-indicator {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .exercise-header {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .exercise-meta {
+        width: 100%;
+    }
+    
+    .sets-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .help-fab {
+        bottom: 1.5rem;
+        right: 1.5rem;
+    }
+    
+    .fab-button {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .routine-container {
+        padding: 0.5rem;
+    }
+    
+    .routine-header,
+    .exercises-section {
+        padding: 1rem;
+    }
+    
+    .routine-cards {
+        gap: 0.75rem;
+    }
+    
+    .routine-card {
+        padding: 1rem;
+    }
+    
+    .sets-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .btn-text {
+        display: none;
+    }
+    
+    .btn-action {
+        min-width: 3rem;
+        padding: 0.75rem;
+    }
+}
+
+/* PWA Optimizations */
+@media (display-mode: standalone) {
+    .routine-container {
+        padding-top: 1rem;
+    }
+    
+    .help-fab {
+        bottom: calc(2rem + env(safe-area-inset-bottom));
+        right: calc(2rem + env(safe-area-inset-right));
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .routine-container {
+        background: #000;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .routine-card,
+    .exercise-card {
+        border-width: 2px;
+    }
+    
+    .btn-action {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+
+
+
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectRoutine(type) {
+    // Update active state
+    document.querySelectorAll('.routine-card').forEach(card => {
+        card.classList.remove('active');
+    });
+    
+    const cards = document.querySelectorAll('.routine-card');
+    if (type === 'trainer') {
+        cards[0].classList.add('active');
+        document.getElementById('rutinaTrainer').style.display = 'block';
+        const personalRoutine = document.getElementById('rutinaPersonal');
+        if (personalRoutine) {
+            personalRoutine.style.display = 'none';
+        }
+    } else {
+        cards[1].classList.add('active');
+        document.getElementById('rutinaTrainer').style.display = 'none';
+        const personalRoutine = document.getElementById('rutinaPersonal');
+        if (personalRoutine) {
+            personalRoutine.style.display = 'block';
+        }
+    }
+}
+
+function toggleSet(setItem) {
+    const weightInput = setItem.querySelector('.weight-input');
+    const repsInput = setItem.querySelector('.reps-input');
+    const weight = weightInput.value;
+    const reps = repsInput.value;
+    
+    if (!weight || !reps) {
+        if (window.showNotification) {
+            window.showNotification('Completa los datos', 'Ingresa peso y repeticiones', 'warning');
+        }
+        return;
+    }
+    
+    setItem.classList.toggle('completed');
+    
+    if (setItem.classList.contains('completed')) {
+        weightInput.disabled = true;
+        repsInput.disabled = true;
+        if (window.showNotification) {
+            window.showNotification('Serie completada', `${weight}kg × ${reps} reps`, 'success');
+        }
+    } else {
+        weightInput.disabled = false;
+        repsInput.disabled = false;
+    }
+    
+    updateExerciseProgress(setItem);
+}
+
+function updateExerciseProgress(setItem) {
+    const exerciseCard = setItem.closest('.exercise-card');
+    const allSets = exerciseCard.querySelectorAll('.set-item');
+    const completedSets = exerciseCard.querySelectorAll('.set-item.completed');
+    
+    const progress = (completedSets.length / allSets.length) * 100;
+    const progressRing = exerciseCard.querySelector('.progress-ring');
+    const progressCount = exerciseCard.querySelector('.progress-count');
+    
+    if (progressRing && progressCount) {
+        progressRing.style.strokeDasharray = `${progress} 100`;
+        progressCount.textContent = `${completedSets.length}/${allSets.length}`;
+        
+        if (completedSets.length === allSets.length) {
+            progressRing.style.stroke = '#00d4aa';
+            progressCount.style.color = '#00d4aa';
+        }
+    }
+    
+    // Actualizar progreso general
+    updateOverallProgress();
+}
+
+function updateOverallProgress() {
+    const allExercises = document.querySelectorAll('.exercise-card');
+    let totalSets = 0;
+    let completedSets = 0;
+    
+    allExercises.forEach(exercise => {
+        const sets = exercise.querySelectorAll('.set-item');
+        const completed = exercise.querySelectorAll('.set-item.completed');
+        totalSets += sets.length;
+        completedSets += completed.length;
+    });
+    
+    const overallProgress = totalSets > 0 ? (completedSets / totalSets) * 100 : 0;
+    const progressFill = document.querySelector('.progress-fill');
+    const progressText = document.querySelector('.progress-text');
+    
+    if (progressFill && progressText) {
+        progressFill.style.width = `${overallProgress}%`;
+        progressText.textContent = `${completedSets}/${totalSets} completados`;
+    }
+}
+
+function iniciarRutina() {
+    // Scroll to exercises
+    const exercisesSection = document.querySelector('.exercises-section');
+    if (exercisesSection) {
+        exercisesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    if (window.showNotification) {
+        window.showNotification('Rutina iniciada', '¡A entrenar! 💪', 'success');
+    }
+}
+
+function verProgreso() {
+    if (window.showNotification) {
+        window.showNotification('Próximamente', 'Función de progreso en desarrollo', 'info');
+    }
+}
+
+
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar progreso
+    updateOverallProgress();
+    
+    // Agregar listeners para inputs
+    const inputs = document.querySelectorAll('.weight-input, .reps-input');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            // Auto-save functionality could be added here
+        });
+    });
+    
+    // Touch events for better mobile experience
+    const setItems = document.querySelectorAll('.set-item');
+    setItems.forEach(item => {
+        item.addEventListener('touchstart', function(e) {
+            this.style.transform = 'scale(0.98)';
+        });
+        
+        item.addEventListener('touchend', function(e) {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+
+function solicitarAyuda() {
+    // Vibración para feedback táctil en móviles
+    if (navigator.vibrate) {
+        navigator.vibrate(100);
+    }
+    
+    const payload = {
+        tipo: 'ayuda_general',
+        mensaje: 'El alumno solicita ayuda desde la rutina'
+    };
+
+    fetch('/api/alerta-ayuda/', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': (function(){
+                const match = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'));
+                return match ? match[2] : '';
+            })()
+        },
+        body: JSON.stringify(payload)
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            if (window.showNotification) {
+                window.showNotification('Ayuda solicitada', data.mensaje || 'Tu entrenador ha sido notificado', 'success');
+            }
+        } else {
+            if (window.showNotification) {
+                window.showNotification('Error', data.error || 'No se pudo enviar la solicitud', 'error');
+            }
+        }
+    }).catch(err => {
+        console.error('Error creando alerta de ayuda:', err);
+        if (window.showNotification) {
+            window.showNotification('Error', 'No se pudo conectar con el servidor', 'error');
+        }
+    });
+}
+</script>
+{% endblock %}

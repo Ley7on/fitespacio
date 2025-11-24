@@ -1,0 +1,1280 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Mis Rutinas | FitSpace{% endblock %}
+
+{% block extra_css %}
+<style>
+.rutina-card {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    border: 2px solid #333;
+    border-radius: 20px;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.rutina-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.rutina-card:hover {
+    transform: translateY(-8px);
+    border-color: #007bff;
+    box-shadow: 0 15px 40px rgba(0, 123, 255, 0.4);
+}
+
+.rutina-card:hover::before {
+    opacity: 1;
+}
+
+.rutina-stats {
+    background: rgba(0, 123, 255, 0.1);
+    border: 1px solid rgba(0, 123, 255, 0.3);
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin: 4px 0;
+}
+
+.rutina-badge {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rutina-entrenador {
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    border-radius: 8px;
+    padding: 4px 8px;
+    color: #28a745;
+    font-size: 0.8rem;
+}
+
+.tab-content {
+    background: transparent;
+}
+
+.nav-pills .nav-link {
+    background: rgba(45, 45, 45, 0.8);
+    color: #fff;
+    border-radius: 25px;
+    margin: 0 5px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    font-weight: 500;
+    padding: 12px 20px;
+}
+
+.nav-pills .nav-link:hover {
+    background: rgba(0, 123, 255, 0.1);
+    border-color: rgba(0, 123, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.nav-pills .nav-link.active {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-color: #007bff;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.calendario-dia {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    min-height: 150px;
+    transition: all 0.3s ease;
+}
+
+.calendario-dia:hover {
+    border-color: #007bff;
+}
+
+.rutina-mini {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin: 5px 0;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.rutina-mini:hover {
+    transform: scale(1.05);
+}
+
+.btn-crear {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+    border-radius: 25px;
+    padding: 12px 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+}
+
+.btn-crear:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+}
+
+.btn-ver-rutina {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-ver-rutina:hover {
+    background: transparent;
+    border-color: #007bff;
+    color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-asignar {
+    background: rgba(255, 193, 7, 0.1);
+    border: 2px solid #ffc107;
+    color: #ffc107;
+    border-radius: 8px;
+    padding: 6px 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-asignar:hover {
+    background: #ffc107;
+    color: #000;
+    transform: scale(1.05);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-white mb-0">
+                    <i class="bi bi-calendar-week me-2"></i>Mis Rutinas
+                </h2>
+                <button class="btn btn-crear" onclick="mostrarModalCrearRutina()">
+                    <i class="bi bi-plus-circle me-2"></i>Crear Rutina
+                </button>
+            </div>
+
+            <!-- Navegación por pestañas -->
+            <ul class="nav nav-pills mb-4" id="rutinas-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="asignadas-tab" data-bs-toggle="pill" data-bs-target="#asignadas" type="button" role="tab">
+                        <i class="bi bi-person-check me-2"></i>Rutinas Asignadas
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="personales-tab" data-bs-toggle="pill" data-bs-target="#personales" type="button" role="tab">
+                        <i class="bi bi-person-gear me-2"></i>Mis Rutinas
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="calendario-tab" data-bs-toggle="pill" data-bs-target="#calendario" type="button" role="tab">
+                        <i class="bi bi-calendar-week me-2"></i>Calendario Semanal
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Contenido de las pestañas -->
+            <div class="tab-content" id="rutinas-tabContent">
+                <!-- Rutinas Asignadas -->
+                <div class="tab-pane fade show active" id="asignadas" role="tabpanel">
+                    <div class="row" id="rutinas-asignadas-container">
+                        <div class="col-12 text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rutinas Personales -->
+                <div class="tab-pane fade" id="personales" role="tabpanel">
+                    <div class="row" id="rutinas-personales-container">
+                        <div class="col-12 text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendario Semanal -->
+                <div class="tab-pane fade" id="calendario" role="tabpanel">
+                    <div class="row" id="calendario-container">
+                        <div class="col-12 col-md-6 col-lg-4 mb-3" data-dia="lunes">
+                            <div class="calendario-dia p-3">
+                                <h5 class="text-primary mb-3">Lunes</h5>
+                                <div class="rutinas-dia" id="rutinas-lunes"></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4 mb-3" data-dia="martes">
+                            <div class="calendario-dia p-3">
+                                <h5 class="text-primary mb-3">Martes</h5>
+                                <div class="rutinas-dia" id="rutinas-martes"></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4 mb-3" data-dia="miercoles">
+                            <div class="calendario-dia p-3">
+                                <h5 class="text-primary mb-3">Miércoles</h5>
+                                <div class="rutinas-dia" id="rutinas-miercoles"></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4 mb-3" data-dia="jueves">
+                            <div class="calendario-dia p-3">
+                                <h5 class="text-primary mb-3">Jueves</h5>
+                                <div class="rutinas-dia" id="rutinas-jueves"></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4 mb-3" data-dia="viernes">
+                            <div class="calendario-dia p-3">
+                                <h5 class="text-primary mb-3">Viernes</h5>
+                                <div class="rutinas-dia" id="rutinas-viernes"></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4 mb-3" data-dia="sabado">
+                            <div class="calendario-dia p-3">
+                                <h5 class="text-primary mb-3">Sábado</h5>
+                                <div class="rutinas-dia" id="rutinas-sabado"></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-4 mb-3" data-dia="domingo">
+                            <div class="calendario-dia p-3">
+                                <h5 class="text-primary mb-3">Domingo</h5>
+                                <div class="rutinas-dia" id="rutinas-domingo"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Crear Rutina Personal -->
+<div class="modal fade" id="modalCrearRutina" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-white">
+                    <i class="bi bi-plus-circle me-2"></i>Crear Rutina Personal
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCrearRutina">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-white">Nombre de la Rutina</label>
+                            <input type="text" class="form-control bg-secondary text-white border-0" name="nombre" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-white">Objetivo</label>
+                            <select class="form-select bg-secondary text-white border-0" name="objetivo" required>
+                                <option value="">Seleccionar objetivo</option>
+                                <option value="fuerza">Fuerza</option>
+                                <option value="hipertrofia">Ganancia Muscular</option>
+                                <option value="resistencia">Resistencia</option>
+                                <option value="perdida_grasa">Pérdida de Grasa</option>
+                                <option value="funcional">Entrenamiento Funcional</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Descripción (Opcional)</label>
+                        <textarea class="form-control bg-secondary text-white border-0" name="descripcion" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Asignar a día (Opcional)</label>
+                        <select class="form-select bg-secondary text-white border-0" name="dia_asignado">
+                            <option value="">Sin asignar</option>
+                            <option value="lunes">Lunes</option>
+                            <option value="martes">Martes</option>
+                            <option value="miercoles">Miércoles</option>
+                            <option value="jueves">Jueves</option>
+                            <option value="viernes">Viernes</option>
+                            <option value="sabado">Sábado</option>
+                            <option value="domingo">Domingo</option>
+                        </select>
+                    </div>
+                    
+                    <h6 class="text-white mb-3">Ejercicios</h6>
+                    <div id="ejercicios-container">
+                        <div class="ejercicio-item border border-secondary rounded p-3 mb-3">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <input type="text" class="form-control bg-secondary text-white border-0" placeholder="Nombre del ejercicio" name="ejercicio_nombre[]" required>
+                                </div>
+                                <div class="col-md-2 mb-2">
+                                    <input type="number" class="form-control bg-secondary text-white border-0" placeholder="Series" name="ejercicio_series[]" min="1" value="3" required>
+                                </div>
+                                <div class="col-md-2 mb-2">
+                                    <input type="text" class="form-control bg-secondary text-white border-0" placeholder="Reps" name="ejercicio_repeticiones[]" value="8-12" required>
+                                </div>
+                                <div class="col-md-2 mb-2">
+                                    <button type="button" class="btn btn-danger btn-sm w-100" onclick="eliminarEjercicio(this)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <input type="text" class="form-control bg-secondary text-white border-0" placeholder="Peso (ej: 20kg)" name="ejercicio_peso[]">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <input type="text" class="form-control bg-secondary text-white border-0" placeholder="Descanso (ej: 60s)" name="ejercicio_descanso[]" value="60s">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline-primary mb-3" onclick="agregarEjercicio()">
+                        <i class="bi bi-plus me-2"></i>Agregar Ejercicio
+                    </button>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="crearRutinaPersonal()">
+                    <i class="bi bi-check-circle me-2"></i>Crear Rutina
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Asignar a Día -->
+<div class="modal fade" id="modalAsignarDia" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-white">Asignar Rutina a Día</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-white">Selecciona el día para la rutina: <strong id="rutina-nombre-asignar"></strong></p>
+                <select class="form-select bg-secondary text-white border-0" id="dia-seleccionado">
+                    <option value="">Seleccionar día</option>
+                    <option value="lunes">Lunes</option>
+                    <option value="martes">Martes</option>
+                    <option value="miercoles">Miércoles</option>
+                    <option value="jueves">Jueves</option>
+                    <option value="viernes">Viernes</option>
+                    <option value="sabado">Sábado</option>
+                    <option value="domingo">Domingo</option>
+                </select>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmarAsignacionDia()">Asignar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let rutinasAsignadas = [];
+let rutinasPersonales = [];
+let rutinaParaAsignar = null;
+
+// Helpers to safely render descripcion (shared with entrenador modal)
+function escapeHtml(unsafe) {
+  if (unsafe === null || unsafe === undefined) return '';
+  return String(unsafe)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function nl2br(s) {
+  return escapeHtml(s).replace(/\r?\n/g, '<br>');
+}
+
+function renderChips(arr) {
+  if (!Array.isArray(arr)) return '';
+  return arr.map(v => `<span class="inline-block bg-white/5 text-blue-200 px-2 py-0.5 rounded-full text-xs mr-1 mb-1">${escapeHtml(String(v))}</span>`).join('');
+}
+
+function renderDescripcion(raw) {
+  if ((raw === null || raw === undefined) || (typeof raw === 'string' && raw.trim() === '')) {
+    return '<p class="text-light small fst-italic">Sin descripción</p>';
+  }
+
+  let obj = raw;
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+      try { obj = JSON.parse(trimmed); } catch (e) { obj = null; }
+    } else {
+      obj = null;
+    }
+  }
+
+  if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+    const parts = [];
+    const mainText = obj.descripcion_text || obj.descripcion || obj.descripcion_texto || obj.description || '';
+    if (mainText && String(mainText).trim() !== '') {
+      parts.push(`<p class="text-light small mb-2">${nl2br(String(mainText))}</p>`);
+    }
+
+    const metaBadges = [];
+    if (obj.tipo) metaBadges.push(`<span class="badge bg-secondary me-1">${escapeHtml(String(obj.tipo))}</span>`);
+    if (obj.dificultad) metaBadges.push(`<span class="badge bg-secondary me-1">${escapeHtml(String(obj.dificultad))}</span>`);
+    if (obj.status) metaBadges.push(`<span class="badge bg-secondary me-1">${escapeHtml(String(obj.status))}</span>`);
+    if (metaBadges.length) parts.push(`<div class="mb-2">${metaBadges.join('')}</div>`);
+
+    const metrics = [];
+    if (obj.duracion_estimada || obj.duracion) metrics.push(`<div class="text-light small me-3"><i class="bi bi-clock me-1"></i><strong class="text-white ms-1">${escapeHtml(String(obj.duracion_estimada || obj.duracion))} min</strong></div>`);
+    if (obj.frecuencia_semanal) metrics.push(`<div class="text-light small me-3"><i class="bi bi-calendar-week me-1"></i><strong class="text-white ms-1">${escapeHtml(String(obj.frecuencia_semanal))} /sem</strong></div>`);
+    if (obj.semanas_duracion) metrics.push(`<div class="text-light small me-3"><i class="bi bi-hourglass-split me-1"></i><strong class="text-white ms-1">${escapeHtml(String(obj.semanas_duracion))} semanas</strong></div>`);
+    if (metrics.length) parts.push(`<div class="mb-2 d-flex">${metrics.join('')}</div>`);
+
+    if (obj.tags) {
+      let tagsArr = Array.isArray(obj.tags) ? obj.tags : String(obj.tags).split(',').map(s => s.trim()).filter(Boolean);
+      if (tagsArr.length) parts.push(`<div class="mb-2">${renderChips(tagsArr)}</div>`);
+    }
+
+    if (obj.notas_entrenador || obj.notas) {
+      const note = obj.notas_entrenador || obj.notas;
+      if (String(note).trim() !== '') {
+        parts.push(`<div class="text-light small fst-italic mt-2"><strong class="text-white">Notas:</strong> ${nl2br(String(note))}</div>`);
+      }
+    }
+
+    return parts.length ? parts.join('') : '<p class="text-light small fst-italic">Sin contenido relevante</p>';
+  }
+
+  if (Array.isArray(obj)) return `<div>${renderChips(obj)}</div>`;
+
+  return `<p class="text-light small">${nl2br(String(raw))}</p>`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    cargarRutinasAsignadas();
+    cargarRutinasPersonales();
+    cargarCalendarioSemanal();
+    
+    // Event listeners para las pestañas
+    document.getElementById('asignadas-tab').addEventListener('shown.bs.tab', cargarRutinasAsignadas);
+    document.getElementById('personales-tab').addEventListener('shown.bs.tab', cargarRutinasPersonales);
+    document.getElementById('calendario-tab').addEventListener('shown.bs.tab', cargarCalendarioSemanal);
+});
+
+function cargarRutinasAsignadas() {
+    const container = document.getElementById('rutinas-asignadas-container');
+    // keep spinner visible while loading; ensure it is removed on finally
+    const timeoutMs = 10000;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    fetch('/alumno/api/rutinas-asignadas/', { credentials: 'same-origin', signal: controller.signal })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Rutinas asignadas cargadas:', data);
+            if (data && data.success) {
+                window.rutinasAsignadas = data.rutinas || [];
+                mostrarRutinasAsignadas();
+            } else {
+                const msg = (data && (data.error || data.message)) || 'Error desconocido';
+                container.innerHTML = `<div class="col-12"><div class="alert alert-danger">Error al cargar rutinas: ${msg}</div></div>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando rutinas asignadas:', error);
+            const msg = error.name === 'AbortError' ? 'Tiempo de espera agotado' : (error.message || 'Error de conexión');
+            container.innerHTML = `<div class="col-12"><div class="alert alert-danger">Error al cargar rutinas: ${msg}</div></div>`;
+        })
+        .finally(() => {
+            clearTimeout(timeout);
+            // If spinner remains, replace it with empty state or current content
+            if (container.querySelector('.spinner-border')) {
+                // if no rutinas were rendered, show placeholder
+                if (!window.rutinasAsignadas || window.rutinasAsignadas.length === 0) {
+                    container.innerHTML = `<div class="col-12"><p class="text-muted">No se encontraron rutinas asignadas.</p></div>`;
+                }
+            }
+        });
+}
+
+function cargarRutinasPersonales() {
+    const container = document.getElementById('rutinas-personales-container');
+    const timeoutMs = 10000;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    fetch('/alumno/api/rutinas-personales/', { credentials: 'same-origin', signal: controller.signal })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Rutinas personales cargadas:', data);
+            if (data && data.success) {
+                window.rutinasPersonales = data.rutinas || [];
+                mostrarRutinasPersonales();
+            } else {
+                const msg = (data && (data.error || data.message)) || 'Error desconocido';
+                container.innerHTML = `<div class="col-12"><div class="alert alert-warning">${msg}</div></div>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando rutinas personales:', error);
+            const msg = error.name === 'AbortError' ? 'Tiempo de espera agotado' : (error.message || 'Error de conexión');
+            container.innerHTML = `<div class="col-12"><div class="alert alert-danger">Error al cargar rutinas personales: ${msg}</div></div>`;
+        })
+        .finally(() => {
+            clearTimeout(timeout);
+            if (container.querySelector('.spinner-border')) {
+                if (!window.rutinasPersonales || window.rutinasPersonales.length === 0) {
+                    container.innerHTML = `<div class="col-12"><p class="text-muted">No se encontraron rutinas personales.</p></div>`;
+                }
+            }
+        });
+}
+
+function cargarCalendarioSemanal() {
+    const container = document.getElementById('calendario-container');
+    fetch('/alumno/api/calendario-semanal/')
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Calendario semanal cargado:', data);
+            if (data.success) {
+                mostrarCalendarioSemanal(data.calendario || {});
+            } else {
+                throw new Error(data.error || 'Error desconocido');
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando calendario semanal:', error);
+            // Mostrar al menos los días sin rutinas en lugar de error
+            const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+            dias.forEach(dia => {
+                const elem = document.getElementById(`rutinas-${dia}`);
+                if (elem) elem.innerHTML = '<p class="text-muted small">Error cargando rutinas</p>';
+            });
+        });
+}
+
+function mostrarCalendarioSemanal(calendario) {
+    Object.keys(calendario).forEach(dia => {
+        const container = document.getElementById(`rutinas-${dia}`);
+        const rutinas = calendario[dia];
+        
+        if (rutinas.length === 0) {
+            container.innerHTML = '<p class="text-muted small">Sin rutinas programadas</p>';
+        } else {
+            container.innerHTML = rutinas.map(rutina => `
+                <div class="rutina-mini" onclick="verDetalleRutina(${rutina.id})">
+                    <div class="fw-bold">${rutina.nombre}</div>
+                    <small>${rutina.tipo} • ${rutina.ejercicios_count} ejercicios</small>
+                </div>
+            `).join('');
+        }
+    });
+}
+
+function mostrarRutinasAsignadas() {
+    const container = document.getElementById('rutinas-asignadas-container');
+    const rutinasAsignadas = window.rutinasAsignadas || [];
+    
+    if (rutinasAsignadas.length === 0) {
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="text-center py-5" style="background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 86, 179, 0.1)); border: 2px dashed rgba(0, 123, 255, 0.3); border-radius: 20px;">
+                    <div class="mb-4">
+                        <i class="bi bi-inbox display-1 text-primary" style="opacity: 0.7;"></i>
+                    </div>
+                    <h4 class="text-white mb-3">No tienes rutinas asignadas</h4>
+                    <p class="text-light mb-4">Tu entrenador aún no te ha asignado ninguna rutina personalizada.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <span class="badge bg-primary px-3 py-2">
+                            <i class="bi bi-clock me-1"></i>Próximamente
+                        </span>
+                        <span class="badge bg-secondary px-3 py-2">
+                            <i class="bi bi-person-check me-1"></i>Entrenador requerido
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = rutinasAsignadas.map(rutina => `
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="rutina-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="text-white mb-0 fw-bold">${escapeHtml(rutina.nombre)}</h5>
+                    <span class="rutina-badge">${escapeHtml(rutina.objetivo)}</span>
+                </div>
+                
+                <div class="rutina-entrenador mb-3">
+                    <i class="bi bi-person-check me-2"></i>Por: <strong>${escapeHtml(rutina.entrenador)}</strong>
+                </div>
+                
+                <div class="rutina-stats mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-center">
+                            <div class="text-primary fw-bold fs-4">${rutina.ejercicios_count}</div>
+                            <small class="text-light">Ejercicios</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-success fw-bold fs-6">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                            <small class="text-light">${rutina.fecha_asignacion}</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-warning fw-bold">
+                                <i class="bi bi-lightning-charge fs-5"></i>
+                            </div>
+                            <small class="text-light">Activa</small>
+                        </div>
+                    </div>
+                </div>
+                
+                ${rutina.dia_asignado ? `
+                    <div class="alert alert-success py-2 mb-3">
+                        <i class="bi bi-calendar-check me-1"></i>
+                        <small>Programada: <strong>${escapeHtml(rutina.dia_asignado)}</strong></small>
+                    </div>
+                ` : ''}
+                
+                <div class="d-flex gap-2 mt-auto">
+                    <button class="btn btn-ver-rutina flex-fill" onclick="verDetalleRutina(${rutina.id})">
+                        <i class="bi bi-eye me-2"></i>Ver Rutina
+                    </button>
+                    ${!rutina.dia_asignado ? `
+                        <button class="btn btn-asignar" onclick="asignarRutinaADia(${rutina.id}, '${escapeHtml(rutina.nombre)}')" title="Asignar a día">
+                            <i class="bi bi-calendar-plus"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function mostrarRutinasPersonales() {
+    const container = document.getElementById('rutinas-personales-container');
+    const rutinasPersonales = window.rutinasPersonales || [];
+    
+    if (rutinasPersonales.length === 0) {
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="text-center py-5" style="background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(32, 201, 151, 0.1)); border: 2px dashed rgba(40, 167, 69, 0.3); border-radius: 20px;">
+                    <div class="mb-4">
+                        <i class="bi bi-plus-circle display-1 text-success" style="opacity: 0.8;"></i>
+                    </div>
+                    <h4 class="text-white mb-3">Crea tu primera rutina</h4>
+                    <p class="text-light mb-4">Diseña rutinas personalizadas según tus objetivos y necesidades.</p>
+                    <button class="btn btn-crear btn-lg" onclick="mostrarModalCrearRutina()">
+                        <i class="bi bi-plus-circle me-2"></i>Crear Mi Rutina
+                    </button>
+                    <div class="mt-4 d-flex justify-content-center gap-3">
+                        <span class="badge bg-success px-3 py-2">
+                            <i class="bi bi-lightning me-1"></i>Fácil y rápido
+                        </span>
+                        <span class="badge bg-info px-3 py-2">
+                            <i class="bi bi-gear me-1"></i>100% personalizable
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = rutinasPersonales.map(rutina => `
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="rutina-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="text-white mb-0 fw-bold">${escapeHtml(rutina.nombre)}</h5>
+                    <span class="badge" style="background: linear-gradient(135deg, #28a745, #20c997); border-radius: 20px; padding: 6px 12px; font-size: 0.75rem; font-weight: 600;">${escapeHtml(rutina.objetivo)}</span>
+                </div>
+                
+                <div class="mb-3" style="background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); border-radius: 8px; padding: 8px 12px;">
+                    <i class="bi bi-person-gear me-2 text-success"></i>
+                    <span class="text-success fw-semibold">Rutina Personal</span>
+                </div>
+                
+                <div class="rutina-stats mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-center">
+                            <div class="text-primary fw-bold fs-4">${rutina.ejercicios_count}</div>
+                            <small class="text-light">Ejercicios</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-success fw-bold fs-6">
+                                <i class="bi bi-calendar-plus"></i>
+                            </div>
+                            <small class="text-light">${rutina.fecha_creacion}</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-info fw-bold">
+                                <i class="bi bi-gear fs-5"></i>
+                            </div>
+                            <small class="text-light">Personal</small>
+                        </div>
+                    </div>
+                </div>
+                
+                ${rutina.dia_asignado ? `
+                    <div class="alert alert-success py-2 mb-3">
+                        <i class="bi bi-calendar-check me-1"></i>
+                        <small>Programada: <strong>${escapeHtml(rutina.dia_asignado)}</strong></small>
+                    </div>
+                ` : ''}
+                
+                <div class="d-flex gap-2 mt-auto">
+                    <button class="btn btn-ver-rutina flex-fill" onclick="verDetalleRutina(${rutina.id})">
+                        <i class="bi bi-eye me-2"></i>Ver Rutina
+                    </button>
+                    ${!rutina.dia_asignado ? `
+                        <button class="btn btn-asignar" onclick="asignarRutinaADia(${rutina.id}, '${escapeHtml(rutina.nombre)}')" title="Asignar a día">
+                            <i class="bi bi-calendar-plus"></i>
+                        </button>
+                    ` : ''}
+                    ${rutina.tipo === 'personal' ? `
+                        <button class="btn btn-outline-light" onclick="rsModal.openEditor(${rutina.id})" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger" onclick="rsModal.confirmDelete(${rutina.id}, '${escapeHtml(rutina.nombre)}')" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function mostrarModalCrearRutina() {
+    new bootstrap.Modal(document.getElementById('modalCrearRutina')).show();
+}
+
+function agregarEjercicio() {
+    const container = document.getElementById('ejercicios-container');
+    const ejercicioHtml = `
+        <div class="ejercicio-item border border-secondary rounded p-3 mb-3">
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <input type="text" class="form-control bg-secondary text-white border-0" placeholder="Nombre del ejercicio" name="ejercicio_nombre[]" required>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <input type="number" class="form-control bg-secondary text-white border-0" placeholder="Series" name="ejercicio_series[]" min="1" value="3" required>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <input type="text" class="form-control bg-secondary text-white border-0" placeholder="Reps" name="ejercicio_repeticiones[]" value="8-12" required>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <button type="button" class="btn btn-danger btn-sm w-100" onclick="eliminarEjercicio(this)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <input type="text" class="form-control bg-secondary text-white border-0" placeholder="Peso (ej: 20kg)" name="ejercicio_peso[]">
+                </div>
+                <div class="col-md-6 mb-2">
+                    <input type="text" class="form-control bg-secondary text-white border-0" placeholder="Descanso (ej: 60s)" name="ejercicio_descanso[]" value="60s">
+                </div>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', ejercicioHtml);
+}
+
+function eliminarEjercicio(btn) {
+    const ejerciciosCount = document.querySelectorAll('.ejercicio-item').length;
+    if (ejerciciosCount > 1) {
+        btn.closest('.ejercicio-item').remove();
+    } else {
+        if (window.toast && window.toast.warning) {
+            window.toast.warning('Validación', 'Debe tener al menos un ejercicio');
+        } else {
+            alert('Debe tener al menos un ejercicio');
+        }
+    }
+}
+
+function crearRutinaPersonal() {
+    const form = document.getElementById('formCrearRutina');
+    
+    // Limpiar errores previos
+    document.querySelectorAll('.error-message').forEach(el => el.remove());
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    
+    // Construir payload
+    const nombres = Array.from(form.querySelectorAll('input[name="ejercicio_nombre[]"]')).map(el => el.value.trim());
+    const series = Array.from(form.querySelectorAll('input[name="ejercicio_series[]"]')).map(el => parseInt(el.value) || 0);
+    const reps = Array.from(form.querySelectorAll('input[name="ejercicio_repeticiones[]"]')).map(el => el.value.trim());
+    const pesos = Array.from(form.querySelectorAll('input[name="ejercicio_peso[]"]')).map(el => el.value.trim() ? parseInt(el.value) : null);
+    const descansos = Array.from(form.querySelectorAll('input[name="ejercicio_descanso[]"]')).map(el => {
+        const val = el.value.trim();
+        const match = val.match(/\d+/);
+        return match ? parseInt(match[0]) : 60;
+    });
+    
+    const ejercicios = [];
+    for (let i = 0; i < nombres.length; i++) {
+        if (nombres[i]) {
+            ejercicios.push({
+                nombre: nombres[i],
+                series: series[i],
+                reps: reps[i],
+                peso: pesos[i],
+                descanso: descansos[i]
+            });
+        }
+    }
+    
+    const payload = {
+        nombre: form.querySelector('input[name="nombre"]').value.trim(),
+        objetivo: form.querySelector('select[name="objetivo"]').value.trim(),
+        descripcion: form.querySelector('textarea[name="descripcion"]').value.trim(),
+        dia: form.querySelector('select[name="dia_asignado"]').value.trim(),
+        ejercicios: ejercicios
+    };
+    
+    // Enviar al servidor
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken') || getCookie('trainer_csrftoken');
+    const timeoutMs = 15000;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    fetch('/alumno/rutinas/crear/', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+    })
+    .then(response => response.json().then(data => ({ok: response.ok, data, status: response.status})))
+    .then(({ok, data, status}) => {
+        if (ok && (status === 200 || status === 201)) {
+            // Éxito
+            bootstrap.Modal.getInstance(document.getElementById('modalCrearRutina')).hide();
+            form.reset();
+            if (window.toast && window.toast.success) {
+                window.toast.success('Rutina creada', '¡Rutina creada exitosamente!');
+            } else {
+                alert('¡Rutina creada exitosamente!');
+            }
+            // Recargar la página o actualizar las vistas
+            if (data && data.redirect) window.location.href = data.redirect;
+            else {
+                cargarRutinasPersonales();
+            }
+        } else {
+            // Error (400 o 500)
+            if (data && data.errors) {
+                pintarErrores(form, data.errors);
+            } else {
+                const msg = (data && (data.error || data.message)) || 'Respuesta inesperada';
+                if (window.toast && window.toast.error) window.toast.error('Error', msg);
+                else alert('Error al crear la rutina: ' + msg);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const msg = error.name === 'AbortError' ? 'Tiempo de espera agotado' : (error.message || 'Error de conexión');
+        if (window.toast && window.toast.error) window.toast.error('Error de conexión', 'No se pudo crear la rutina: ' + msg);
+        else alert('Error de conexión al crear la rutina: ' + msg);
+    })
+    .finally(() => {
+        clearTimeout(timeout);
+    });
+}
+
+function pintarErrores(form, errors) {
+    /*
+    Muestra errores en el formulario.
+    errors: {"campo": ["msg1", "msg2"], "ejercicios[0].nombre": ["error"]}
+    */
+    Object.keys(errors).forEach(campo => {
+        const mensajes = errors[campo];
+        
+        // Casos especiales para ejercicios
+        if (campo.startsWith('ejercicios[')) {
+            const match = campo.match(/ejercicios\[(\d+)\]\.(\w+)/);
+            if (match) {
+                const idx = parseInt(match[1]);
+                const subcampo = match[2];
+                const ejercicioItems = form.querySelectorAll('.ejercicio-item');
+                if (ejercicioItems[idx]) {
+                    const selector = subcampo === 'nombre' ? 'input[name="ejercicio_nombre[]"]' :
+                                   subcampo === 'series' ? 'input[name="ejercicio_series[]"]' :
+                                   subcampo === 'reps' ? 'input[name="ejercicio_repeticiones[]"]' :
+                                   subcampo === 'peso' ? 'input[name="ejercicio_peso[]"]' :
+                                   subcampo === 'descanso' ? 'input[name="ejercicio_descanso[]"]' : null;
+                    if (selector) {
+                        const inputs = ejercicioItems[idx].querySelectorAll(selector);
+                        if (inputs.length > 0) {
+                            inputs[0].classList.add('is-invalid');
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'error-message text-danger small mt-1';
+                            errorDiv.textContent = mensajes.join(', ');
+                            inputs[0].after(errorDiv);
+                        }
+                    }
+                }
+            }
+        } else {
+            // Campos del formulario principal
+            const selector = campo === 'nombre' ? 'input[name="nombre"]' :
+                           campo === 'objetivo' ? 'select[name="objetivo"]' :
+                           campo === 'descripcion' ? 'textarea[name="descripcion"]' :
+                           campo === 'dia' ? 'select[name="dia_asignado"]' : null;
+            if (selector) {
+                const input = form.querySelector(selector);
+                if (input) {
+                    input.classList.add('is-invalid');
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message text-danger small mt-1';
+                    errorDiv.textContent = mensajes.join(', ');
+                    input.after(errorDiv);
+                }
+            }
+        }
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function asignarRutinaADia(rutinaId, nombreRutina) {
+    rutinaParaAsignar = rutinaId;
+    document.getElementById('rutina-nombre-asignar').textContent = nombreRutina;
+    new bootstrap.Modal(document.getElementById('modalAsignarDia')).show();
+}
+
+function confirmarAsignacionDia() {
+    const dia = document.getElementById('dia-seleccionado').value;
+    if (!dia) {
+        if (window.toast && window.toast.warning) window.toast.warning('Validación','Selecciona un día');
+        else alert('Selecciona un día');
+        return;
+    }
+    
+    fetch('/entrenador/api/rutinas/asignar-rutina-dia/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            rutina_id: rutinaParaAsignar,
+            dia: dia
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('modalAsignarDia')).hide();
+            cargarRutinasAsignadas();
+            cargarRutinasPersonales();
+            cargarCalendarioSemanal();
+            if (window.toast && window.toast.success) window.toast.success('Asignación', data.message || 'Asignada');
+        } else {
+            if (window.toast && window.toast.error) window.toast.error('Error', data.message || 'No se pudo asignar');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (window.toast && window.toast.error) window.toast.error('Error', 'Error al asignar la rutina');
+    });
+}
+
+function verDetalleRutina(rutinaId) {
+    fetch(`/alumno/api/rutina/${rutinaId}/detalle/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarModalDetalleRutina(data.rutina);
+            } else {
+                if (window.toast && window.toast.error) window.toast.error('Error', 'Error al cargar la rutina: ' + (data.message || 'Error desconocido'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (window.toast && window.toast.error) window.toast.error('Error', 'Error al cargar los detalles de la rutina');
+        });
+}
+
+function mostrarModalDetalleRutina(rutina) {
+    const ejerciciosHtml = rutina.ejercicios.map((ejercicio, index) => `
+        <div class="ejercicio-detalle bg-dark border border-secondary rounded p-4 mb-3">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h5 class="text-primary mb-0">
+                    <i class="bi bi-play-circle me-2"></i>${ejercicio.nombre}
+                </h5>
+                <span class="badge bg-secondary">#${index + 1}</span>
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="text-center p-3 border border-primary rounded" style="background: rgba(13, 110, 253, 0.2);">
+                        <i class="bi bi-arrow-repeat text-primary d-block mb-2" style="font-size: 1.2rem;"></i>
+                        <strong class="text-white fs-5">${ejercicio.series}</strong>
+                        <small class="text-light d-block">Series</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 border border-success rounded" style="background: rgba(25, 135, 84, 0.2);">
+                        <i class="bi bi-123 text-success d-block mb-2" style="font-size: 1.2rem;"></i>
+                        <strong class="text-white fs-5">${ejercicio.repeticiones}</strong>
+                        <small class="text-light d-block">Repeticiones</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 border border-warning rounded" style="background: rgba(255, 193, 7, 0.2);">
+                        <i class="bi bi-speedometer text-warning d-block mb-2" style="font-size: 1.2rem;"></i>
+                        <strong class="text-white fs-5">${ejercicio.peso}</strong>
+                        <small class="text-light d-block">Peso</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 border border-info rounded" style="background: rgba(13, 202, 240, 0.2);">
+                        <i class="bi bi-clock text-info d-block mb-2" style="font-size: 1.2rem;"></i>
+                        <strong class="text-white fs-5">${ejercicio.descanso}</strong>
+                        <small class="text-light d-block">Descanso</small>
+                    </div>
+                </div>
+            </div>
+            
+            ${ejercicio.notas && ejercicio.notas !== 'Sin notas adicionales' ? `
+                <div class="mt-3 p-3 border border-secondary rounded" style="background: rgba(108, 117, 125, 0.2);">
+                    <small class="text-light"><i class="bi bi-chat-text me-1"></i>Notas:</small>
+                    <div class="text-white mt-1">${ejercicio.notas}</div>
+                </div>
+            ` : ''}
+            
+            ${ejercicio.grupo_muscular ? `
+                <div class="mt-3">
+                    <span class="badge bg-secondary border border-light" style="font-size: 0.8rem;">
+                        <i class="bi bi-bullseye me-1"></i>${ejercicio.grupo_muscular}
+                    </span>
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+    
+    const modalHtml = `
+        <div class="modal fade" id="modalDetalleRutina" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title text-white">
+                            <i class="bi bi-list-ul me-2"></i>${rutina.nombre}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <div class="d-flex gap-2 mb-2">
+                                    <span class="badge bg-primary fs-6">
+                                        <i class="bi bi-target me-1"></i>${rutina.objetivo}
+                                    </span>
+                                    <span class="badge bg-secondary fs-6">
+                                        <i class="bi bi-list-ul me-1"></i>${rutina.ejercicios.length} ejercicios
+                                    </span>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-person-check me-1"></i>Creado por: ${rutina.entrenador}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        ${rutina.descripcion && rutina.descripcion !== 'Sin descripción' ? `
+                            <div class="alert mb-4" style="background-color: #2d2d2d; border: 1px solid #444; color: #e0e0e0;">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Descripción:</strong> ${renderDescripcion(rutina.descripcion)}
+                            </div>
+                        ` : ''}
+                        
+                        <h5 class="text-white mb-4">
+                            <i class="bi bi-list-check me-2"></i>Plan de Ejercicios
+                        </h5>
+                        ${ejerciciosHtml}
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-success" onclick="marcarRutinaCompletada(${rutina.id}, '${rutina.nombre}')">
+                            <i class="bi bi-check-circle me-2"></i>Marcar como Listo por Hoy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remover modal anterior si existe
+    const modalAnterior = document.getElementById('modalDetalleRutina');
+    if (modalAnterior) {
+        modalAnterior.remove();
+    }
+    
+    // Agregar nuevo modal
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Mostrar modal
+    new bootstrap.Modal(document.getElementById('modalDetalleRutina')).show();
+}
+
+function marcarRutinaCompletada(rutinaId, nombreRutina) {
+    // Confirmar antes de marcar
+    if (!confirm(`¿Marcar la rutina "${nombreRutina}" como completada por hoy?`)) {
+        return;
+    }
+    
+    fetch(`/alumno/api/rutina/${rutinaId}/completar/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ fecha: new Date().toISOString().split('T')[0] })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalDetalleRutina'));
+            if (modal) modal.hide();
+            
+            // Mostrar mensaje motivacional
+            if (data.mensaje_motivacional) {
+                if (window.toast && window.toast.success) {
+                    window.toast.success('¡Excelente!', data.mensaje_motivacional);
+                } else {
+                    alert('¡Excelente! ' + data.mensaje_motivacional);
+                }
+            } else {
+                if (window.toast && window.toast.success) {
+                    window.toast.success('¡Completado!', '¡Rutina marcada como completada por hoy!');
+                } else {
+                    alert('¡Rutina marcada como completada por hoy!');
+                }
+            }
+            
+            // Opcional: recargar la lista de rutinas
+            // cargarRutinasAsignadas();
+        } else {
+            if (window.toast && window.toast.error) {
+                window.toast.error('Error', data.message || 'No se pudo marcar la rutina');
+            } else {
+                alert('Error: ' + (data.message || 'No se pudo marcar la rutina'));
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (window.toast && window.toast.error) {
+            window.toast.error('Error', 'Error al marcar la rutina');
+        } else {
+            alert('Error al marcar la rutina');
+        }
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function iniciarEntrenamiento(rutinaId) {
+    if (window.toast && window.toast.info) window.toast.info('Info','Función de entrenamiento en desarrollo');
+    bootstrap.Modal.getInstance(document.getElementById('modalDetalleRutina')).hide();
+}
+
+function eliminarRutinaPersonal(rutinaId) {
+    // delegate to the modal-based delete flow
+    try{
+        // try to get name from card UI
+        const card = document.querySelector(`[onclick="verDetalleRutina(${rutinaId})"]`);
+        let name = '';
+        if (card) {
+            const container = card.closest('.rutina-card');
+            if (container) name = container.querySelector('h5')?.textContent?.trim() || '';
+        }
+        window.rsModal && window.rsModal.confirmDelete(rutinaId, name || '');
+    }catch(e){ console.error(e); window.rsModal && window.rsModal.confirmDelete(rutinaId, ''); }
+}
+
+function editarRutinaPersonal(rutinaId) {
+    // open modal editor
+    try{ window.rsModal && window.rsModal.openEditor(rutinaId); } catch(e){ console.error(e); }
+}
+
+</script>
+<script src="{% static 'js/ui/toast.js' %}"></script>
+<script src="{% static 'js/ui/routineModal.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Recordatorio de Pago - FitSpace{% endblock %}
+
+{% block content %}
+<h2>Hola {{ cliente.nombre }},</h2>
+
+<p>Te recordamos que tu membresía de FitSpace está próxima a vencer.</p>
+
+<div class="highlight">
+    <h3>📋 Detalles de tu membresía:</h3>
+    <ul>
+        <li><strong>Plan:</strong> {{ cliente.get_membresia_display }}</li>
+        <li><strong>Estado:</strong> {{ cliente.get_estado_membresia_display }}</li>
+        <li><strong>Fecha de vencimiento:</strong> {{ cliente.fecha_vencimiento|date:"d/m/Y" }}</li>
+    </ul>
+</div>
+
+<p>Para continuar disfrutando de todos nuestros servicios, renueva tu membresía antes de la fecha de vencimiento.</p>
+
+<div style="text-align: center;">
+    <a href="http://localhost:8000/pagos/" class="button">Renovar Membresía</a>
+</div>
+
+<p><strong>¿Necesitas ayuda?</strong><br>
+Nuestro equipo está disponible para asistirte con cualquier consulta sobre tu membresía.</p>
+
+<p>Gracias por ser parte de FitSpace,<br>
+<strong>El equipo de administración</strong></p>
+{% endblock %}

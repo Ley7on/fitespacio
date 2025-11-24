@@ -1,0 +1,399 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Notificaciones - FitSpace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="glass p-4 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 text-white mb-2">
+                    <i class="fa-solid fa-bell me-2"></i>Notificaciones
+                </h1>
+                <p class="text-light-70 mb-0">Mensajes motivacionales y actualizaciones importantes</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button class="btn btn-glass" onclick="marcarTodasLeidas()">
+                    <i class="fa-solid fa-check-double me-2"></i>Marcar Todas Leídas
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="glass p-3 mb-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <select class="form-control form-control-glass" id="filtroTipo">
+                    <option value="">Todos los tipos</option>
+                    <option value="motivacional">Motivacional</option>
+                    <option value="recordatorio">Recordatorio</option>
+                    <option value="logro">Logro</option>
+                    <option value="sistema">Sistema</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select class="form-control form-control-glass" id="filtroEstado">
+                    <option value="">Todas</option>
+                    <option value="no_leida">No leídas</option>
+                    <option value="leida">Leídas</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-primary-alumno w-100" onclick="aplicarFiltros()">
+                    <i class="fa-solid fa-filter me-2"></i>Filtrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Notificaciones -->
+    <div class="row" id="notificacionesContainer">
+        {% if notificaciones %}
+            {% for notif in notificaciones %}
+            <div class="col-12 mb-3 notificacion-item" 
+                 data-tipo="motivacional" 
+                 data-estado="{% if notif.leida %}leida{% else %}no_leida{% endif %}">
+                <div class="notification-card {% if not notif.leida %}notification-unread{% endif %}">
+                    <div class="row align-items-start">
+                        <div class="col-auto">
+                            <div class="notification-icon">
+                                <i class="fa-solid fa-heart text-primary fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="notification-header d-flex justify-content-between align-items-start">
+                                <div class="notification-title">{{ notif.titulo }}</div>
+                                <div class="notification-actions">
+                                    {% if not notif.leida %}
+                                        <span class="badge bg-primary">Nuevo</span>
+                                    {% endif %}
+                                    <button class="btn btn-glass btn-sm ms-2" onclick="toggleFavorito({{ notif.id }})">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="notification-message">{{ notif.mensaje }}</div>
+                            <div class="notification-date">
+                                <i class="fa-solid fa-clock me-1"></i>
+                                {{ notif.fecha_envio|timesince }} atrás
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Notificaciones Mock para Demo -->
+            <div class="col-12 mb-3 notificacion-item" data-tipo="motivacional" data-estado="no_leida">
+                <div class="notification-card notification-unread">
+                    <div class="row align-items-start">
+                        <div class="col-auto">
+                            <div class="notification-icon">
+                                <i class="fa-solid fa-fire text-danger fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="notification-header d-flex justify-content-between align-items-start">
+                                <div class="notification-title">¡Racha de 5 días! 🔥</div>
+                                <div class="notification-actions">
+                                    <span class="badge bg-primary">Nuevo</span>
+                                    <button class="btn btn-glass btn-sm ms-2" onclick="toggleFavorito(1)">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="notification-message">
+                                ¡Increíble! Has mantenido una racha de 5 días consecutivos entrenando. 
+                                Tu constancia es admirable. ¡Sigue así y alcanzarás todos tus objetivos!
+                            </div>
+                            <div class="notification-date">
+                                <i class="fa-solid fa-clock me-1"></i>
+                                Hace 2 horas
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 mb-3 notificacion-item" data-tipo="recordatorio" data-estado="no_leida">
+                <div class="notification-card notification-unread">
+                    <div class="row align-items-start">
+                        <div class="col-auto">
+                            <div class="notification-icon">
+                                <i class="fa-solid fa-dumbbell text-primary fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="notification-header d-flex justify-content-between align-items-start">
+                                <div class="notification-title">Hora de entrenar 💪</div>
+                                <div class="notification-actions">
+                                    <span class="badge bg-primary">Nuevo</span>
+                                    <button class="btn btn-glass btn-sm ms-2" onclick="toggleFavorito(2)">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="notification-message">
+                                Es tu horario habitual de entrenamiento. Tu rutina de hoy incluye ejercicios 
+                                de fuerza para piernas. ¡Dale con todo!
+                            </div>
+                            <div class="notification-date">
+                                <i class="fa-solid fa-clock me-1"></i>
+                                Hace 1 día
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 mb-3 notificacion-item" data-tipo="logro" data-estado="leida">
+                <div class="notification-card">
+                    <div class="row align-items-start">
+                        <div class="col-auto">
+                            <div class="notification-icon">
+                                <i class="fa-solid fa-trophy text-warning fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="notification-header d-flex justify-content-between align-items-start">
+                                <div class="notification-title">¡Nuevo logro desbloqueado!</div>
+                                <div class="notification-actions">
+                                    <button class="btn btn-glass btn-sm" onclick="toggleFavorito(3)">
+                                        <i class="fa-solid fa-heart text-danger"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="notification-message">
+                                Has completado 25 entrenamientos. ¡Felicitaciones por tu dedicación! 
+                                Sigue así para desbloquear el próximo nivel.
+                            </div>
+                            <div class="notification-date">
+                                <i class="fa-solid fa-clock me-1"></i>
+                                Hace 3 días
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 mb-3 notificacion-item" data-tipo="sistema" data-estado="leida">
+                <div class="notification-card">
+                    <div class="row align-items-start">
+                        <div class="col-auto">
+                            <div class="notification-icon">
+                                <i class="fa-solid fa-gear text-info fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="notification-header d-flex justify-content-between align-items-start">
+                                <div class="notification-title">Rutina actualizada</div>
+                                <div class="notification-actions">
+                                    <button class="btn btn-glass btn-sm" onclick="toggleFavorito(4)">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="notification-message">
+                                Tu entrenador ha actualizado tu rutina personalizada. Revisa los nuevos 
+                                ejercicios en la sección "Mi Rutina".
+                            </div>
+                            <div class="notification-date">
+                                <i class="fa-solid fa-clock me-1"></i>
+                                Hace 1 semana
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 mb-3 notificacion-item" data-tipo="motivacional" data-estado="leida">
+                <div class="notification-card">
+                    <div class="row align-items-start">
+                        <div class="col-auto">
+                            <div class="notification-icon">
+                                <i class="fa-solid fa-star text-warning fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="notification-header d-flex justify-content-between align-items-start">
+                                <div class="notification-title">¡Sigue brillando! ⭐</div>
+                                <div class="notification-actions">
+                                    <button class="btn btn-glass btn-sm" onclick="toggleFavorito(5)">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="notification-message">
+                                Cada día que entrenas te acercas más a tu mejor versión. 
+                                Recuerda: el progreso no siempre es visible, pero siempre está ahí.
+                            </div>
+                            <div class="notification-date">
+                                <i class="fa-solid fa-clock me-1"></i>
+                                Hace 1 semana
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Estado vacío -->
+    <div class="text-center py-5 d-none" id="estadoVacio">
+        <i class="fa-solid fa-bell-slash text-light-50 fa-4x mb-3"></i>
+        <h6 class="text-light-70">No hay notificaciones que mostrar</h6>
+        <p class="text-light-50">Ajusta los filtros para ver más resultados</p>
+    </div>
+
+    <!-- Paginación -->
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination">
+                <li class="page-item">
+                    <a class="page-link bg-transparent border-light text-light" href="#">«</a>
+                </li>
+                <li class="page-item active">
+                    <span class="page-link bg-primary border-primary">1</span>
+                </li>
+                <li class="page-item">
+                    <a class="page-link bg-transparent border-light text-light" href="#">2</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link bg-transparent border-light text-light" href="#">»</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function sanitizeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function aplicarFiltros() {
+    const tipoFiltro = document.getElementById('filtroTipo').value;
+    const estadoFiltro = document.getElementById('filtroEstado').value;
+    
+    const notificaciones = document.querySelectorAll('.notificacion-item');
+    let visibles = 0;
+    
+    notificaciones.forEach(notif => {
+        const tipo = notif.dataset.tipo;
+        const estado = notif.dataset.estado;
+        
+        let mostrar = true;
+        
+        if (tipoFiltro && tipo !== tipoFiltro) mostrar = false;
+        if (estadoFiltro && estado !== estadoFiltro) mostrar = false;
+        
+        if (mostrar) {
+            notif.style.display = '';
+            visibles++;
+        } else {
+            notif.style.display = 'none';
+        }
+    });
+    
+    // Mostrar estado vacío si no hay resultados
+    const estadoVacio = document.getElementById('estadoVacio');
+    if (visibles === 0) {
+        estadoVacio.classList.remove('d-none');
+    } else {
+        estadoVacio.classList.add('d-none');
+    }
+}
+
+function marcarTodasLeidas() {
+    const notificacionesNoLeidas = document.querySelectorAll('.notification-unread');
+    
+    notificacionesNoLeidas.forEach(notif => {
+        notif.classList.remove('notification-unread');
+        const badge = notif.querySelector('.badge');
+        if (badge) badge.remove();
+        
+        // Actualizar dataset
+        const item = notif.closest('.notificacion-item');
+        if (item) item.dataset.estado = 'leida';
+    });
+    
+    showToast('Todas las notificaciones marcadas como leídas', 'success');
+}
+
+function toggleFavorito(id) {
+    const btn = event.currentTarget;
+    const icon = btn.querySelector('i');
+    
+    if (icon.classList.contains('fa-regular')) {
+        icon.classList.remove('fa-regular');
+        icon.classList.add('fa-solid', 'text-danger');
+        showToast('Agregado a favoritos', 'success');
+    } else {
+        icon.classList.remove('fa-solid', 'text-danger');
+        icon.classList.add('fa-regular');
+        showToast('Removido de favoritos', 'info');
+    }
+}
+
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center border-0 show`;
+    toast.setAttribute('role', 'alert');
+    
+    const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+    toast.classList.add(bgClass);
+    
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body text-white">${sanitizeHTML(message)}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+    document.body.appendChild(container);
+    return container;
+}
+
+// Auto-marcar como leída al hacer scroll
+let observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const notif = entry.target.querySelector('.notification-unread');
+            if (notif) {
+                setTimeout(() => {
+                    notif.classList.remove('notification-unread');
+                    const badge = notif.querySelector('.badge');
+                    if (badge) badge.remove();
+                    
+                    const item = entry.target;
+                    if (item) item.dataset.estado = 'leida';
+                }, 2000);
+            }
+        }
+    });
+}, { threshold: 0.5 });
+
+// Observar todas las notificaciones
+document.querySelectorAll('.notificacion-item').forEach(item => {
+    observer.observe(item);
+});
+</script>
+{% endblock %}

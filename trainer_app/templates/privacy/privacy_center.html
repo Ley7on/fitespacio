@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Centro de Privacidad - Fitspace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/ui-perfil.css' %}">
+<link rel="stylesheet" href="{% static 'css/privacy-center.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 privacy-page">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex align-items-center mb-4">
+                <div class="privacy-icon me-3">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h1 class="h3 mb-0 text-white">Centro de Privacidad</h1>
+                    <p class="text-light mb-0">Gestiona tu información personal y privacidad</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Información Personal -->
+        <div class="col-lg-6">
+            <div class="privacy-section">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-user me-2"></i>Tu Información Personal
+                </h5>
+                
+                <div class="data-item">
+                    <strong class="text-white">Nombre de usuario:</strong>
+                    <span class="text-light ms-2">{{ user.username }}</span>
+                </div>
+                
+                <div class="data-item">
+                    <strong class="text-white">Nombre completo:</strong>
+                    <span class="text-light ms-2">{{ user.get_full_name|default:"No especificado" }}</span>
+                </div>
+                
+                <div class="data-item">
+                    <strong class="text-white">Correo electrónico:</strong>
+                    <span class="text-light ms-2">{{ user.email|default:"No especificado" }}</span>
+                </div>
+                
+                <div class="data-item">
+                    <strong class="text-white">Fecha de registro:</strong>
+                    <span class="text-light ms-2">{{ date_joined|date:"d/m/Y H:i" }}</span>
+                </div>
+                
+                <div class="data-item">
+                    <strong class="text-white">Último acceso:</strong>
+                    <span class="text-light ms-2">{{ last_login|date:"d/m/Y H:i"|default:"Nunca" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Derechos ARCO -->
+        <div class="col-lg-6">
+            <div class="privacy-section">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-scale-balanced me-2"></i>Tus Derechos ARCO
+                </h5>
+                
+                <p class="text-light mb-3">
+                    Conforme a la Ley de Protección de Datos Personales, tienes derecho a:
+                </p>
+                
+                <ul class="text-light mb-4">
+                    <li><strong>Acceder</strong> a tus datos personales</li>
+                    <li><strong>Rectificar</strong> datos incorrectos</li>
+                    <li><strong>Cancelar</strong> el tratamiento de tus datos</li>
+                    <li><strong>Oponerte</strong> al tratamiento de tus datos</li>
+                </ul>
+                
+                <a href="{% url 'download_data' %}" class="btn btn-privacy w-100 mb-2">
+                    <i class="fa-solid fa-download me-2"></i>Descargar mis datos (ARCO)
+                </a>
+                
+                <small class="text-light d-block">
+                    Descarga un archivo JSON con toda tu información personal almacenada en FitSpace.
+                </small>
+            </div>
+        </div>
+
+        <!-- Política de Privacidad -->
+        <div class="col-lg-6">
+            <div class="privacy-section">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-file-shield me-2"></i>Política de Privacidad
+                </h5>
+                
+                <p class="text-light mb-3">
+                    En FitSpace protegemos tu información personal conforme a las mejores prácticas de seguridad:
+                </p>
+                
+                <ul class="text-light mb-3">
+                    <li>Cifrado de contraseñas con PBKDF2</li>
+                    <li>Conexiones seguras HTTPS</li>
+                    <li>Acceso restringido por roles</li>
+                    <li>Auditoría de accesos</li>
+                    <li>Respaldos seguros en AWS</li>
+                </ul>
+                
+                <p class="text-light small">
+                    <strong>Retención de datos:</strong> Tus datos se conservan mientras tu cuenta esté activa. 
+                    Puedes solicitar su eliminación en cualquier momento.
+                </p>
+            </div>
+        </div>
+
+        <!-- Gestión de Cuenta -->
+        <div class="col-lg-6">
+            <div class="privacy-section">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-gear me-2"></i>Gestión de Cuenta
+                </h5>
+                
+                <p class="text-light mb-3">
+                    Administra la configuración de seguridad y privacidad de tu cuenta:
+                </p>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% if user.is_staff %}{% url 'perfil' %}{% else %}{% url 'alumno:perfil' %}{% endif %}" class="btn btn-privacy">
+                        <i class="fa-solid fa-edit me-2"></i>Editar información personal
+                    </a>
+                    
+                    <button type="button" class="btn btn-privacy" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                        <i class="fa-solid fa-key me-2"></i>Cambiar contraseña
+                    </button>
+                    
+                    <button type="button" class="btn btn-danger-privacy" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        <i class="fa-solid fa-trash me-2"></i>Eliminar cuenta
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contacto -->
+        <div class="col-12">
+            <div class="privacy-section text-center">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-envelope me-2"></i>¿Tienes dudas sobre tu privacidad?
+                </h5>
+                
+                <p class="text-light mb-3">
+                    Si tienes preguntas sobre el manejo de tus datos personales o deseas ejercer tus derechos ARCO, 
+                    contáctanos a través de:
+                </p>
+                
+                <div class="row g-3 justify-content-center">
+                    <div class="col-auto">
+                        <strong class="text-white">Email:</strong>
+                        <span class="text-light">privacidad@fitspace.com</span>
+                    </div>
+                    <div class="col-auto">
+                        <strong class="text-white">Teléfono:</strong>
+                        <span class="text-light">+52 (55) 1234-5678</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cambiar Contraseña -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-white">Cambiar Contraseña</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'change_password' %}">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label text-white">Contraseña actual</label>
+                        <input type="password" name="old_password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Nueva contraseña</label>
+                        <input type="password" name="new_password1" class="form-control" required minlength="8">
+                        <small class="text-light">Mínimo 8 caracteres</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Confirmar nueva contraseña</label>
+                        <input type="password" name="new_password2" class="form-control" required minlength="8">
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-privacy">Cambiar contraseña</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Eliminar Cuenta -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-white">Eliminar Cuenta</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                    <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                </div>
+                
+                <p class="text-white mb-3">
+                    Al eliminar tu cuenta:
+                </p>
+                
+                <ul class="text-light mb-3">
+                    <li>Se eliminarán todos tus datos personales</li>
+                    <li>Perderás acceso a tu historial de entrenamientos</li>
+                    <li>No podrás recuperar tu información</li>
+                    <li>La eliminación será efectiva en 30 días</li>
+                </ul>
+                
+                <p class="text-light">
+                    ¿Estás seguro de que deseas continuar?
+                </p>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" action="{% url 'delete_account' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger-privacy">Confirmar eliminación</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Validación del formulario de cambio de contraseña
+document.querySelector('#changePasswordModal form').addEventListener('submit', function(e) {
+    const newPassword1 = this.querySelector('input[name="new_password1"]').value;
+    const newPassword2 = this.querySelector('input[name="new_password2"]').value;
+    
+    if (newPassword1 !== newPassword2) {
+        e.preventDefault();
+        alert('Las contraseñas no coinciden');
+        return false;
+    }
+    
+    if (newPassword1.length < 8) {
+        e.preventDefault();
+        alert('La contraseña debe tener al menos 8 caracteres');
+        return false;
+    }
+});
+
+// Mostrar mensajes si existen
+{% if messages %}
+    {% for message in messages %}
+        setTimeout(() => {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-{{ message.tags }} alert-dismissible fade show position-fixed';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }, 100);
+    {% endfor %}
+{% endif %}
+</script>
+{% endblock %}

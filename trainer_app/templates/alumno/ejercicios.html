@@ -1,0 +1,184 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Ejercicios - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <h1 class="h4 text-white mb-2">
+                    <i class="fa-solid fa-dumbbell me-2"></i>Biblioteca de Ejercicios
+                </h1>
+                <p class="text-light-70 mb-0">Selecciona ejercicios para a\u00f1adir a tu rutina y hacer seguimiento</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tren Superior - Empuje -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-arrow-up me-2 text-danger"></i>Tren Superior - Empuje
+                    <small class="text-light-70">(Pecho, Hombros, Tr\u00edceps)</small>
+                </h5>
+                <div class="row g-3">
+                    {% for ejercicio in ejercicios.empuje %}
+                    <div class="col-md-6 col-lg-3">
+                        <div class="ejercicio-card" onclick="verEjercicio({{ ejercicio.id }})">
+                            <div class="ejercicio-imagen">
+                                <img src="{% static 'img/ejercicios/' %}{{ ejercicio.imagen }}" alt="{{ ejercicio.nombre }}" 
+                                     onerror="this.src='{% static 'img/ejercicios/default.jpg' %}'">
+                            </div>
+                            <div class="ejercicio-info">
+                                <h6 class="text-white mb-1">{{ ejercicio.nombre }}</h6>
+                                <small class="text-light-70">{{ ejercicio.maquina }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tren Superior - Tracci\u00f3n -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-arrow-down me-2 text-info"></i>Tren Superior - Tracci\u00f3n
+                    <small class="text-light-70">(Espalda, B\u00edceps)</small>
+                </h5>
+                <div class="row g-3">
+                    {% for ejercicio in ejercicios.traccion %}
+                    <div class="col-md-6 col-lg-3">
+                        <div class="ejercicio-card" onclick="verEjercicio({{ ejercicio.id }})">
+                            <div class="ejercicio-imagen">
+                                <img src="{% static 'img/ejercicios/' %}{{ ejercicio.imagen }}" alt="{{ ejercicio.nombre }}"
+                                     onerror="this.src='{% static 'img/ejercicios/default.jpg' %}'">
+                            </div>
+                            <div class="ejercicio-info">
+                                <h6 class="text-white mb-1">{{ ejercicio.nombre }}</h6>
+                                <small class="text-light-70">{{ ejercicio.maquina }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tren Inferior -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-running me-2 text-success"></i>Tren Inferior
+                    <small class="text-light-70">(Piernas y Gl\u00fateos)</small>
+                </h5>
+                <div class="row g-3">
+                    {% for ejercicio in ejercicios.piernas %}
+                    <div class="col-md-6 col-lg-3">
+                        <div class="ejercicio-card" onclick="verEjercicio({{ ejercicio.id }})">
+                            <div class="ejercicio-imagen">
+                                <img src="{% static 'img/ejercicios/' %}{{ ejercicio.imagen }}" alt="{{ ejercicio.nombre }}"
+                                     onerror="this.src='{% static 'img/ejercicios/default.jpg' %}'">
+                            </div>
+                            <div class="ejercicio-info">
+                                <h6 class="text-white mb-1">{{ ejercicio.nombre }}</h6>
+                                <small class="text-light-70">{{ ejercicio.maquina }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- N\u00facleo (Core) -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-circle-dot me-2 text-warning"></i>N\u00facleo (Core)
+                    <small class="text-light-70">(Abdomen y Core)</small>
+                </h5>
+                <div class="row g-3">
+                    {% for ejercicio in ejercicios.core %}
+                    <div class="col-md-6 col-lg-3">
+                        <div class="ejercicio-card" onclick="verEjercicio({{ ejercicio.id }})">
+                            <div class="ejercicio-imagen">
+                                <img src="{% static 'img/ejercicios/' %}{{ ejercicio.imagen }}" alt="{{ ejercicio.nombre }}"
+                                     onerror="this.src='{% static 'img/ejercicios/default.jpg' %}'">
+                            </div>
+                            <div class="ejercicio-info">
+                                <h6 class="text-white mb-1">{{ ejercicio.nombre }}</h6>
+                                <small class="text-light-70">{{ ejercicio.maquina }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function verEjercicio(ejercicioId) {
+    window.location.href = `/alumno/ejercicios/${ejercicioId}/`;
+}
+</script>
+
+<style>
+.ejercicio-card {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.ejercicio-card:hover {
+    border-color: #00d4aa;
+    transform: translateY(-2px);
+}
+
+.ejercicio-imagen {
+    width: 100%;
+    height: 120px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    background: #262626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ejercicio-imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ejercicio-info h6 {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.ejercicio-info small {
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitspace Admin - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#059669',
+                        'secondary': '#0d9488',
+                        'dark': '#1e293b',
+                        'darker': '#0f172a'
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(5, 150, 105, 0.5); }
+            to { box-shadow: 0 0 30px rgba(13, 148, 136, 0.8); }
+        }
+        .bg-gradient-custom {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #059669 100%);
+        }
+    </style>
+</head>
+<body class="bg-gradient-custom min-h-screen">
+    <!-- Background decorative elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-float" style="animation-delay: -3s;"></div>
+    </div>
+
+    <div class="min-h-screen flex items-center justify-center px-4 py-12 relative z-10">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Logo and Header -->
+            <div class="text-center">
+                <div class="mx-auto h-20 w-20 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mb-6 animate-glow">
+                    <i class="fas fa-user-shield text-2xl text-white"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-white mb-2">Fitspace</h2>
+                <p class="text-xl text-gray-300 font-medium">Administración</p>
+                <p class="text-sm text-gray-400 mt-2">Panel de administración</p>
+            </div>
+
+            <!-- Login Form -->
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
+                <form method="post" class="space-y-6" id="loginForm">
+                    {% csrf_token %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="{% if message.tags == 'error' %}bg-red-500/20 border-red-500/50 text-red-200{% else %}bg-green-500/20 border-green-500/50 text-green-200{% endif %} border rounded-lg p-4 mb-4 backdrop-blur-sm">
+                                <div class="flex items-center">
+                                    <i class="{% if message.tags == 'error' %}fas fa-exclamation-triangle{% else %}fas fa-check-circle{% endif %} mr-2"></i>
+                                    <span>{{ message }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Username Field -->
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-200 mb-2">
+                            <i class="fas fa-user mr-2"></i>Usuario (RUT)
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="username" name="username" required
+                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                                   placeholder="12.345.678-9" autocomplete="username">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <i class="fas fa-id-card text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-200 mb-2">
+                            <i class="fas fa-lock mr-2"></i>Contraseña
+                        </label>
+                        <div class="relative">
+                            <input type="password" id="password" name="password" required minlength="5"
+                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 pr-12"
+                                   placeholder="Ingresa tu contraseña" autocomplete="current-password">
+                            <button type="button" id="togglePassword" 
+                                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors">
+                                <i class="fas fa-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="flex items-center">
+                        <input type="checkbox" id="remember" name="remember" 
+                               class="h-4 w-4 text-primary focus:ring-primary border-white/20 rounded bg-white/10">
+                        <label for="remember" class="ml-2 block text-sm text-gray-300">
+                            Recordar sesión
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button type="submit" id="loginBtn"
+                                class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 transform hover:scale-105">
+                            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                                <i class="fas fa-sign-in-alt group-hover:text-white/80" id="loginIcon"></i>
+                            </span>
+                            <span id="loginText">Iniciar Sesión</span>
+                        </button>
+                    </div>
+                </form>
+                <!-- Footer Info -->
+                <div class="text-center space-y-3 pt-4 border-t border-white/10">
+                    <p class="text-sm text-gray-300 flex items-center justify-center">
+                        <i class="fas fa-shield-alt mr-2 text-green-400"></i>
+                        Conexión segura y encriptada
+                    </p>
+                    <p class="text-xs text-gray-400">
+                        <i class="fas fa-cog mr-1"></i>
+                        Panel de administración del gimnasio
+                    </p>
+                </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="text-center">
+                <p class="text-xs text-gray-500">
+                    © 2025 Fitspace. Todos los derechos reservados.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordField = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginIcon = document.getElementById('loginIcon');
+            const loginText = document.getElementById('loginText');
+            const usernameField = document.getElementById('username');
+
+            // Password visibility toggle
+            togglePassword.addEventListener('click', function() {
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    eyeIcon.classList.remove('fa-eye');
+                    eyeIcon.classList.add('fa-eye-slash');
+                } else {
+                    passwordField.type = 'password';
+                    eyeIcon.classList.remove('fa-eye-slash');
+                    eyeIcon.classList.add('fa-eye');
+                }
+            });
+
+            // Form submission with loading state
+            let submitAttempts = 0;
+            loginForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                // Basic validation
+                if (!usernameField.value.trim() || !passwordField.value.trim()) {
+                    showError('Por favor completa todos los campos');
+                    return;
+                }
+
+                // Rate limiting
+                submitAttempts++;
+                if (submitAttempts > 3) {
+                    showError('Demasiados intentos. Espera 30 segundos.');
+                    loginBtn.disabled = true;
+                    setTimeout(() => {
+                        loginBtn.disabled = false;
+                        submitAttempts = 0;
+                    }, 30000);
+                    return;
+                }
+
+                // Show loading state
+                loginBtn.disabled = true;
+                loginIcon.className = 'fas fa-spinner fa-spin';
+                loginText.textContent = 'Iniciando sesión...';
+                loginBtn.classList.add('opacity-75');
+
+                // Submit form after animation
+                setTimeout(() => {
+                    this.submit();
+                }, 800);
+            });
+
+            // Input animations
+            const inputs = [usernameField, passwordField];
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.classList.add('ring-2', 'ring-primary', 'scale-105');
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.classList.remove('ring-2', 'ring-primary', 'scale-105');
+                });
+            });
+
+            // Auto-focus username
+            usernameField.focus();
+
+            // Error display function
+            function showError(message) {
+                // Remove existing error
+                const existingError = document.querySelector('.error-message');
+                if (existingError) existingError.remove();
+
+                // Create error element
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message bg-red-500/20 border border-red-500/50 text-red-200 rounded-lg p-3 mb-4 backdrop-blur-sm';
+                errorDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                // Insert before form
+                loginForm.parentNode.insertBefore(errorDiv, loginForm);
+                
+                // Remove after 5 seconds
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.remove();
+                    }
+                }, 5000);
+            }
+
+            // Prevent form resubmission
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    loginForm.reset();
+                    loginBtn.disabled = false;
+                    loginIcon.className = 'fas fa-sign-in-alt group-hover:text-white/80';
+                    loginText.textContent = 'Iniciar Sesión';
+                    loginBtn.classList.remove('opacity-75');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

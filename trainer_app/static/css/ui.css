@@ -1,0 +1,96 @@
+/* Fondo oscuro como alumno */
+body { 
+  min-height:100vh; 
+  background: #0f0f0f; 
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+/* Capa de oscurecimiento removida */
+.main-content{ position:relative; z-index:1; }
+
+/* Navbar is handled by base.html inline styles - don't override z-index here */
+/* This prevents conflicts with inline styles in navbar.html */
+
+/* Make room for fixed navbar so content isn't hidden under it */
+main.main-content { padding-top: 80px; }
+
+/* Tarjetas como alumno */
+.card{ background: #1a1a1a; border: 1px solid #333; border-radius: 12px; }
+
+/* Texto global claro */
+body{ color:#fff; }
+a{ color:#e7f5ff; } a:hover, a:focus{ color:#b3e6ff; }
+.navbar,.dropdown-menu,.offcanvas,.modal-content{ color:#fff; }
+.nav-link,.dropdown-item{ color:#f1f3f5; } .nav-link:hover,.dropdown-item:hover{ color:#fff; }
+h1,h2,h3,h4,h5,h6{ color:#fff; }
+.text-muted{ color:rgba(255,255,255,.7) !important; }
+.card,.list-group,.table{ color:#fff; border-color:rgba(255,255,255,.2); }
+.text-white-force{ color:#fff !important; }
+
+/* FullCalendar variables/contraste */
+:root{
+  --fc-border-color: rgba(255,255,255,.25);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(255,255,255,.06);
+  --fc-today-bg-color: rgba(0,225,255,.14);
+  --fc-button-text-color: #e9f5ff;
+  --fc-button-bg-color: rgba(13,110,253,.25);
+  --fc-button-border-color: rgba(255,255,255,.2);
+  --fc-button-hover-bg-color: rgba(13,110,253,.45);
+  --fc-button-hover-border-color: rgba(255,255,255,.3);
+  --fc-button-active-bg-color: rgba(13,110,253,.55);
+  --fc-button-active-border-color: rgba(255,255,255,.35);
+}
+.card .card-body{ background:rgba(0,0,0,.35); border-radius:.75rem; }
+.fc .fc-col-header-cell{ background:rgba(255,255,255,.12); border-bottom:1px solid rgba(255,255,255,.25); backdrop-filter:blur(2px); }
+.fc .fc-daygrid-day,.fc .fc-timegrid-slot{ background:rgba(0,0,0,.25); }
+.fc .fc-daygrid-day:hover,.fc .fc-timegrid-slot:hover{ background:rgba(255,255,255,.10); }
+.fc .fc-daygrid-day.fc-day-today,.fc .fc-timegrid-col.fc-day-today{ background:var(--fc-today-bg-color) !important; box-shadow:inset 0 0 0 1px rgba(0,225,255,.45); }
+.fc .fc-event{ color:#fff !important; box-shadow:0 4px 12px rgba(0,0,0,.35); border-radius:.5rem; }
+#fullcalendar,.fc .fc-scrollgrid,.fc .fc-scrollgrid-section > *{ border-color:rgba(255,255,255,.25); }
+
+/* Footer legible */
+footer.footer{ background:rgba(0,0,0,.6); border-top:1px solid rgba(255,255,255,.3); }
+footer.footer .footer-text{ color:#f1f3f5 !important; }
+footer.footer .footer-link{ color:#b3e6ff !important; text-decoration:none; }
+footer.footer .footer-link:hover{ color:#e7f5ff !important; text-decoration:underline; }
+footer.footer.bg-light{ background:rgba(0,0,0,.55) !important; }
+footer.footer .text-muted{ color:#f1f3f5 !important; }
+
+/* Descanso: texto sobre background events */
+.fc .fc-bg-event{ opacity:1 !important; }
+.fc .fc-rest-label{
+  position:absolute; inset:6px 8px auto 8px; color:#fff; font-size:.85rem; font-weight:700;
+  text-shadow:0 1px 3px rgba(0,0,0,.65); pointer-events:none; z-index:1;
+}
+.fc-daygrid-day-frame{ position:relative; }
+
+/* Modal por encima */
+.modal,.modal-backdrop{ z-index:1080; }
+.fc,#fullcalendar,.fc .fc-scrollgrid{ z-index:1; }
+
+/* Botón Hoy optimizado */
+.fc .fc-button.fc-today-button{
+  color:#e9f5ff; background:rgba(13,110,253,.15);
+  border:1px solid rgba(0,225,255,.45); border-radius:999px; padding:.35rem .9rem;
+  text-transform:uppercase; transition:background .2s;
+}
+.fc .fc-button.fc-today-button:hover{
+  background:rgba(13,110,253,.25); border-color:rgba(0,225,255,.65);
+}
+.fc .fc-button.fc-today-button:active{
+  background:rgba(13,110,253,.35);
+}
+
+/* Asegurar interacción del modal */
+.modal-backdrop { z-index: 1080 !important; }
+.modal { z-index: 1090 !important; }
+
+/* Evitar que capas del calendario tapen el modal */
+.fc, #fullcalendar, .fc .fc-scrollgrid { z-index: 1 !important; }
+
+/* Si usas una superposición global (body-overlay), que quede detrás del modal */
+.body-overlay::before { z-index: 0 !important; }

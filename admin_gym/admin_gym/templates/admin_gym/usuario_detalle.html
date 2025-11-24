@@ -1,0 +1,114 @@
+{% extends "admin_gym/base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Detalle del Cliente</h1>
+        <p class="mt-2 text-gray-600">Información completa del cliente</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Información del Cliente -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center">
+                    <div class="h-16 w-16 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span class="text-xl font-bold text-white">{{ usuario.nombre|first|upper }}</span>
+                    </div>
+                    <div class="ml-4">
+                        <h2 class="text-2xl font-bold text-gray-900">{{ usuario.nombre }}</h2>
+                        <p class="text-gray-600">{{ usuario.email }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">RUT</label>
+                        <p class="text-lg font-semibold text-gray-900">{{ usuario.rut }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Teléfono</label>
+                        <p class="text-lg font-semibold text-gray-900">{{ usuario.telefono|default:"No registrado" }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Fecha de Registro</label>
+                        <p class="text-lg font-semibold text-gray-900">{{ usuario.fecha_registro|date:"d/m/Y" }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Estado de Membresía</label>
+                        <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
+                            {{ usuario.get_estado_membresia_display }}
+                        </span>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Tipo de Membresía</label>
+                        <p class="text-lg font-semibold text-gray-900">{{ usuario.get_membresia_display }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Fecha de Vencimiento</label>
+                        <p class="text-lg font-semibold text-gray-900">{{ usuario.fecha_vencimiento|date:"d/m/Y"|default:"No definida" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado de Asistencia -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Estado Hoy</h3>
+                </div>
+                <div class="p-6 text-center">
+                    {% if estado == 'Presente' %}
+                        <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <p class="text-lg font-semibold text-green-600">Presente</p>
+                    {% else %}
+                        <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        <p class="text-lg font-semibold text-gray-600">Ausente</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Acciones</h3>
+                </div>
+                <div class="p-6 space-y-3">
+                    <a href="{% url 'modificar_usuario' usuario.id %}" 
+                       class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 text-center block">
+                        Editar Cliente
+                    </a>
+                    
+                    {% if estado == 'Ausente' %}
+                        <a href="{% url 'marcar_asistencia' usuario.id %}" 
+                           class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 text-center block">
+                            Marcar Asistencia
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'usuarios' %}" 
+                       class="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 text-center block">
+                        Volver a Lista
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

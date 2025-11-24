@@ -1,0 +1,398 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Mis Métricas - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="glass p-4 mb-4">
+        <h1 class="h3 text-white mb-2">
+            <i class="fa-solid fa-chart-bar me-2"></i>Mis Métricas Personales
+        </h1>
+        <p class="text-light-70 mb-0">Resumen completo de tu rendimiento y logros</p>
+    </div>
+
+    <!-- Métricas Principales -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ total_visitas }}</div>
+                <div class="metric-label">Total Visitas</div>
+                <div class="mt-2">
+                    <i class="fa-solid fa-trophy text-warning"></i>
+                    <small class="text-light-70 ms-1">¡Constante!</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ dias_activo }}</div>
+                <div class="metric-label">Días Activo</div>
+                <div class="mt-2">
+                    <i class="fa-solid fa-calendar-check text-success"></i>
+                    <small class="text-light-70 ms-1">Desde registro</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="metric-card">
+                <div class="metric-value" id="rachaActual">--</div>
+                <div class="metric-label">Racha Actual</div>
+                <div class="mt-2">
+                    <i class="fa-solid fa-fire text-danger"></i>
+                    <small class="text-light-70 ms-1">Días seguidos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="metric-card">
+                <div class="metric-value" id="nivelFitness">--</div>
+                <div class="metric-label">Nivel Fitness</div>
+                <div class="mt-2">
+                    <i class="fa-solid fa-star text-warning"></i>
+                    <small class="text-light-70 ms-1">Basado en actividad</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos de Rendimiento -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-chart-line me-2"></i>Evolución Mensual
+                </h5>
+                <div class="chart-container" style="position: relative; height: 300px; max-height: 300px;">
+                    <canvas id="evolucionChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-clock me-2"></i>Horarios Preferidos
+                </h5>
+                <div class="chart-container" style="position: relative; height: 300px; max-height: 300px;">
+                    <canvas id="horariosChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logros y Badges -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-trophy me-2"></i>Logros Desbloqueados
+                </h5>
+                <div class="row g-2" id="logrosContainer">
+                    <!-- Logros dinámicos -->
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-target me-2"></i>Objetivos del Mes
+                </h5>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-light-90">Visitas este mes</span>
+                        <span class="text-light-70" id="objetivoVisitas">{{ visitas_mes_actual }}/20</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary" id="progressVisitas" style="width: {{ porcentaje_visitas_mes }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-light-90">Ejercicios registrados</span>
+                        <span class="text-light-70" id="objetivoRutinas">{{ total_ejercicios }}/50</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" id="progressRutinas" style="width: {{ porcentaje_ejercicios }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-light-90">Hábitos completados</span>
+                        <span class="text-light-70" id="objetivoPeso">{{ habitos_completados }}/30</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" id="progressPeso" style="width: {{ porcentaje_habitos }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Detalladas -->
+    <div class="glass p-4 mb-4">
+        <h5 class="text-white mb-3">
+            <i class="fa-solid fa-chart-pie me-2"></i>Estadísticas Detalladas
+        </h5>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="metric-value text-primary" id="tiempoPromedio">--</div>
+                    <div class="metric-label">Tiempo Promedio</div>
+                    <small class="text-light-50">Por sesión</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="metric-value text-success" id="mejorRacha">--</div>
+                    <div class="metric-label">Mejor Racha</div>
+                    <small class="text-light-50">Días consecutivos</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="metric-value text-warning" id="horaFavorita">--</div>
+                    <div class="metric-label">Hora Favorita</div>
+                    <small class="text-light-50">Más frecuente</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="metric-value text-info" id="consistencia">--</div>
+                    <div class="metric-label">Consistencia</div>
+                    <small class="text-light-50">% regularidad</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparación con Otros -->
+    <div class="glass p-4">
+        <h5 class="text-white mb-3">
+            <i class="fa-solid fa-users me-2"></i>Comparación con Otros Usuarios
+        </h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="text-center p-3 rounded" style="background: rgba(0,123,255,0.1);">
+                    <i class="fa-solid fa-medal text-primary fa-2x mb-2"></i>
+                    <div class="fw-bold text-white">{{ comparacion_usuarios.percentil }}</div>
+                    <small class="text-light-70">En asistencia mensual</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3 rounded" style="background: rgba(40,167,69,0.1);">
+                    <i class="fa-solid fa-chart-line text-success fa-2x mb-2"></i>
+                    <div class="fw-bold text-white">{{ estadisticas_detalladas.consistencia }}</div>
+                    <small class="text-light-70">Consistencia mensual</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3 rounded" style="background: rgba(255,193,7,0.1);">
+                    <i class="fa-solid fa-clock text-warning fa-2x mb-2"></i>
+                    <div class="fw-bold text-white">{{ comparacion_usuarios.promedio_duracion }}</div>
+                    <small class="text-light-70">Duración promedio</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Datos reales desde el servidor
+const metricsData = {
+    visitasPorMes: {% if evolucion_mensual %}{{ evolucion_mensual|safe }}{% else %}[0, 0, 0, 0, 0, 0]{% endif %},
+    etiquetasMeses: {% if etiquetas_meses %}{{ etiquetas_meses|safe }}{% else %}['Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov']{% endif %},
+    horarios: {% if horarios_preferidos %}{{ horarios_preferidos|safe }}{% else %}{}{% endif %},
+    logros: {% if logros %}{{ logros|safe }}{% else %}[]{% endif %}
+};
+
+// Convertir datos a JSON si vienen como strings
+if (typeof metricsData.visitasPorMes === 'string') {
+    try { metricsData.visitasPorMes = JSON.parse(metricsData.visitasPorMes); } catch(e) { metricsData.visitasPorMes = [0, 0, 0, 0, 0, 0]; }
+}
+if (typeof metricsData.etiquetasMeses === 'string') {
+    try { metricsData.etiquetasMeses = JSON.parse(metricsData.etiquetasMeses); } catch(e) { metricsData.etiquetasMeses = ['Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov']; }
+}
+if (typeof metricsData.horarios === 'string') {
+    try { metricsData.horarios = JSON.parse(metricsData.horarios); } catch(e) { metricsData.horarios = {}; }
+}
+if (typeof metricsData.logros === 'string') {
+    try { metricsData.logros = JSON.parse(metricsData.logros); } catch(e) { metricsData.logros = []; }
+}
+
+// Inicializar métricas
+document.addEventListener('DOMContentLoaded', function() {
+    calcularMetricas();
+    configurarGraficos();
+    mostrarLogros();
+});
+
+function calcularMetricas() {
+    // Racha actual desde el servidor
+    document.getElementById('rachaActual').textContent = '{{ racha_actual }}';
+    
+    // Calcular nivel fitness basado en actividad
+    const nivel = Math.min(10, Math.floor({{ total_visitas }} / 10) + 1);
+    document.getElementById('nivelFitness').textContent = nivel;
+    
+    // Estadísticas detalladas reales
+    document.getElementById('tiempoPromedio').textContent = '{{ estadisticas_detalladas.tiempo_promedio }}';
+    document.getElementById('mejorRacha').textContent = '{{ estadisticas_detalladas.mejor_racha }}';
+    document.getElementById('horaFavorita').textContent = '{{ estadisticas_detalladas.hora_favorita }}';
+    document.getElementById('consistencia').textContent = '{{ estadisticas_detalladas.consistencia }}';
+}
+
+function configurarGraficos() {
+    // Gráfico de evolución mensual
+    const ctxEvolucion = document.getElementById('evolucionChart');
+    if (ctxEvolucion) {
+        new Chart(ctxEvolucion, {
+            type: 'line',
+            data: {
+                labels: metricsData.etiquetasMeses,
+                datasets: [{
+                    label: 'Visitas por Mes',
+                    data: metricsData.visitasPorMes,
+                    borderColor: '#00d4aa',
+                    backgroundColor: 'rgba(0, 212, 170, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#00d4aa',
+                    pointBorderColor: '#00d4aa',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#1a1a1a',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#333',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { 
+                            color: 'rgba(255,255,255,0.7)',
+                            font: { size: 12 }
+                        },
+                        grid: { 
+                            color: 'rgba(255,255,255,0.1)',
+                            drawBorder: false
+                        }
+                    },
+                    y: {
+                        ticks: { 
+                            color: 'rgba(255,255,255,0.7)',
+                            font: { size: 12 }
+                        },
+                        grid: { 
+                            color: 'rgba(255,255,255,0.1)',
+                            drawBorder: false
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // Gráfico de horarios
+    const ctxHorarios = document.getElementById('horariosChart');
+    if (ctxHorarios) {
+        new Chart(ctxHorarios, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(metricsData.horarios),
+                datasets: [{
+                    data: Object.values(metricsData.horarios),
+                    backgroundColor: [
+                        '#00d4aa', '#ff6b6b', '#4ecdc4', 
+                        '#45b7d1', '#96ceb4', '#feca57'
+                    ],
+                    borderWidth: 0,
+                    hoverBorderWidth: 2,
+                    hoverBorderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { 
+                            color: 'white',
+                            font: { size: 10 },
+                            padding: 15,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#1a1a1a',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#333',
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
+    }
+}
+
+function mostrarLogros() {
+    const container = document.getElementById('logrosContainer');
+    
+    if (!metricsData.logros || metricsData.logros.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center text-light-70">No hay logros disponibles</div>';
+        return;
+    }
+    
+    metricsData.logros.forEach(logro => {
+        const col = document.createElement('div');
+        col.className = 'col-6 col-lg-4';
+        
+        const desbloqueadoClass = logro.desbloqueado ? 'text-warning' : 'text-light-50';
+        const cardClass = logro.desbloqueado ? 'border-warning' : 'border-secondary';
+        
+        col.innerHTML = `
+            <div class="card bg-transparent ${cardClass} border-2 h-100" style="min-height: 100px;">
+                <div class="card-body text-center p-2">
+                    <i class="fa-solid ${sanitizeHTML(logro.icono)} ${desbloqueadoClass} fa-2x mb-2"></i>
+                    <h6 class="card-title text-white small mb-1">${sanitizeHTML(logro.nombre)}</h6>
+                    <p class="card-text text-light-70" style="font-size: 0.75rem;">${sanitizeHTML(logro.descripcion)}</p>
+                    ${logro.desbloqueado ? 
+                        '<span class="badge bg-warning text-dark">Desbloqueado</span>' : 
+                        '<span class="badge bg-secondary">Bloqueado</span>'
+                    }
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(col);
+    });
+}
+
+function sanitizeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+</script>
+{% endblock %}

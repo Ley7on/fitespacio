@@ -1,0 +1,808 @@
+{% extends "entrenador/base_entrenador.html" %}
+{% load static %}
+
+{% block extra_css %}
+  {{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/calendario.css' %}">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    padding-top: 80px !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1a2f4b 100%) !important;
+  }
+  
+  .calendario-container {
+    background: transparent;
+    color: #f1f5f9;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="calendario-container min-h-screen py-8">
+  <div class="max-w-7xl mx-auto px-4">
+    
+    <!-- Header Premium -->
+    <div class="calendario-glass-card p-8 mb-8 transform hover:scale-[1.01] transition-transform duration-300">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <!-- Left Section -->
+        <div class="flex items-center gap-4">
+          <a href="{% url 'dashboard' %}" class="calendario-btn-secondary p-3 rounded-lg hover:scale-110 transition-transform duration-200">
+            <i class="fa-solid fa-arrow-left text-lg"></i>
+          </a>
+          <div class="bg-gradient-to-br from-cyan-500 to-teal-600 p-4 rounded-lg shadow-lg">
+            <i class="fa-solid fa-calendar text-3xl text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-4xl font-bold text-white leading-tight">Mi Calendario</h1>
+            <p class="text-gray-400 font-medium">Gestiona tus sesiones, evaluaciones y eventos</p>
+          </div>
+        </div>
+        <!-- Right Section -->
+        <div class="flex gap-3 w-full md:w-auto">
+          <button onclick="nuevoEvento()" class="calendario-btn-primary flex items-center gap-2 flex-1 md:flex-none justify-center hover:scale-105 transition-transform duration-200">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nuevo Evento</span>
+          </button>
+          <button onclick="cambiarVista()" id="btnVista" class="calendario-btn-secondary flex items-center gap-2 flex-1 md:flex-none justify-center">
+            <i class="fa-solid fa-list"></i>
+            <span>Vista Lista</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navegación y Filtros -->
+    <div class="calendario-glass-card p-6 mb-8">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <!-- Navigation -->
+        <div class="flex items-center gap-6">
+          <button onclick="mesAnterior()" class="calendario-nav-btn p-3 hover:scale-110 transition-transform duration-200" title="Mes anterior">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <h2 id="mesActual" class="calendario-month-title min-w-[280px]"></h2>
+          <button onclick="mesSiguiente()" class="calendario-nav-btn p-3 hover:scale-110 transition-transform duration-200" title="Mes siguiente">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+        <!-- Controls -->
+        <div class="flex gap-3 w-full md:w-auto">
+          <button onclick="irHoy()" class="calendario-btn-primary px-4 py-2 rounded-lg hover:scale-105 transition-transform duration-200">
+            Hoy
+          </button>
+          <select id="filtroTipo" class="calendario-filter-select px-4 py-2">
+            <option value="">Todos los eventos</option>
+            <option value="sesion">🏋️ Sesiones</option>
+            <option value="evaluacion">📊 Evaluaciones</option>
+            <option value="reunion">👥 Reuniones</option>
+            <option value="descanso">😴 Descanso</option>
+            <option value="otro">📌 Otros</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendario Grid -->
+    <div id="vistaCalendario" class="calendario-glass-card p-8">
+      <!-- Días de la semana -->
+      <div class="calendario-grid mb-2 gap-3">
+        <div class="calendario-weekday">Domingo</div>
+        <div class="calendario-weekday">Lunes</div>
+        <div class="calendario-weekday">Martes</div>
+        <div class="calendario-weekday">Miércoles</div>
+        <div class="calendario-weekday">Jueves</div>
+        <div class="calendario-weekday">Viernes</div>
+        <div class="calendario-weekday">Sábado</div>
+      </div>
+      <!-- Días del mes -->
+      <div id="diasCalendario" class="calendario-grid gap-3">
+        <!-- Días generados dinámicamente -->
+      </div>
+    </div>
+
+    <!-- Vista Lista (oculta por defecto) -->
+    <div id="vistaLista" class="hidden">
+      <div class="calendario-glass-card p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="bg-gradient-to-br from-cyan-500 to-teal-600 p-3 rounded-lg">
+            <i class="fa-solid fa-list-check text-white"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-white">Próximos Eventos</h3>
+        </div>
+        <div id="listaEventos" class="space-y-3">
+          <!-- Eventos cargados aquí -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Nuevo Evento Premium -->
+    <div id="modalNuevoEvento" class="calendario-modal">
+  <div class="calendario-modal-content">
+    <!-- Header del Modal -->
+    <div class="flex items-center justify-between mb-6 pb-6 border-b border-gray-600">
+      <div class="flex items-center gap-3">
+        <div class="bg-gradient-to-br from-cyan-500 to-teal-600 p-3 rounded-lg">
+          <i class="fa-solid fa-calendar-plus text-white text-lg"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white">Nuevo Evento</h3>
+      </div>
+      <button onclick="cerrarModalEvento()" class="text-gray-400 hover:text-white transition-colors duration-200 p-2">
+        <i class="fa-solid fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Formulario -->
+    <form id="formNuevoEvento" class="space-y-5">
+      {% csrf_token %}
+      
+      <!-- Título -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-300 mb-2">
+          <i class="fa-solid fa-heading mr-2 text-cyan-500"></i>Título del Evento
+        </label>
+        <input type="text" id="eventoTitulo" name="titulo" required 
+          class="calendario-form-control focus:ring-2 focus:ring-cyan-500" 
+          placeholder="Ej: Sesión de Pecho">
+      </div>
+
+      <!-- Tipo de Evento -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-300 mb-2">
+          <i class="fa-solid fa-tag mr-2 text-cyan-500"></i>Tipo de Evento
+        </label>
+        <select id="eventoTipo" name="tipo" class="calendario-form-control focus:ring-2 focus:ring-cyan-500">
+          <option value="sesion">🏋️ Sesión de Entrenamiento</option>
+          <option value="evaluacion">📊 Evaluación</option>
+          <option value="reunion">👥 Reunión</option>
+          <option value="descanso">😴 Día de Descanso</option>
+          <option value="otro">📌 Otro</option>
+        </select>
+      </div>
+
+      <!-- Fecha y Color -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-300 mb-2">
+            <i class="fa-solid fa-calendar mr-2 text-cyan-500"></i>Fecha
+          </label>
+          <input type="date" id="eventoFecha" name="fecha" required class="calendario-form-control focus:ring-2 focus:ring-cyan-500">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-300 mb-2">
+            <i class="fa-solid fa-palette mr-2 text-cyan-500"></i>Color
+          </label>
+          <div class="flex gap-2 items-center">
+            <input type="color" id="eventoColor" name="color" value="#06b6d4" 
+              class="w-12 h-12 rounded-lg cursor-pointer border border-gray-600">
+            <span id="colorHex" class="text-gray-400 text-sm">#06b6d4</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Horario -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-300 mb-2">
+            <i class="fa-solid fa-clock mr-2 text-cyan-500"></i>Hora de Inicio
+          </label>
+          <input type="time" id="eventoHoraInicio" name="hora_inicio" required 
+            class="calendario-form-control focus:ring-2 focus:ring-cyan-500">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-300 mb-2">
+            <i class="fa-solid fa-flag-checkered mr-2 text-cyan-500"></i>Hora de Fin
+          </label>
+          <input type="time" id="eventoHoraFin" name="hora_fin" required 
+            class="calendario-form-control focus:ring-2 focus:ring-cyan-500">
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-300 mb-2">
+          <i class="fa-solid fa-note-sticky mr-2 text-cyan-500"></i>Descripción (Opcional)
+        </label>
+        <textarea id="eventoDescripcion" name="descripcion" rows="4" 
+          class="calendario-form-control focus:ring-2 focus:ring-cyan-500" 
+          placeholder="Añade detalles sobre el evento..."></textarea>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex gap-3 pt-6 border-t border-gray-600">
+        <button type="button" onclick="cerrarModalEvento()" 
+          class="flex-1 calendario-btn-secondary py-3 font-medium rounded-lg hover:bg-gray-700 transition-colors duration-200">
+          <i class="fa-solid fa-times mr-2"></i>Cancelar
+        </button>
+        <button type="submit" 
+          class="flex-1 calendario-btn-primary py-3 font-medium rounded-lg flex items-center justify-center gap-2 hover:scale-105 transition-transform duration-200">
+          <i class="fa-solid fa-save"></i>Guardar Evento
+        </button>
+      </div>
+    </form>
+  </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% csrf_token %}
+<script>
+// ===== Variables Globales =====
+let fechaActual = new Date();
+let vistaActual = 'calendario';
+let eventos = [];
+const colorMap = {
+  'sesion': '#10b981',
+  'evaluacion': '#3b82f6',
+  'reunion': '#f59e0b',
+  'descanso': '#6b7280',
+  'otro': '#ef4444'
+};
+
+// ===== Inicialización =====
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🚀 Inicializando calendario...');
+  configurarFechaHoy();
+  cargarEventos();
+  
+  // Esperar a que el DOM esté completamente listo
+  setTimeout(() => {
+    configurarEventos();
+    actualizarColorPicker();
+    console.log('✅ Calendario iniciado correctamente');
+  }, 300);
+});
+
+// ===== Configuración de Eventos =====
+function configurarEventos() {
+  // Actualizar hex del color picker
+  const colorInput = document.getElementById('eventoColor');
+  if (colorInput) {
+    colorInput.addEventListener('change', actualizarColorPicker);
+    colorInput.addEventListener('input', actualizarColorPicker);
+  }
+
+  // Cerrar modal al hacer clic fuera
+  const modal = document.getElementById('modalNuevoEvento');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) cerrarModalEvento();
+    });
+  }
+
+  // Envío del formulario - GARANTIZAR QUE FUNCIONA
+  setTimeout(() => {
+    const form = document.getElementById('formNuevoEvento');
+    if (form) {
+      console.log('✅ Formulario encontrado, agregando listener');
+      form.addEventListener('submit', function(e) {
+        console.log('📝 Formulario enviado');
+        guardarEvento.call(this, e);
+      });
+    } else {
+      console.warn('❌ Formulario NO encontrado');
+    }
+  }, 100);
+
+  // Filtro de eventos
+  const filtro = document.getElementById('filtroTipo');
+  if (filtro) {
+    filtro.addEventListener('change', aplicarFiltro);
+  }
+}
+
+function actualizarColorPicker() {
+  const colorInput = document.getElementById('eventoColor');
+  const colorHex = document.getElementById('colorHex');
+  if (colorInput && colorHex) {
+    colorHex.textContent = colorInput.value.toUpperCase();
+  }
+}
+
+function configurarFechaHoy() {
+  const hoy = new Date();
+  const fechaString = hoy.toISOString().split('T')[0];
+  const inputFecha = document.getElementById('eventoFecha');
+  if (inputFecha) {
+    inputFecha.value = fechaString;
+  }
+}
+
+// ===== Cargar Eventos =====
+function cargarEventos() {
+  const container = document.getElementById('diasCalendario');
+  if (container) {
+    container.style.opacity = '0.5';
+  }
+
+  fetch('/api/eventos/', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+    },
+    credentials: 'same-origin'
+  })
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return response.json();
+    })
+    .then(data => {
+      eventos = Array.isArray(data) ? data : [];
+      generarCalendario();
+      actualizarVistaLista();
+      if (container) container.style.opacity = '1';
+    })
+    .catch(error => {
+      console.error('Error cargando eventos:', error);
+      mostrarError('Error al cargar eventos. Recargando...');
+      eventos = [];
+      generarCalendario();
+      actualizarVistaLista();
+      if (container) container.style.opacity = '1';
+    });
+}
+
+// ===== Generar Calendario =====
+function generarCalendario() {
+  const container = document.getElementById('diasCalendario');
+  const mesElement = document.getElementById('mesActual');
+  
+  if (!container || !mesElement) return;
+
+  // Nombres de meses en español
+  const meses = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+  
+  mesElement.textContent = `${meses[fechaActual.getMonth()]} ${fechaActual.getFullYear()}`;
+  container.innerHTML = '';
+
+  // Obtener información del mes
+  const primerDia = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 1);
+  const ultimoDia = new Date(fechaActual.getFullYear(), fechaActual.getMonth() + 1, 0);
+  const diasEnMes = ultimoDia.getDate();
+  const diaSemanaInicio = primerDia.getDay();
+
+  // Días del mes anterior (deshabilitados)
+  const diasMesAnterior = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 0).getDate();
+  for (let i = diaSemanaInicio - 1; i >= 0; i--) {
+    const dia = document.createElement('div');
+    dia.className = 'calendario-day otro-mes';
+    dia.innerHTML = `<div class="calendario-day-number">${diasMesAnterior - i}</div>`;
+    container.appendChild(dia);
+  }
+
+  // Días del mes actual
+  const hoy = new Date();
+  for (let dia = 1; dia <= diasEnMes; dia++) {
+    const diaElement = document.createElement('div');
+    diaElement.className = 'calendario-day';
+
+    const fechaDia = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), dia);
+    const esHoy = fechaDia.toDateString() === hoy.toDateString();
+
+    if (esHoy) {
+      diaElement.classList.add('hoy');
+    }
+
+    diaElement.innerHTML = `<div class="calendario-day-number">${dia}</div><div id="eventos-${dia}" class="space-y-1"></div>`;
+    diaElement.style.cursor = 'pointer';
+    diaElement.addEventListener('click', () => nuevoEventoFecha(fechaDia));
+
+    // Agregar eventos del día
+    const eventosDia = eventos.filter(evento => {
+      const fechaEvento = new Date(evento.start || evento.fecha_inicio);
+      return fechaEvento.toDateString() === fechaDia.toDateString();
+    });
+
+    const eventosContainer = diaElement.querySelector(`#eventos-${dia}`);
+    eventosDia.forEach(evento => {
+      const eventoElement = document.createElement('div');
+      const tipo = evento.type || evento.tipo || 'otro';
+      eventoElement.className = `event-item event-${tipo}`;
+      eventoElement.textContent = evento.title || evento.titulo || 'Evento';
+      eventoElement.style.cursor = 'pointer';
+      eventoElement.addEventListener('click', (e) => {
+        e.stopPropagation();
+        verDetalleEvento(evento);
+      });
+      eventosContainer.appendChild(eventoElement);
+    });
+
+    container.appendChild(diaElement);
+  }
+
+  // Días del próximo mes (deshabilitados)
+  const diasRestantes = (42 - (diaSemanaInicio + diasEnMes));
+  for (let i = 1; i <= diasRestantes; i++) {
+    const dia = document.createElement('div');
+    dia.className = 'calendario-day otro-mes';
+    dia.innerHTML = `<div class="calendario-day-number">${i}</div>`;
+    container.appendChild(dia);
+  }
+}
+
+// ===== Vista Lista =====
+function actualizarVistaLista() {
+  const container = document.getElementById('listaEventos');
+  if (!container) return;
+
+  if (eventos.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-12">
+        <div class="mb-4">
+          <i class="fa-solid fa-inbox text-5xl text-cyan-500/30"></i>
+        </div>
+        <p class="text-gray-400 font-medium">No hay eventos programados</p>
+        <p class="text-gray-500 text-sm mt-1">Crea uno haciendo clic en "Nuevo Evento"</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Ordenar eventos por fecha
+  const eventosOrdenados = [...eventos].sort((a, b) => {
+    const fechaA = new Date(a.start || a.fecha_inicio);
+    const fechaB = new Date(b.start || b.fecha_inicio);
+    return fechaA - fechaB;
+  });
+
+  const fragment = document.createDocumentFragment();
+  eventosOrdenados.forEach((evento, index) => {
+    const fecha = new Date(evento.start || evento.fecha_inicio);
+    const tipo = evento.type || evento.tipo || 'otro';
+    const colorTipo = colorMap[tipo] || '#6b7280';
+
+    const card = document.createElement('div');
+    card.className = 'evento-card animate-fade-in';
+    card.style.animationDelay = `${index * 50}ms`;
+    card.style.borderLeftColor = colorTipo;
+
+    const title = evento.title || evento.titulo || 'Evento sin título';
+    const description = evento.description || evento.descripcion || '';
+    const timeStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = fecha.toLocaleDateString('es-ES', { weekday: 'short', month: 'short', day: 'numeric' });
+
+    card.innerHTML = `
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <h4 class="font-semibold text-white mb-2 flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full" style="background-color: ${colorTipo}"></div>
+            ${title}
+          </h4>
+          <div class="flex flex-wrap gap-3 text-sm text-gray-300 mb-2">
+            <span>
+              <i class="fa-solid fa-calendar mr-2 text-cyan-500"></i>${dateStr}
+            </span>
+            <span>
+              <i class="fa-solid fa-clock mr-2 text-cyan-500"></i>${timeStr}
+            </span>
+          </div>
+          ${description ? `<p class="text-gray-400 text-sm">${description}</p>` : ''}
+        </div>
+        <span class="px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap ml-2" style="background: ${colorTipo}20; color: ${colorTipo}; border: 1px solid ${colorTipo}40">
+          ${tipo}
+        </span>
+      </div>
+    `;
+    
+    card.addEventListener('click', () => verDetalleEvento(evento));
+    fragment.appendChild(card);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(fragment);
+}
+
+// ===== Navegación =====
+function mesAnterior() {
+  fechaActual.setMonth(fechaActual.getMonth() - 1);
+  generarCalendario();
+}
+
+function mesSiguiente() {
+  fechaActual.setMonth(fechaActual.getMonth() + 1);
+  generarCalendario();
+}
+
+function irHoy() {
+  fechaActual = new Date();
+  generarCalendario();
+}
+
+// ===== Cambiar Vista =====
+function cambiarVista() {
+  const btnVista = document.getElementById('btnVista');
+  const vistaCalendario = document.getElementById('vistaCalendario');
+  const vistaLista = document.getElementById('vistaLista');
+
+  if (vistaActual === 'calendario') {
+    vistaActual = 'lista';
+    vistaCalendario.classList.add('hidden');
+    vistaLista.classList.remove('hidden');
+    btnVista.innerHTML = '<i class="fa-solid fa-calendar-days"></i><span>Vista Calendario</span>';
+  } else {
+    vistaActual = 'calendario';
+    vistaCalendario.classList.remove('hidden');
+    vistaLista.classList.add('hidden');
+    btnVista.innerHTML = '<i class="fa-solid fa-list"></i><span>Vista Lista</span>';
+  }
+}
+
+// ===== Modal =====
+function nuevoEvento() {
+  console.log('📌 Abriendo modal...');
+  const modal = document.getElementById('modalNuevoEvento');
+  if (modal) {
+    modal.classList.add('show');
+    console.log('✅ Modal abierto');
+  } else {
+    console.error('❌ Modal no encontrado');
+  }
+}
+
+function nuevoEventoFecha(fecha) {
+  const fechaString = fecha.toISOString().split('T')[0];
+  const inputFecha = document.getElementById('eventoFecha');
+  if (inputFecha) {
+    inputFecha.value = fechaString;
+  }
+  nuevoEvento();
+}
+
+function cerrarModalEvento() {
+  const modal = document.getElementById('modalNuevoEvento');
+  if (modal) {
+    modal.classList.remove('show');
+  }
+  const form = document.getElementById('formNuevoEvento');
+  if (form) {
+    form.reset();
+    configurarFechaHoy();
+  }
+}
+
+// ===== Guardar Evento =====
+function guardarEvento(e) {
+  e.preventDefault();
+  console.log('🔥 GUARDANDO EVENTO...');
+
+  try {
+    const titulo = document.getElementById('eventoTitulo').value.trim();
+    const tipo = document.getElementById('eventoTipo').value;
+    const fecha = document.getElementById('eventoFecha').value;
+    const horaInicio = document.getElementById('eventoHoraInicio').value;
+    const horaFin = document.getElementById('eventoHoraFin').value;
+    const descripcion = document.getElementById('eventoDescripcion').value.trim() || '';
+    const color = document.getElementById('eventoColor').value || '#06b6d4';
+
+    console.log('📋 Datos:', {titulo, tipo, fecha, horaInicio, horaFin});
+
+    // Validaciones simples
+    if (!titulo || titulo.length < 3) {
+      mostrarError('❌ Título muy corto (mín 3 caracteres)');
+      return;
+    }
+
+    if (!tipo) {
+      mostrarError('❌ Selecciona tipo de evento');
+      return;
+    }
+
+    if (!fecha) {
+      mostrarError('❌ Selecciona fecha');
+      return;
+    }
+
+    if (!horaInicio || !horaFin) {
+      mostrarError('❌ Selecciona horas');
+      return;
+    }
+
+    if (horaInicio >= horaFin) {
+      mostrarError('❌ Hora fin debe ser posterior a inicio');
+      return;
+    }
+
+    // Crear fechas en hora local (sin UTC)
+    const fechaInicio = new Date(`${fecha}T${horaInicio}:00`);
+    const fechaFin = new Date(`${fecha}T${horaFin}:00`);
+
+    if (isNaN(fechaInicio.getTime()) || isNaN(fechaFin.getTime())) {
+      mostrarError('❌ Fechas inválidas');
+      return;
+    }
+
+    // Convertir a ISO preservando la hora local
+    const offsetMinutos = fechaInicio.getTimezoneOffset();
+    const fechaInicioISO = new Date(fechaInicio.getTime() - offsetMinutos * 60000).toISOString();
+    const fechaFinISO = new Date(fechaFin.getTime() - offsetMinutos * 60000).toISOString();
+
+    const eventoData = {
+      titulo,
+      tipo,
+      descripcion,
+      color,
+      fecha_inicio: fechaInicioISO,
+      fecha_fin: fechaFinISO
+    };
+
+    console.log('📤 Enviando datos:', eventoData);
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    console.log('🔐 CSRF Token:', csrfToken.substring(0, 20) + '...');
+
+    const submitBtn = document.querySelector('#formNuevoEvento button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+    fetch('/api/eventos/crear/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify(eventoData)
+    })
+      .then(response => {
+        console.log('📬 Respuesta recibida:', response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('✅ Datos respuesta:', data);
+        if (data.success || data.id) {
+          console.log('🎉 EVENTO CREADO CON ÉXITO');
+          cerrarModalEvento();
+          setTimeout(() => {
+            cargarEventos();
+          }, 100);
+          mostrarExito('✅ ¡Evento creado!');
+        } else {
+          mostrarError('❌ ' + (data.message || 'Error desconocido'));
+        }
+      })
+      .catch(error => {
+        console.error('💥 Error:', error);
+        mostrarError('❌ ' + error.message);
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Evento';
+      });
+
+  } catch (error) {
+    console.error('Error al guardar evento:', error);
+    mostrarError('❌ Error: ' + error.message);
+  }
+}
+
+
+// ===== Ver Detalle Evento =====
+function verDetalleEvento(evento) {
+  const tipo = evento.type || evento.tipo || 'otro';
+  const titulo = evento.title || evento.titulo || 'Evento';
+  const descripcion = evento.description || evento.descripcion || '';
+  const fecha = new Date(evento.start || evento.fecha_inicio);
+
+  const fechaFormato = fecha.toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  const horaFormato = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+  alert(`📅 ${titulo}\n\n📆 ${fechaFormato}\n🕐 ${horaFormato}\n\n${descripcion}`);
+}
+
+// ===== Filtro =====
+function aplicarFiltro(e) {
+  const tipo = e.target.value;
+  const items = document.querySelectorAll('.event-item');
+
+  items.forEach(item => {
+    if (!tipo || item.classList.contains(`event-${tipo}`)) {
+      item.style.display = 'block';
+      item.style.animation = 'fadeIn 0.3s ease';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+// ===== Notificaciones Mejoradas =====
+function mostrarError(mensaje) {
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'fixed top-4 right-4 md:top-24 md:right-4 bg-red-500/95 backdrop-blur-md text-white px-4 md:px-6 py-3 md:py-4 rounded-lg shadow-lg border border-red-400/50 flex items-center gap-2 animate-slide-in-right z-[2000] max-w-sm md:max-w-md';
+  msgDiv.innerHTML = `<i class="fa-solid fa-exclamation-circle flex-shrink-0"></i> <span class="text-sm md:text-base">${mensaje}</span>`;
+  document.body.appendChild(msgDiv);
+
+  setTimeout(() => {
+    msgDiv.style.animation = 'slideOutRight 0.3s ease forwards';
+    setTimeout(() => msgDiv.remove(), 300);
+  }, 4000);
+}
+
+function mostrarExito(mensaje) {
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'fixed top-4 right-4 md:top-24 md:right-4 bg-green-500/95 backdrop-blur-md text-white px-4 md:px-6 py-3 md:py-4 rounded-lg shadow-lg border border-green-400/50 flex items-center gap-2 animate-slide-in-right z-[2000] max-w-sm md:max-w-md';
+  msgDiv.innerHTML = `<i class="fa-solid fa-check-circle flex-shrink-0"></i> <span class="text-sm md:text-base">${mensaje}</span>`;
+  document.body.appendChild(msgDiv);
+
+  setTimeout(() => {
+    msgDiv.style.animation = 'slideOutRight 0.3s ease forwards';
+    setTimeout(() => msgDiv.remove(), 300);
+  }, 3000);
+}
+
+// ===== Estilos Dinámicos =====
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideInRight {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(400px); opacity: 0; }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in { animation: fadeInUp 0.4s ease forwards; }
+  .animate-slide-in-right { animation: slideInRight 0.3s ease forwards; }
+
+  /* Responsive inputs */
+  .calendario-form-control,
+  .calendario-filter-select,
+  .calendario-btn-primary,
+  .calendario-btn-secondary {
+    transition: all 0.2s ease;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Mobile optimizations */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 2px;
+    opacity: 0.8;
+  }
+  
+  input[type="color"] {
+    cursor: pointer;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+  }
+
+  /* Prevenir zoom en inputs en mobile */
+  @media (max-width: 480px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+`;
+document.head.appendChild(style);
+
+</script>
+{% endblock %}

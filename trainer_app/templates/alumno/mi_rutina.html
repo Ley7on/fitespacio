@@ -1,0 +1,90 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Mi Rutina Personal - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="glass p-4 mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h1 class="h3 text-white mb-2">
+                    <i class="fa-solid fa-user me-2"></i>Mi Rutina Personal
+                </h1>
+                <p class="text-light-70 mb-0">Rutina creada y personalizada por ti</p>
+            </div>
+            <a href="{% url 'alumno:crear_rutina' %}" class="btn btn-primary-alumno">
+                <i class="fa-solid fa-plus me-2"></i>Nueva Rutina
+            </a>
+        </div>
+    </div>
+
+    {% if mi_rutina %}
+        <!-- Rutina Actual -->
+        <div class="glass p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="text-white mb-0">{{ mi_rutina.nombre }}</h5>
+                <div>
+                    <button class="btn btn-glass btn-sm me-2" onclick="editarRutina()">
+                        <i class="fa-solid fa-edit"></i> Editar
+                    </button>
+                    <button class="btn btn-primary-alumno btn-sm" onclick="iniciarEntrenamiento()">
+                        <i class="fa-solid fa-play"></i> Iniciar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="row g-3">
+                {% for ejercicio in mi_rutina.ejercicios %}
+                <div class="col-md-6">
+                    <div class="exercise-card">
+                        <div class="exercise-name">{{ ejercicio.nombre }}</div>
+                        <div class="exercise-details">
+                            {{ ejercicio.series }} series × {{ ejercicio.repeticiones }} reps
+                            {% if ejercicio.peso %}
+                                - {{ ejercicio.peso }}kg
+                            {% endif %}
+                        </div>
+                        {% if ejercicio.notas %}
+                            <div class="exercise-notes mt-2">
+                                <small class="text-light-70">{{ ejercicio.notas }}</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <!-- Sin Rutina -->
+        <div class="glass p-5 text-center">
+            <i class="fa-solid fa-dumbbell text-light-50 fa-4x mb-3"></i>
+            <h5 class="text-white mb-3">No tienes una rutina personal</h5>
+            <p class="text-light-70 mb-4">Crea tu propia rutina personalizada según tus objetivos</p>
+            <a href="{% url 'alumno:crear_rutina' %}" class="btn btn-primary-alumno">
+                <i class="fa-solid fa-plus me-2"></i>Crear Mi Primera Rutina
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function editarRutina() {
+    window.location.href = "{% url 'alumno:editar_rutina' %}";
+}
+
+function iniciarEntrenamiento() {
+    if (window.showNotification) {
+        window.showNotification(
+            'Entrenamiento Iniciado',
+            'Comenzando tu rutina personal',
+            'success'
+        );
+    }
+    // Aquí iría la lógica para iniciar el entrenamiento
+}
+</script>
+{% endblock %}

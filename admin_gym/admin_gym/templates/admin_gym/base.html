@@ -1,0 +1,269 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Fitspace Admin{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com?v=2024"></script>
+    <!-- Fallback: si Tailwind CDN no responde, cargar CSS precompilado desde static -->
+    <script>
+        (function() {
+            function loadFallbackCss() {
+                try {
+                    var head = document.getElementsByTagName('head')[0];
+                    var css1 = document.createElement('link');
+                    css1.rel = 'stylesheet';
+                    css1.href = '{% static "admin_gym/css/style.css" %}';
+                    head.appendChild(css1);
+
+                    var css2 = document.createElement('link');
+                    css2.rel = 'stylesheet';
+                    css2.href = '{% static "admin_gym/css/dark-theme.css" %}';
+                    head.appendChild(css2);
+
+                    console.warn('Tailwind CDN no disponible — cargando CSS de respaldo (static).');
+                } catch (e) {
+                    console.error('Error cargando CSS de respaldo:', e);
+                }
+            }
+
+            // Si tailwind no está definido después de 2 segundos, usar fallback
+            setTimeout(function() {
+                if (typeof window.tailwind === 'undefined') {
+                    loadFallbackCss();
+                }
+            }, 2000);
+        })();
+    </script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#059669',
+                            600: '#047857',
+                            700: '#065f46',
+                            900: '#064e3b'
+                        },
+                        secondary: {
+                            500: '#0d9488',
+                            600: '#0f766e'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'slide-down': 'slideDown 0.3s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
+                        'bounce-slow': 'bounce 2s infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #064e3b 0%, #065f46 50%, #047857 100%);
+        }
+    </style>
+</head>
+<body class="h-full font-sans">
+    <div class="min-h-full">
+        <!-- Enhanced Sidebar -->
+        <div class="fixed inset-y-0 left-0 z-50 w-64 sidebar-gradient shadow-2xl">
+            <div class="flex h-16 items-center justify-center border-b border-emerald-600/30">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2">
+                        <i class="fas fa-dumbbell text-emerald-300 text-lg"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-white">
+                        <span class="text-emerald-300">Fit</span>space
+                        <span class="block text-xs text-emerald-200 font-normal">Admin Panel</span>
+                    </h1>
+                </div>
+            </div>
+            
+            <nav class="mt-8 px-4 space-y-1">
+                <a href="{% url 'dashboard' %}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-emerald-100 hover:bg-white/10 hover:text-white transition-all duration-300 {% if request.resolver_match.url_name == 'dashboard' %}bg-white/20 text-white shadow-lg{% endif %}">
+                    <i class="fas fa-tachometer-alt mr-3 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                    Dashboard
+                    {% if request.resolver_match.url_name == 'dashboard' %}
+                        <div class="ml-auto w-2 h-2 bg-emerald-300 rounded-full animate-pulse"></div>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'usuarios' %}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-emerald-100 hover:bg-white/10 hover:text-white transition-all duration-300 {% if request.resolver_match.url_name == 'usuarios' %}bg-white/20 text-white shadow-lg{% endif %}">
+                    <i class="fas fa-users mr-3 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                    Clientes
+                    {% if request.resolver_match.url_name == 'usuarios' %}
+                        <div class="ml-auto w-2 h-2 bg-emerald-300 rounded-full animate-pulse"></div>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'profesores' %}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-emerald-100 hover:bg-white/10 hover:text-white transition-all duration-300 {% if request.resolver_match.url_name == 'profesores' %}bg-white/20 text-white shadow-lg{% endif %}">
+                    <i class="fas fa-user-tie mr-3 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                    Profesores
+                    {% if request.resolver_match.url_name == 'profesores' %}
+                        <div class="ml-auto w-2 h-2 bg-emerald-300 rounded-full animate-pulse"></div>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'sesiones' %}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-emerald-100 hover:bg-white/10 hover:text-white transition-all duration-300 {% if request.resolver_match.url_name == 'sesiones' %}bg-white/20 text-white shadow-lg{% endif %}">
+                    <i class="fas fa-calendar-alt mr-3 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                    Sesiones
+                    {% if request.resolver_match.url_name == 'sesiones' %}
+                        <div class="ml-auto w-2 h-2 bg-emerald-300 rounded-full animate-pulse"></div>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'pagos' %}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-emerald-100 hover:bg-white/10 hover:text-white transition-all duration-300 {% if request.resolver_match.url_name == 'pagos' %}bg-white/20 text-white shadow-lg{% endif %}">
+                    <i class="fas fa-credit-card mr-3 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                    Pagos
+                    {% if request.resolver_match.url_name == 'pagos' %}
+                        <div class="ml-auto w-2 h-2 bg-emerald-300 rounded-full animate-pulse"></div>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'reportes' %}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-emerald-100 hover:bg-white/10 hover:text-white transition-all duration-300 {% if request.resolver_match.url_name == 'reportes' %}bg-white/20 text-white shadow-lg{% endif %}">
+                    <i class="fas fa-chart-bar mr-3 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                    Reportes
+                    {% if request.resolver_match.url_name == 'reportes' %}
+                        <div class="ml-auto w-2 h-2 bg-emerald-300 rounded-full animate-pulse"></div>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'scanner_qr' %}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-emerald-100 hover:bg-white/10 hover:text-white transition-all duration-300 {% if request.resolver_match.url_name == 'scanner_qr' %}bg-white/20 text-white shadow-lg{% endif %}">
+                    <i class="fas fa-qrcode mr-3 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                    Escáner QR
+                    {% if request.resolver_match.url_name == 'scanner_qr' %}
+                        <div class="ml-auto w-2 h-2 bg-emerald-300 rounded-full animate-pulse"></div>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'configuracion' %}" class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-emerald-100 hover:bg-white/10 hover:text-white transition-all duration-300 {% if request.resolver_match.url_name == 'configuracion' %}bg-white/20 text-white shadow-lg{% endif %}">
+                    <i class="fas fa-cog mr-3 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                    Configuración
+                    {% if request.resolver_match.url_name == 'configuracion' %}
+                        <div class="ml-auto w-2 h-2 bg-emerald-300 rounded-full animate-pulse"></div>
+                    {% endif %}
+                </a>
+            </nav>
+            
+            <!-- Enhanced User menu -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-emerald-600/30">
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-lg">
+                                <span class="text-sm font-bold text-white">{{ request.user.username|first|upper }}</span>
+                            </div>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <p class="text-sm font-semibold text-white">{{ request.user.username }}</p>
+                            <p class="text-xs text-emerald-200">Administrador</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <form method="post" action="{% url 'logout' %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="text-emerald-200 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10" title="Cerrar sesión">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="pl-64">
+            <!-- Enhanced Messages -->
+            {% if messages %}
+                <div class="fixed top-4 right-4 z-50 space-y-3">
+                    {% for message in messages %}
+                        <div class="bg-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}emerald{% elif message.tags == 'warning' %}yellow{% else %}blue{% endif %}-500 text-white px-6 py-4 rounded-xl shadow-2xl animate-slide-down max-w-sm backdrop-blur-sm border border-white/20">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} text-lg"></i>
+                                </div>
+                                <div class="ml-3 flex-1">
+                                    <p class="text-sm font-medium">{{ message }}</p>
+                                </div>
+                                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white/80 hover:text-white transition-colors">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <main class="py-8 px-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+                <div class="animate-fade-in">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Función global para mostrar alertas
+        function mostrarAlerta(mensaje, tipo = 'success') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            const alert = document.createElement('div');
+            alert.className = `fixed top-4 right-4 ${colors[tipo]} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up`;
+            alert.textContent = mensaje;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 4000);
+        }
+        
+        // Auto-ocultar notificaciones existentes
+        document.addEventListener('DOMContentLoaded', function() {
+            const notifications = document.querySelectorAll('.animate-slide-up');
+            notifications.forEach(function(notification) {
+                setTimeout(function() {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 5000);
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

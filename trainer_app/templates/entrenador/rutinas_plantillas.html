@@ -1,0 +1,1128 @@
+{% extends "entrenador/base_entrenador.html" %}
+{% load static %}
+
+{% block extra_css %}
+  {{ block.super }}
+<link rel="stylesheet" href="{% static 'css/rutinas_plantillas.css' %}">
+<link rel="stylesheet" href="{% static 'css/modal-nuevo.css' %}">
+<meta name="csrf-token" content="{{ csrf_token }}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .glass-card {
+    background: rgba(31, 41, 55, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(75, 85, 99, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  .gradient-bg {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  }
+  .routine-card {
+    transition: all 0.3s ease;
+  }
+  .routine-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen gradient-bg">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="glass-card p-6 mb-6">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center gap-4">
+          <div class="bg-gray-600 p-3 rounded-full">
+            <i class="fa-solid fa-dumbbell text-2xl text-gray-300"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-white mb-1">Rutinas & Plantillas</h1>
+            <p class="text-gray-300">Gestiona entrenamientos personalizados para tus atletas</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button id="btnExportarCSV" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+            <i class="fa-solid fa-download"></i>
+            <span class="hidden md:inline">Exportar CSV</span>
+          </button>
+          <button id="btnNuevaRutina" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nueva Rutina</span>
+          </button>
+        </div>
+      </div>
+    </div>
+      
+    <!-- Estadísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="glass-card p-4">
+        <div class="flex items-center gap-3">
+          <div class="bg-gray-600 p-2 rounded-lg">
+            <i class="fa-solid fa-clipboard-check text-xl text-gray-300"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-white" id="totalRutinas">{{ stats.rutinas_activas }}</p>
+            <p class="text-gray-400 text-sm">Rutinas Activas</p>
+          </div>
+        </div>
+      </div>
+      <div class="glass-card p-4">
+        <div class="flex items-center gap-3">
+          <div class="bg-gray-600 p-2 rounded-lg">
+            <i class="fa-solid fa-users text-xl text-gray-300"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-white" id="alumnosActivos">{{ stats.alumnos_activos }}</p>
+            <p class="text-gray-400 text-sm">Atletas Activos</p>
+          </div>
+        </div>
+      </div>
+      <div class="glass-card p-4">
+        <div class="flex items-center gap-3">
+          <div class="bg-gray-600 p-2 rounded-lg">
+            <i class="fa-solid fa-layer-group text-xl text-gray-300"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-white" id="totalPlantillas">{{ stats.plantillas }}</p>
+            <p class="text-gray-400 text-sm">Plantillas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="glass-card p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div class="md:col-span-2">
+          <label class="block text-blue-200 text-sm font-medium mb-2">🔍 Buscar</label>
+          <input type="text" id="filtroBusqueda" placeholder="Nombre, atleta, ejercicio..." 
+                 class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">🎯 Objetivo</label>
+          <select id="filtroObjetivo" class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option value="">Todos</option>
+            <option value="fuerza">Fuerza</option>
+            <option value="hipertrofia">Hipertrofia</option>
+            <option value="resistencia">Resistencia</option>
+            <option value="perdida_grasa">Pérdida de grasa</option>
+            <option value="funcional">Funcional</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">📊 Estado</label>
+          <select id="filtroStatus" class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option value="">Todos</option>
+            <option value="activa">Activa</option>
+            <option value="pausada">Pausada</option>
+            <option value="completada">Completada</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">👤 Tipo</label>
+          <div class="flex gap-2">
+            <select id="filtroTipo" class="flex-1 py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <option value="">Todos</option>
+              <option value="personalizada">Personalizadas</option>
+              <option value="plantilla">Plantillas</option>
+            </select>
+            <button type="button" id="btnAplicarFiltros" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg transition-colors duration-200">
+              <i class="fa-solid fa-filter"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs de navegación -->
+    <div class="glass-card p-1 mb-6">
+      <div class="flex flex-wrap gap-1">
+        <button class="tab-button active flex-1 md:flex-none px-4 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2" data-tab="rutinas">
+          <i class="fa-solid fa-clipboard-check"></i>
+          <span>Rutinas</span>
+          <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full" id="badgeRutinas">{{ rutinas|length }}</span>
+        </button>
+        <button class="tab-button flex-1 md:flex-none px-4 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2" data-tab="plantillas">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>Plantillas</span>
+          <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full" id="badgePlantillas">{{ stats.plantillas }}</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Datos embebidos de forma segura para JavaScript -->
+    <script id="rutinas-data-json" type="application/json">{{ rutinas_json|safe }}</script>
+    
+    <style>
+      .tab-button {
+        color: rgba(255, 255, 255, 0.6);
+        background: transparent;
+      }
+      .tab-button.active {
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .tab-button:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.05);
+      }
+    </style>
+
+    <!-- Contenido de tabs -->
+    <div id="tabContent">
+      <!-- Tab Rutinas -->
+      <div id="rutinas" class="tab-content active">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl text-white font-semibold">Mis Rutinas</h2>
+          <select id="ordenarPor" class="bg-white/10 border border-white/20 rounded-lg text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option value="nombre">Ordenar por Nombre</option>
+            <option value="fecha">Ordenar por Fecha</option>
+            <option value="objetivo">Ordenar por Objetivo</option>
+          </select>
+        </div>
+        
+        <!-- LISTA SIMPLE DE RUTINAS -->
+        <div id="listaRutinas" class="space-y-3">
+          <!-- Las rutinas se cargarán aquí dinámicamente -->
+          {% for rutina in rutinas %}
+          <div class="glass-card p-5 hover:bg-white/5 transition cursor-pointer" data-rutina-id="{{ rutina.id }}">
+            <div class="flex justify-between items-center">
+              <div class="flex-1">
+                <h3 class="text-white font-bold text-lg mb-1">{{ rutina.nombre }}</h3>
+                <div class="flex gap-4 text-sm text-gray-400">
+                  <span><i class="fa-solid fa-bullseye mr-1"></i>{{ rutina.objetivo|default:"general" }}</span>
+                  <span><i class="fa-solid fa-dumbbell mr-1"></i>{{ rutina.ejercicios_count|default:0 }} ejercicios</span>
+                  <span><i class="fa-solid fa-calendar mr-1"></i>{{ rutina.frecuencia_semanal|default:3 }}x semana</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 rounded text-sm {% if rutina.status == 'activa' %}bg-green-500/20 text-green-400{% else %}bg-gray-500/20 text-gray-400{% endif %}">
+                  {{ rutina.status|default:"activa" }}
+                </span>
+                <button onclick="editarRutina({{ rutina.id }})" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white text-sm font-medium transition">
+                  <i class="fa-solid fa-edit mr-1"></i>Editar
+                </button>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="glass-card p-8 text-center">
+            <i class="fa-solid fa-dumbbell text-4xl text-gray-400 mb-4"></i>
+            <h3 class="text-xl font-semibold text-white mb-2">No hay rutinas todavía</h3>
+            <p class="text-gray-300">Crea tu primera rutina usando el botón "Nueva Rutina"</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Tab Plantillas -->
+      <div id="plantillas" class="tab-content hidden">
+        <div id="plantillasContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Las plantillas se cargarán aquí -->
+        </div>
+      </div>
+
+      <!-- Tab Recomendaciones -->
+      <div id="recomendaciones" class="tab-content hidden">
+        <div id="recomendacionesContainer" class="space-y-4">
+          <!-- Las recomendaciones se cargarán aquí -->
+        </div>
+      </div>
+    </div>
+    
+    {% if error_message %}
+    <div class="glass-card p-4 mt-6 border-l-4 border-red-500">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-exclamation-triangle text-red-400"></i>
+        <p class="text-red-200">{{ error_message }}</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  .view-button.active {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+</style>
+
+<!-- Los modales se han simplificado y modernizado -->
+<!-- Modal Editar Rutina (reemplazado por versión completa con input hidden para id) -->
+<div id="modalEditarRutina" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="bg-gray-900 text-white rounded-2xl w-full max-w-3xl p-6 shadow-2xl modal-container overflow-y-auto max-h-96">
+    <form id="formEditarRutina" class="space-y-4">
+      <input type="hidden" id="editarRutinaId" name="id" value="">
+      <div class="modal-header flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">Editar Rutina</h3>
+        <button type="button" aria-label="Cerrar" onclick="cerrarModalEditar()" class="text-gray-300 hover:text-white">×</button>
+      </div>
+
+      <div class="modal-body grid grid-cols-1 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-300">Nombre</label>
+          <input id="editarNombreRutina" name="nombre" class="w-full mt-1 p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300">Descripción</label>
+          <textarea id="editarDescripcionRutina" name="descripcion" rows="3" class="w-full mt-1 p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300">Objetivo</label>
+            <select id="editarObjetivoRutina" name="objetivo" class="w-full mt-1 p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="fuerza">Fuerza</option>
+              <option value="hipertrofia">Hipertrofia</option>
+              <option value="resistencia">Resistencia</option>
+              <option value="perdida_grasa">Pérdida de grasa</option>
+              <option value="funcional">Funcional</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300">Tipo</label>
+            <select id="editarTipoRutina" name="tipo" class="w-full mt-1 p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="personalizada">Personalizada</option>
+              <option value="plantilla">Plantilla</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300">Duración (semanas)</label>
+          <input type="number" id="editarDuracionRutina" name="duracion" class="w-full mt-1 p-2 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" min="1" value="4" />
+        </div>
+
+        <!-- Sección de ejercicios -->
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-gray-300 mb-2">Ejercicios</label>
+          <div id="listaEjerciciosEditar" class="space-y-2 mb-3">
+            <!-- Los ejercicios existentes se cargarán aquí -->
+          </div>
+          
+          <!-- Formulario para agregar nuevo ejercicio -->
+          <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+            <div class="grid grid-cols-2 gap-2 mb-2">
+              <input type="text" id="editarNombreEjercicio" placeholder="Nombre del ejercicio" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="text" id="editarRepeticiones" placeholder="Ej: 3x12" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <button type="button" onclick="agregarEjercicioEditar()" class="w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-plus"></i>
+              Agregar ejercicio
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer flex items-center justify-between gap-3 mt-4">
+        <button type="button" class="btn btn-danger px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 transition text-white" onclick="eliminarRutinaActual()">
+          <i class="fa-solid fa-trash mr-2"></i>Eliminar Rutina
+        </button>
+        <div class="flex gap-3">
+          <button type="button" class="btn btn-secondary px-4 py-2 rounded-lg bg-neutral-800 text-gray-200 hover:bg-neutral-700 transition" onclick="cerrarModalEditar()">Cancelar</button>
+          <button type="submit" class="btn btn-primary px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition text-white">Guardar cambios</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Nueva Rutina - overlay separado y contenedor con z-index superior -->
+<div id="modalNuevaRutina" class="fixed inset-0 z-50 hidden" aria-hidden="true" role="dialog" aria-modal="true">
+  <!-- Overlay (capa detrás del modal) -->
+  <div class="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" onclick="cerrarModal()" aria-hidden="true"></div>
+
+  <!-- Contenedor centrado (por encima del overlay) -->
+  <div class="relative z-50 flex items-center justify-center min-h-screen px-4">
+    <div class="w-full max-w-2xl transform transition-all duration-200 scale-100 opacity-100" onclick="event.stopPropagation()">
+      <form id="formNuevaRutina" class="rounded-2xl p-6 bg-neutral-900 border border-white/10 shadow-xl text-white" novalidate>
+        {% csrf_token %}
+        <h3 class="text-white text-lg font-semibold mb-4">+ Nueva Rutina</h3>
+
+        <div class="mb-3">
+          <label class="block text-gray-400 text-sm font-medium mb-1">Nombre de rutina</label>
+          <input type="text" id="nombreRutina" class="w-full p-3 bg-neutral-800 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600/30" required />
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-gray-400 text-sm font-medium mb-1">Descripción</label>
+          <textarea id="descripcionRutina" class="w-full p-3 bg-neutral-800 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600/30" rows="3"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-3">
+          <div>
+            <label class="block text-gray-400 text-sm font-medium mb-1">Objetivo</label>
+            <select id="objetivoRutina" class="w-full p-3 bg-neutral-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-600/30">
+              <option value="fuerza">Fuerza</option>
+              <option value="resistencia">Resistencia</option>
+              <option value="hipertrofia">Hipertrofia</option>
+              <option value="perdida_grasa">Pérdida de grasa</option>
+              <option value="funcional">Funcional</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-400 text-sm font-medium mb-1">Tipo</label>
+            <select id="tipoRutina" class="w-full p-3 bg-neutral-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-600/30">
+              <option value="personalizada">Personalizada</option>
+              <option value="plantilla">Plantilla</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-3">
+          <div>
+            <label class="block text-gray-400 text-sm font-medium mb-1">Duración (semanas)</label>
+            <input type="number" id="semanasDuracion" class="w-full p-3 bg-neutral-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-600/30" min="1" value="4" />
+          </div>
+          <div>
+            <label class="block text-gray-400 text-sm font-medium mb-1">Dificultad</label>
+            <select id="dificultadRutina" class="w-full p-3 bg-neutral-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-600/30">
+              <option value="principiante">Principiante</option>
+              <option value="intermedio" selected>Intermedio</option>
+              <option value="avanzado">Avanzado</option>
+              <option value="experto">Experto</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Sección de Ejercicios -->
+        <div class="mb-3">
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-gray-400 text-sm font-medium">Ejercicios</label>
+            <button type="button" id="btnAgregarEjercicio" class="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+              <i class="fa-solid fa-plus"></i> Agregar ejercicio
+            </button>
+          </div>
+          <div id="listaEjercicios" class="space-y-2 max-h-60 overflow-y-auto">
+            <p class="text-gray-500 text-sm text-center py-4">No hay ejercicios agregados. Click en "Agregar ejercicio" para comenzar.</p>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-4">
+          <button type="button" id="btnCerrarModal" class="px-4 py-2 rounded-lg bg-neutral-800 text-gray-200 hover:bg-neutral-700 transition">Cancelar</button>
+          <button type="submit" id="btnGuardarRutina" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition text-white">Guardar Rutina</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Contenedor con URLs para JS -->
+<div id="rutinasApp" style="display:none;"
+     data-crear-url="/api/rutinas/crear/"
+     data-obtener-url="/api/rutinas/">
+</div>
+
+{% endblock %}
+
+<!-- DATOS JSON PARA JAVASCRIPT -->
+<script id="rutinas-data-json" type="application/json">{{ rutinas_json|safe }}</script>
+
+{% block extra_js %}
+<script>
+console.log('🚀 [INICIO] Script de rutinas cargando...');
+
+// ====== VARIABLES GLOBALES ======
+let rutinasData = [];
+let vistaActual = 'tarjetas';
+let tabActual = 'rutinas';
+
+// ====== CARGAR DATOS DESDE SCRIPT TAG ======
+try {
+  const scriptTag = document.getElementById('rutinas-data-json');
+  if (scriptTag && scriptTag.textContent) {
+    const jsonText = scriptTag.textContent.trim();
+    if (jsonText && jsonText !== '[]') {
+      rutinasData = JSON.parse(jsonText);
+      console.log('✅ [DATOS] Cargadas', rutinasData.length, 'rutinas');
+      if (rutinasData[0]) console.log('📋 Primera:', rutinasData[0].nombre);
+    }
+  }
+} catch (e) {
+  console.error('❌ [ERROR] Parseando JSON:', e);
+  rutinasData = [];
+}
+
+window.rutinasData = rutinasData;
+window.rutinas = rutinasData;
+window._rutinasYaCargadas = true;
+
+// ====== FUNCIONES DE RENDERIZADO SIMPLIFICADAS ======
+function renderTarjetas(data) {
+  console.log('🎴 [renderTarjetas] INICIO - Recibido:', data ? data.length : 0, 'rutinas');
+  const container = document.getElementById('vistaTarjetas');
+  console.log('🎴 [renderTarjetas] Contenedor encontrado:', container ? 'SÍ' : 'NO');
+  
+  if (!container) {
+    console.error('🎴 [renderTarjetas] ❌ Contenedor #vistaTarjetas NO encontrado');
+    return;
+  }
+  
+  container.innerHTML = '';
+  console.log('🎴 [renderTarjetas] Contenedor limpiado');
+  
+  if (!data || data.length === 0) {
+    console.log('🎴 [renderTarjetas] Array vacío, mostrando mensaje');
+    container.innerHTML = `
+      <div class="col-span-full glass-card p-8 text-center">
+        <i class="fa-solid fa-dumbbell text-4xl text-gray-400 mb-4"></i>
+        <h3 class="text-xl font-semibold text-white mb-2">No hay rutinas todavía</h3>
+        <p class="text-gray-300 mb-4">Crea tu primera rutina usando el botón "Nueva Rutina"</p>
+      </div>`;
+    return;
+  }
+  
+  console.log('🎴 [renderTarjetas] Generando', data.length, 'tarjetas...');
+  
+  data.forEach((r, index) => {
+    console.log(`🎴 [renderTarjetas] ${index + 1}/${data.length}: ${r.nombre}`);
+    const card = document.createElement('div');
+    card.className = 'glass-card p-4 routine-card';
+    card.style.minHeight = '150px';
+    card.innerHTML = `
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <h3 class="text-white font-semibold text-lg mb-1">${r.nombre || 'Sin nombre'}</h3>
+          <p class="text-xs text-gray-400 mb-2">${r.objetivo || 'general'}</p>
+          ${r.descripcion ? `<p class="text-sm text-gray-300 mb-2">${r.descripcion.substring(0, 60)}...</p>` : ''}
+          <div class="flex gap-2 text-xs text-gray-400 mt-2">
+            <span><i class="fa-solid fa-dumbbell mr-1"></i>${r.ejercicios_count || 0} ejercicios</span>
+            <span><i class="fa-solid fa-calendar mr-1"></i>${r.frecuencia_semanal || 3}x semana</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-sm px-2 py-1 rounded ${r.status === 'activa' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}">${r.status || '—'}</span>
+        </div>
+      </div>`;
+    container.appendChild(card);
+    console.log(`🎴 [renderTarjetas] Tarjeta ${index + 1} agregada al contenedor`);
+  });
+  
+  console.log('✅ [renderTarjetas] COMPLETADO -', data.length, 'tarjetas renderizadas');
+  console.log('📦 [renderTarjetas] Contenedor ahora tiene', container.children.length, 'elementos');
+}
+
+function renderLista(data) {
+  console.log('📋 [renderLista] INICIO - Recibido:', data ? data.length : 0, 'rutinas');
+  const tbody = document.getElementById('tablaRutinasBody');
+  console.log('📋 [renderLista] Tbody encontrado:', tbody ? 'SÍ' : 'NO');
+  
+  if (!tbody) {
+    console.error('📋 [renderLista] ❌ Tbody #tablaRutinasBody NO encontrado');
+    return;
+  }
+  
+  tbody.innerHTML = '';
+  console.log('📋 [renderLista] Tbody limpiado');
+  
+  if (!data || data.length === 0) {
+    console.log('📋 [renderLista] Array vacío, mostrando mensaje');
+    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-300">No hay rutinas</td></tr>`;
+    return;
+  }
+  
+  console.log('📋 [renderLista] Generando', data.length, 'filas...');
+  
+  data.forEach((r, index) => {
+    console.log(`📋 [renderLista] Creando fila ${index + 1}:`, r.nombre);
+    const tr = document.createElement('tr');
+    tr.className = 'border-b border-white/10 hover:bg-white/5';
+    tr.innerHTML = `
+      <td class="px-6 py-3 text-white">${r.nombre || 'Sin nombre'}</td>
+      <td class="px-6 py-3 text-gray-300">${r.descripcion ? r.descripcion.substring(0, 30) : '—'}</td>
+      <td class="px-6 py-3"><span class="text-sm px-2 py-1 rounded bg-blue-500/20 text-blue-400">${r.objetivo || 'general'}</span></td>
+      <td class="px-6 py-3"><span class="text-sm px-2 py-1 rounded ${r.status === 'activa' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}">${r.status || '—'}</span></td>
+      <td class="px-6 py-3 text-gray-300">${r.ejercicios_count || 0}</td>
+      <td class="px-6 py-3"><button class="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-white text-sm">Editar</button></td>`;
+    tbody.appendChild(tr);
+    console.log(`📋 [renderLista] Fila ${index + 1} agregada`);
+  });
+  
+  console.log('✅ [renderLista] COMPLETADO -', data.length, 'filas renderizadas');
+  console.log('📦 [renderLista] Tbody ahora tiene', tbody.children.length, 'elementos');
+}
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🚀 [DOMContentLoaded] ========== INICIANDO ==========');
+  console.log('📊 [DOMContentLoaded] rutinasData:', rutinasData.length, 'elementos');
+  console.log('👤 [DOMContentLoaded] Usuario:', '{{ request.user.username }}');
+  
+  // Asegurar variables globales
+  window._rutinasYaCargadas = true;
+  window.rutinas = rutinasData;
+  window.rutinasData = rutinasData;
+  
+  // Verificar contenedor
+  const container = document.getElementById('vistaTarjetas');
+  console.log('📦 [init] Contenedor #vistaTarjetas:', container ? 'EXISTE' : 'NO EXISTE');
+  
+  // Renderizar inmediatamente
+  console.log('🎨 [init] Ejecutando mostrarRutinas()...');
+  try {
+    mostrarRutinas();
+  } catch (err) {
+    console.error('❌ [init] Error en mostrarRutinas:', err);
+    // Fallback directo
+    if (rutinasData && rutinasData.length > 0) {
+      renderTarjetas(rutinasData);
+    }
+  }
+  
+  // Configurar eventos
+  console.log('🔧 [init] Configurando eventos...');
+  configurarEventos();
+  
+  console.log('✅ [DOMContentLoaded] ========== LISTO ==========');
+});
+
+function configurarEventos() {
+  // Tabs
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', function() {
+      const tab = this.dataset.tab;
+      cambiarTab(tab);
+    });
+  });
+  
+  // Vista
+  const btnVistaTarjetas = document.getElementById('btnVistaTarjetas');
+  if (btnVistaTarjetas) btnVistaTarjetas.addEventListener('click', () => cambiarVista('tarjetas'));
+  const btnVistaLista = document.getElementById('btnVistaLista');
+  if (btnVistaLista) btnVistaLista.addEventListener('click', () => cambiarVista('lista'));
+  
+  // Filtros
+  const btnAplicar = document.getElementById('btnAplicarFiltros');
+  if (btnAplicar) btnAplicar.addEventListener('click', aplicarFiltros);
+  const filtroBusqueda = document.getElementById('filtroBusqueda');
+  if (filtroBusqueda) filtroBusqueda.addEventListener('input', aplicarFiltros);
+  
+  // Exportar
+  const btnExp = document.getElementById('btnExportarCSV');
+  if (btnExp) {
+    if (typeof window.exportarCSV === 'function') btnExp.addEventListener('click', window.exportarCSV);
+    else btnExp.addEventListener('click', () => mostrarToast('Función de exportación no disponible', 'error'));
+  }
+
+  // Nueva rutina: abrir modal mediante listener (evitar inline onclick)
+  const btnNuevo = document.getElementById('btnNuevaRutina');
+  if (btnNuevo) {
+    console.log('[configurarEventos] Agregando listener a btnNuevaRutina');
+    btnNuevo.addEventListener('click', function() {
+      console.log('[btnNuevaRutina] Click detectado');
+      if (typeof window.abrirModal === 'function') {
+        console.log('[btnNuevaRutina] Llamando window.abrirModal()');
+        window.abrirModal();
+      } else if (typeof abrirModal === 'function') {
+        console.log('[btnNuevaRutina] Llamando abrirModal()');
+        abrirModal();
+      } else {
+        console.error('[btnNuevaRutina] abrirModal no disponible');
+        mostrarToast('Función de abrir modal no disponible', 'error');
+      }
+    });
+  } else {
+    console.error('[configurarEventos] btnNuevaRutina NO encontrado');
+  }
+
+  // Modal: cerrar
+  const btnCerrar = document.getElementById('btnCerrarModal');
+  if (btnCerrar) btnCerrar.addEventListener('click', cerrarModal);
+
+  // Delegación: click en tarjeta de rutina -> abrir editor visual
+  const tarjetasContainer = document.getElementById('vistaTarjetas');
+  if (tarjetasContainer) {
+    tarjetasContainer.addEventListener('click', async function(e) {
+      // si el click vino de un botón o control, ignorar
+      if (e.target.closest('button') || e.target.closest('a')) return;
+      // buscar el elemento que tiene el dataset id
+      const card = e.target.closest('[data-id]');
+      if (!card) return;
+      const id = card.dataset.id;
+      if (!id) return;
+      // mostrar loader visual
+      card.classList.add('opacity-70');
+      // Llamar al flujo de edición
+      try {
+        if (typeof window.editarRutina === 'function') await window.editarRutina(id);
+        else mostrarToast('Función de edición no disponible', 'error');
+      } catch (err) {
+        // editarRutina ya muestra el toast de error
+      } finally {
+        card.classList.remove('opacity-70');
+      }
+    });
+  }
+}
+
+// Aplicar filtros a las rutinas
+function aplicarFiltros() {
+  const busqueda = document.getElementById('filtroBusqueda')?.value.toLowerCase() || '';
+  const objetivo = document.getElementById('filtroObjetivo')?.value || '';
+  const status = document.getElementById('filtroStatus')?.value || '';
+  const tipo = document.getElementById('filtroTipo')?.value || '';
+  
+  const rutinasOriginales = window.rutinasData || window.rutinas || rutinasData || [];
+  
+  const rutinasFiltradas = rutinasOriginales.filter(r => {
+    // Filtro de búsqueda
+    if (busqueda) {
+      const textoCompleto = `${r.nombre} ${r.descripcion} ${r.objetivo}`.toLowerCase();
+      if (!textoCompleto.includes(busqueda)) return false;
+    }
+    
+    // Filtro de objetivo
+    if (objetivo && r.objetivo !== objetivo) return false;
+    
+    // Filtro de status
+    if (status && r.status !== status) return false;
+    
+    // Filtro de tipo
+    if (tipo && r.tipo !== tipo) return false;
+    
+    return true;
+  });
+  
+  console.log('[aplicarFiltros] Filtradas', rutinasFiltradas.length, 'de', rutinasOriginales.length);
+  
+  // Renderizar resultados filtrados
+  if (vistaActual === 'tarjetas') {
+    renderTarjetas(rutinasFiltradas);
+  } else {
+    renderLista(rutinasFiltradas);
+  }
+}
+  
+  // Exportar (agregar listener solo si existe la función exportarCSV)
+  const btnExp = document.getElementById('btnExportarCSV');
+  if (btnExp) {
+    if (typeof window.exportarCSV === 'function') btnExp.addEventListener('click', window.exportarCSV);
+    else btnExp.addEventListener('click', () => mostrarToast('Función de exportación no disponible', 'error'));
+  }
+
+  // Nueva rutina: abrir modal mediante listener (evitar inline onclick)
+  const btnNuevo = document.getElementById('btnNuevaRutina');
+  if (btnNuevo) {
+    console.log('[configurarEventos] Agregando listener a btnNuevaRutina');
+    btnNuevo.addEventListener('click', function() {
+      console.log('[btnNuevaRutina] Click detectado');
+      if (typeof window.abrirModal === 'function') {
+        console.log('[btnNuevaRutina] Llamando window.abrirModal()');
+        window.abrirModal();
+      } else if (typeof abrirModal === 'function') {
+        console.log('[btnNuevaRutina] Llamando abrirModal()');
+        abrirModal();
+      } else {
+        console.error('[btnNuevaRutina] abrirModal no disponible');
+        mostrarToast('Función de abrir modal no disponible', 'error');
+      }
+    });
+  } else {
+    console.error('[configurarEventos] btnNuevaRutina NO encontrado');
+  }
+
+  // Modal: cerrar
+  const btnCerrar = document.getElementById('btnCerrarModal');
+  if (btnCerrar) btnCerrar.addEventListener('click', cerrarModal);
+
+  // Delegación: click en tarjeta de rutina -> abrir editor visual
+  const tarjetasContainer = document.getElementById('vistaTarjetas');
+  if (tarjetasContainer) {
+    tarjetasContainer.addEventListener('click', async function(e) {
+      // si el click vino de un botón o control, ignorar (dejamos que los botones manejen sus acciones)
+      if (e.target.closest('button') || e.target.closest('a')) return;
+      // buscar el elemento que tiene el dataset id (más robusto que clase)
+      const card = e.target.closest('[data-id]');
+      if (!card) return;
+      const id = card.dataset.id;
+      if (!id) return;
+      // mostrar loader visual
+      card.classList.add('opacity-70');
+      // Llamar al flujo de edición (editarRutina maneja fetch y abrir modal)
+      try {
+        if (typeof window.editarRutina === 'function') await window.editarRutina(id);
+        else mostrarToast('Función de edición no disponible', 'error');
+      } catch (err) {
+        // editarRutina ya muestra el toast de error
+      } finally {
+        card.classList.remove('opacity-70');
+      }
+    });
+  }
+}
+
+// Cambiar tab activo y actualizar vista
+function mostrarRutinas() {
+  console.log('📋 [mostrarRutinas] Mostrando rutinas...');
+  const data = window.rutinasData || window.rutinas || rutinasData || [];
+  console.log('📋 [mostrarRutinas] Datos disponibles:', data.length, 'rutinas');
+  console.log('📋 [mostrarRutinas] Vista actual:', vistaActual);
+  console.log('📋 [mostrarRutinas] Array completo:', data);
+  
+  // Actualizar badge
+  const badge = document.getElementById('badgeRutinas');
+  if (badge) {
+    badge.textContent = data.length;
+    console.log('📋 [mostrarRutinas] Badge actualizado a:', data.length);
+  }
+  
+  if (vistaActual === 'tarjetas') {
+    console.log('🎴 [mostrarRutinas] Renderizando TARJETAS...');
+    renderTarjetas(data);
+  } else {
+    console.log('📋 [mostrarRutinas] Renderizando LISTA...');
+    renderLista(data);
+  }
+}
+
+function mostrarPlantillas() {
+  console.log('📋 [mostrarPlantillas] Mostrando plantillas...');
+  // TODO: Implementar lógica de plantillas
+}
+
+function mostrarRecomendaciones() {
+  console.log('📋 [mostrarRecomendaciones] Mostrando recomendaciones...');
+  // TODO: Implementar lógica de recomendaciones
+}
+
+function cambiarTab(tab) {
+  console.log('🔄 [cambiarTab] Cambiando a tab:', tab);
+  
+  // Actualizar botones
+  document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+  const tabButton = document.querySelector(`[data-tab="${tab}"]`);
+  if (tabButton) tabButton.classList.add('active');
+  
+  // Actualizar contenido
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.remove('active');
+    content.classList.add('hidden');
+  });
+  const tabContent = document.getElementById(tab);
+  if (tabContent) {
+    tabContent.classList.remove('hidden');
+    tabContent.classList.add('active');
+  }
+  
+  tabActual = tab;
+  
+  if (tab === 'rutinas') {
+    mostrarRutinas();
+  } else if (tab === 'plantillas') {
+    mostrarPlantillas();
+  } else if (tab === 'recomendaciones') {
+    mostrarRecomendaciones();
+  }
+}
+
+// Cambiar vista entre tarjetas y lista
+function cambiarVista(vista) {
+  console.log('[cambiarVista] Cambiando a:', vista);
+  vistaActual = vista;
+  
+  const data = window.rutinasData || window.rutinas || rutinasData || [];
+  console.log('[cambiarVista] Datos disponibles:', data.length);
+  
+  // Actualizar botones
+  document.querySelectorAll('.view-button').forEach(btn => btn.classList.remove('active'));
+  
+  if (vista === 'tarjetas') {
+    document.getElementById('vistaTarjetas').classList.remove('hidden');
+    document.getElementById('vistaLista').classList.add('hidden');
+    document.getElementById('btnVistaTarjetas').classList.add('active');
+    renderTarjetas(data);
+  } else {
+    document.getElementById('vistaTarjetas').classList.add('hidden');
+    document.getElementById('vistaLista').classList.remove('hidden');
+    document.getElementById('btnVistaLista').classList.add('active');
+    renderLista(data);
+  }
+}
+
+// ====== FUNCIONES DE EDICIÓN DE RUTINA ======
+// NOTA: Las funciones editarRutina, cerrarModalEditar, agregarEjercicioEditar, eliminarEjercicioEditar
+// y actualizarRutina están definidas en modal-rutina-fixed.js
+
+// Solo definir estas funciones si modal-rutina-fixed.js no está cargado
+if (typeof window.cerrarModalEditar === 'undefined') {
+  window.cerrarModalEditar = function() {
+    document.getElementById('modalEditarRutina').classList.add('hidden');
+  };
+}
+
+if (typeof window.agregarEjercicioEditar === 'undefined') {
+  window.agregarEjercicioEditar = function() {
+    const nombreInput = document.getElementById('editarNombreEjercicio');
+    const repeticionesInput = document.getElementById('editarRepeticiones');
+    
+    const nombre = nombreInput.value.trim();
+    const repeticiones = repeticionesInput.value.trim();
+    
+    if (!nombre) {
+      alert('Ingresa el nombre del ejercicio');
+      return;
+    }
+    
+    const listaEjercicios = document.getElementById('listaEjerciciosEditar');
+    const tempId = 'new_' + Date.now(); // ID temporal para ejercicios nuevos
+    
+    const ejercicioHTML = `
+      <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700 flex items-center justify-between" data-ejercicio-id="${tempId}" data-nuevo="true">
+        <div class="flex-1">
+          <span class="text-white font-medium">${nombre}</span>
+          <span class="text-gray-400 text-sm ml-3">${repeticiones || '3x12'}</span>
+          <input type="hidden" name="nuevo_ejercicio_nombre[]" value="${nombre}">
+          <input type="hidden" name="nuevo_ejercicio_repeticiones[]" value="${repeticiones || '3x12'}">
+        </div>
+        <button type="button" onclick="eliminarEjercicioNuevo('${tempId}')" class="text-red-500 hover:text-red-400 transition">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    `;
+    
+    listaEjercicios.insertAdjacentHTML('beforeend', ejercicioHTML);
+    
+    // Limpiar inputs
+    nombreInput.value = '';
+    repeticionesInput.value = '';
+    nombreInput.focus();
+  };
+}
+
+// Funciones auxiliares para eliminar ejercicios (siempre disponibles como respaldo)
+if (typeof window.eliminarEjercicioEditar === 'undefined') {
+  window.eliminarEjercicioEditar = async function(ejercicioId) {
+    if (!confirm('¿Eliminar este ejercicio de la rutina?')) return;
+    
+    const rutinaId = document.getElementById('editarRutinaId').value;
+    
+    try {
+      const response = await fetch(`/api/rutinas/${rutinaId}/ejercicios/${ejercicioId}/`, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken')
+        }
+      });
+      
+      if (!response.ok) throw new Error('Error al eliminar ejercicio');
+      
+      // Eliminar del DOM
+      const elemento = document.querySelector(`[data-ejercicio-id="${ejercicioId}"]`);
+      if (elemento) elemento.remove();
+      
+      console.log('✅ Ejercicio eliminado');
+    } catch (error) {
+      console.error('❌ Error:', error);
+      alert('Error al eliminar el ejercicio');
+    }
+  };
+}
+
+if (typeof window.eliminarEjercicioNuevo === 'undefined') {
+  window.eliminarEjercicioNuevo = function(tempId) {
+    const elemento = document.querySelector(`[data-ejercicio-id="${tempId}"]`);
+    if (elemento) elemento.remove();
+  };
+}
+
+if (typeof window.actualizarRutina === 'undefined') {
+  window.actualizarRutina = async function(event) {
+  event.preventDefault();
+  
+  const rutinaId = document.getElementById('editarRutinaId').value;
+  const formData = {
+    nombre: document.getElementById('editarNombreRutina').value,
+    descripcion: document.getElementById('editarDescripcionRutina').value,
+    objetivo: document.getElementById('editarObjetivoRutina').value,
+    tipo: document.getElementById('editarTipoRutina').value,
+    duracion_semanas: document.getElementById('editarDuracionRutina').value
+  };
+  
+  // Recopilar nuevos ejercicios
+  const nuevosEjercicios = [];
+  document.querySelectorAll('[data-nuevo="true"]').forEach(div => {
+    const nombre = div.querySelector('input[name="nuevo_ejercicio_nombre[]"]').value;
+    const repeticiones = div.querySelector('input[name="nuevo_ejercicio_repeticiones[]"]').value;
+    nuevosEjercicios.push({ nombre, repeticiones });
+  });
+  
+  if (nuevosEjercicios.length > 0) {
+    formData.nuevos_ejercicios = nuevosEjercicios;
+  }
+  
+  try {
+    const response = await fetch(`/api/rutinas/${rutinaId}/actualizar/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify(formData)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error al actualizar rutina');
+    }
+    
+    console.log('✅ Rutina actualizada');
+    cerrarModalEditar();
+    location.reload(); // Recargar para ver los cambios
+  } catch (error) {
+    console.error('❌ Error:', error);
+    alert('Error al actualizar la rutina: ' + error.message);
+  }
+  };
+}
+
+if (typeof window.eliminarRutina === 'undefined') {
+  window.eliminarRutina = async function() {
+  if (!confirm('¿Estás seguro de eliminar esta rutina? Esta acción no se puede deshacer.')) return;
+  
+  const rutinaId = document.getElementById('editarRutinaId').value;
+  
+  try {
+    const response = await fetch(`/api/rutinas/${rutinaId}/eliminar/`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken')
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al eliminar rutina');
+    }
+    
+    console.log('✅ Rutina eliminada');
+    cerrarModalEditar();
+    location.reload();
+  } catch (error) {
+    console.error('❌ Error:', error);
+    alert('Error al eliminar la rutina: ' + error.message);
+  }
+  };
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// ====== INICIALIZACIÓN ======
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('[DOM] Iniciando con', rutinasData.length, 'rutinas');
+  
+  // Actualizar badges
+  const badgeRutinas = document.getElementById('badgeRutinas');
+  if (badgeRutinas) badgeRutinas.textContent = rutinasData.length;
+  
+  // Renderizar tarjetas inicialmente
+  renderTarjetas(rutinasData);
+  
+  // Event listeners
+  const btnVistaTarjetas = document.getElementById('btnVistaTarjetas');
+  const btnVistaLista = document.getElementById('btnVistaLista');
+  
+  if (btnVistaTarjetas) btnVistaTarjetas.addEventListener('click', () => cambiarVista('tarjetas'));
+  if (btnVistaLista) btnVistaLista.addEventListener('click', () => cambiarVista('lista'));
+  
+  console.log('[DOM] Listo');
+});
+</script>
+
+<style>
+/* Color overrides únicamente (solo colores) para los modales de rutinas - no cambia estructura HTML */
+#modalEditarRutina, #modalEditarRutina .modal-container, #modalEditarRutina .modal-body, #modalEditarRutina .modal-header, #modalEditarRutina .modal-footer {
+  background: linear-gradient(180deg, rgba(10,14,20,0.92), rgba(20,28,36,0.85));
+  color: #E6EEF8; /* texto ligeramente frío para buen contraste */
+  border-color: rgba(255,255,255,0.04);
+}
+
+/* Inputs y selects dentro del modal */
+#modalEditarRutina input, #modalEditarRutina select, #modalEditarRutina textarea, #modalEditarRutina .form-control {
+  background: #0b1220; /* fondo más oscuro y consistente con el dashboard */
+  color: #F8FAFC;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+#modalEditarRutina input::placeholder, #modalEditarRutina textarea::placeholder { color: rgba(255,255,255,0.35); }
+#modalEditarRutina input:focus, #modalEditarRutina select:focus, #modalEditarRutina textarea:focus, #modalEditarRutina .form-control:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.08); /* focus sutil azul */
+  border-color: rgba(99,102,241,0.9);
+}
+
+/* Botones: primario degradado azul->violeta, secundario gris */
+#modalEditarRutina .btn-primary, #modalEditarRutina .btn-primary[type=submit], #modalEditarRutina .btn.btn-primary {
+  background: linear-gradient(90deg, #2563EB 0%, #7C3AED 100%);
+  color: #FFFFFF;
+  border: none;
+}
+#modalEditarRutina .btn-primary:hover { opacity: 0.95; }
+#modalEditarRutina .btn-secondary, #modalEditarRutina .btn.btn-secondary {
+  background: #374151; /* gris oscuro */
+  color: #E5E7EB;
+  border: none;
+}
+#modalEditarRutina .btn-outline, #modalEditarRutina .btn.btn-outline {
+  border: 1px solid rgba(99,102,241,0.35);
+  color: #93C5FD;
+  background: transparent;
+}
+
+/* Cards de ejercicios dentro del modal (solo color y sombras) */
+#modalEditarRutina .bg-neutral-900\/60, #modalEditarRutina .ejercicio-item, #modalEditarRutina .shadow-inner {
+  background: rgba(8,12,20,0.55);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.45);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Ajuste de badges / labels dentro del modal */
+#modalEditarRutina .badge, #modalEditarRutina .label {
+  background: rgba(255,255,255,0.04);
+  color: #DDE9F7;
+}
+
+/* Pequeño refinamiento para el close button */
+#modalEditarRutina button[aria-label="Cerrar"] {
+  background: transparent;
+  color: rgba(255,255,255,0.65);
+}
+#modalEditarRutina button[aria-label="Cerrar"]:hover { color: #FFFFFF; }
+
+/* Evitar que reglas globales rompan el contraste: forzar textos importantes a blanco suavizado */
+#modalEditarRutina h2, #modalEditarRutina h3, #modalEditarRutina label, #modalEditarRutina p {
+  color: #E6EEF8;
+}
+
+/* Animación (sin cambios estructurales) */
+@keyframes modalFade { from { transform: scale(0.98); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.animate-modalFade { animation: modalFade 240ms cubic-bezier(.16,.84,.4,1); }
+</style>
+
+<!-- Cargar modal-rutina-fixed.js AL FINAL para que no sobrescriba las funciones del template -->
+<script src="{% static 'js/modal-rutina-fixed.js' %}"></script>
+{% endblock %}

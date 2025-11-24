@@ -1,0 +1,175 @@
+/* Mobile-First Responsive Design */
+
+/* Base mobile styles */
+@media (max-width: 767px) {
+  /* Container adjustments */
+  .container-fluid {
+    padding: 0.5rem;
+  }
+  
+  /* Cards responsive */
+  .card {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  /* Buttons responsive */
+  .btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+  
+  .btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-group .btn {
+    border-radius: 0.375rem !important;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Tables responsive */
+  .table-responsive {
+    border: none;
+  }
+  
+  .table {
+    font-size: 0.8rem;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.5rem 0.25rem;
+    white-space: nowrap;
+  }
+  
+  /* Modal responsive */
+  .modal-dialog {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  /* Form responsive */
+  .form-control,
+  .form-select {
+    font-size: 16px; /* Prevent zoom on iOS */
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  /* Grid responsive */
+  .row {
+    margin: 0 -0.5rem;
+  }
+  
+  .col,
+  [class*="col-"] {
+    padding: 0 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Navigation responsive */
+  .navbar-nav {
+    text-align: center;
+  }
+  
+  .nav-link {
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Dashboard cards */
+  .dashboard-card {
+    text-align: center;
+    padding: 1.5rem 1rem;
+  }
+  
+  .dashboard-card h3 {
+    font-size: 1.5rem;
+  }
+  
+  .dashboard-card p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 768px) and (max-width: 991px) {
+  .container-fluid {
+    padding: 1rem;
+  }
+  
+  .btn-group .btn {
+    width: auto;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 992px) {
+  .btn {
+    width: auto;
+  }
+}
+
+/* PWA specific styles */
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .navbar {
+    padding-top: calc(env(safe-area-inset-top) + 0.5rem);
+  }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+  .btn,
+  .card,
+  .nav-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .table td,
+  .table th {
+    min-height: 44px;
+  }
+}
+
+/* Landscape phone adjustments */
+@media (max-width: 767px) and (orientation: landscape) {
+  .modal-dialog {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .dashboard-card {
+    padding: 1rem;
+  }
+  
+  .dashboard-card h3 {
+    font-size: 1.25rem;
+  }
+}

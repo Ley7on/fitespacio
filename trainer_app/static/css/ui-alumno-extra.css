@@ -1,0 +1,390 @@
+/* Additional Gymly/Hevy Inspired Styles */
+
+/* Workout Session Cards */
+.workout-session {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.workout-session.active {
+  border-color: #00d4aa;
+  box-shadow: 0 0 0 1px rgba(0, 212, 170, 0.2);
+}
+
+.workout-header {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.workout-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.workout-duration {
+  background: #262626;
+  color: #00d4aa;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Set Tracking */
+.set-tracker {
+  background: #262626;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0.5rem 0;
+}
+
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #333;
+}
+
+.set-row:last-child {
+  border-bottom: none;
+}
+
+.set-number {
+  width: 30px;
+  height: 30px;
+  background: #404040;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.set-number.completed {
+  background: #00d4aa;
+  color: #000;
+}
+
+.set-input {
+  background: #404040;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 0.5rem;
+  color: #ffffff;
+  width: 80px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.set-input:focus {
+  border-color: #00d4aa;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2);
+}
+
+/* Progress Rings */
+.progress-ring {
+  width: 80px;
+  height: 80px;
+  position: relative;
+}
+
+.progress-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+  fill: none;
+  stroke: #333;
+  stroke-width: 4;
+}
+
+.progress-ring-progress {
+  fill: none;
+  stroke: #00d4aa;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.progress-ring-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Stats Cards */
+.stat-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  border-color: #00d4aa;
+  transform: translateY(-2px);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  background: #262626;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  color: #00d4aa;
+  font-size: 1.5rem;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  color: #888;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-change {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.stat-change.positive {
+  color: #00d4aa;
+}
+
+.stat-change.negative {
+  color: #ff6b6b;
+}
+
+/* Quick Actions */
+.quick-action {
+  background: #262626;
+  border: 1px solid #404040;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+  color: #ffffff;
+  display: block;
+}
+
+.quick-action:hover {
+  background: #333;
+  border-color: #00d4aa;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.quick-action-icon {
+  font-size: 2rem;
+  color: #00d4aa;
+  margin-bottom: 0.75rem;
+}
+
+.quick-action-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.quick-action-desc {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.75rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #333;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -1.75rem;
+  top: 0.5rem;
+  width: 12px;
+  height: 12px;
+  background: #00d4aa;
+  border-radius: 50%;
+  border: 3px solid #0f0f0f;
+}
+
+.timeline-content {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.timeline-date {
+  color: #888;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.timeline-title {
+  color: #ffffff;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.timeline-desc {
+  color: #ccc;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Floating Action Button */
+.fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  background: #00d4aa;
+  border-radius: 50%;
+  border: none;
+  color: #000;
+  font-size: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 212, 170, 0.3);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.fab:hover {
+  background: #00c49a;
+  transform: scale(1.1);
+  box-shadow: 0 12px 32px rgba(0, 212, 170, 0.4);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .workout-session {
+    padding: 1rem;
+  }
+  
+  .set-row {
+    gap: 0.5rem;
+  }
+  
+  .set-input {
+    width: 60px;
+    padding: 0.4rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+  }
+  
+  .fab {
+    bottom: 1rem;
+    right: 1rem;
+    width: 48px;
+    height: 48px;
+    font-size: 1.25rem;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Loading States */
+.loading-skeleton {
+  background: linear-gradient(90deg, #262626 25%, #333 50%, #262626 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Success States */
+.success-animation {
+  animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

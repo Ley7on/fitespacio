@@ -1,0 +1,383 @@
+{% load static %}
+{% load pwa %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>{% block title %}Entrenador | Dashboard{% endblock %}</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+
+   
+    <link rel="stylesheet" href="{% static 'css/mobile-responsive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mobile-entrenador.css' %}">
+    {% block extra_css %}{% endblock %}
+
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#007bff">
+    
+    <!-- Navbar styles for consistency -->
+    <style>
+      /* Absolute navbar priority - inline in navbar.html overrides this as backup */
+      nav.navbar {
+        z-index: 9999 !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        background-color: #1a1a2e !important;
+        border-bottom: 2px solid #0d9488 !important;
+        display: flex !important;
+      }
+      
+      nav.navbar .navbar-brand {
+        font-weight: 700;
+        font-size: 1.3rem;
+        color: #ffffff !important;
+      }
+      
+      nav.navbar .collapse.navbar-collapse {
+        display: flex !important;
+      }
+      
+      nav.navbar .navbar-nav {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 5px;
+      }
+      
+      nav.navbar .nav-item {
+        display: inline-flex !important;
+      }
+      
+      nav.navbar .nav-link {
+        color: #b3b3b3 !important;
+        transition: color 0.3s ease;
+        padding: 0.5rem 1rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        white-space: nowrap;
+      }
+      
+      nav.navbar .nav-link:hover {
+        color: #00d4aa !important;
+      }
+      
+      nav.navbar .nav-link.active {
+        color: #00d4aa !important;
+        border-bottom: 2px solid #00d4aa;
+      }
+      
+      .navbar-dark .navbar-toggler {
+        border-color: #00d4aa;
+      }
+      
+      .navbar-dark .navbar-toggler:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25);
+      }
+      
+      /* Dropdown styles */
+      .dropdown-menu {
+        background-color: #0a0a0a !important;
+        border: 1px solid #0d9488 !important;
+      }
+      
+      .dropdown-item {
+        color: #b3b3b3 !important;
+      }
+      
+      .dropdown-item:hover {
+        background-color: #0d9488 !important;
+        color: #fff !important;
+      }
+      
+      /* Hide toggler on desktop, show only on mobile */
+      .navbar-toggler {
+        display: none !important;
+      }
+      
+      @media (max-width: 991px) {
+        .navbar-toggler {
+          display: inline-block !important;
+        }
+        
+        nav.navbar .navbar-nav {
+          flex-direction: column !important;
+          gap: 0 !important;
+        }
+        
+        nav.navbar .nav-link {
+          padding: 0.75rem 1rem !important;
+        }
+        
+        .navbar-collapse {
+          margin-top: 10px;
+        }
+        
+        /* CRITICAL: Force navbar-custom to be visible on mobile */
+        .navbar-custom {
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          width: 100% !important;
+          z-index: 9999 !important;
+        }
+        
+        .navbar-custom .navbar-container {
+          display: flex !important;
+          visibility: visible !important;
+        }
+        
+        .navbar-custom .navbar-brand-section,
+        .navbar-custom .navbar-brand,
+        .navbar-custom .navbar-toggle {
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+        
+        .navbar-custom .navbar-toggle span {
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+      }
+      
+      /* Ensure body doesn't hide navbar */
+      body {
+        padding-top: 80px;
+      }
+      
+      main.main-content {
+        padding-top: 0 !important;
+      }
+      
+      /* ===== NUCLEAR FIX FOR TAILWIND CONFLICT ===== */
+      /* FORCE navbar to be visible in EVERY page */
+      nav.navbar * {
+        visibility: visible !important;
+        display: block !important;
+      }
+      
+      nav.navbar .navbar-brand,
+      nav.navbar .navbar-toggler,
+      nav.navbar .collapse.navbar-collapse,
+      nav.navbar .navbar-nav,
+      nav.navbar .nav-item,
+      nav.navbar .nav-link,
+      nav.navbar .dropdown-menu,
+      nav.navbar .dropdown-item {
+        visibility: visible !important;
+        opacity: 1 !important;
+        display: inline-flex !important;
+        height: auto !important;
+        width: auto !important;
+      }
+      
+      /* Specific fixes for Tailwind interference */
+      nav.navbar .navbar-nav {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 0.3rem !important;
+      }
+      
+      nav.navbar .nav-item {
+        display: inline-flex !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      nav.navbar .nav-link {
+        display: inline-flex !important;
+        align-items: center !important;
+        color: #b3b3b3 !important;
+        padding: 0.5rem 1rem !important;
+        white-space: nowrap !important;
+      }
+      
+      nav.navbar .dropdown-menu {
+        display: none !important;
+      }
+      
+      nav.navbar .dropdown-menu.show {
+        display: block !important;
+      }
+      
+      /* Fix for any Tailwind hidden class */
+      nav.navbar .hidden {
+        display: inline-flex !important;
+      }
+      
+      /* Ensure navbar items are always visible */
+      .navbar-collapse {
+        display: flex !important;
+        max-height: none !important;
+      }
+      
+      .navbar-collapse.show {
+        display: flex !important;
+      }
+    </style>
+  </head>
+  <body class="body-overlay" style="background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%); color: #ffffff;">
+    
+    {% include "navbar_nuevo.html" %}
+
+    <!-- Contenido -->
+    <main class="main-content container-fluid mt-4">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% include "footer.html" %}
+
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Notification System -->
+    <script src="{% static 'js/notifications.js' %}"></script>
+  <!-- Ensure a showConfirm helper is always available (fallback shim) -->
+  <script src="{% static 'js/ui/confirmShim.js' %}"></script>
+    
+    <!-- Animaciones Globales -->
+    <script>
+      // Animaciones de entrada para elementos
+      document.addEventListener('DOMContentLoaded', function() {
+        // Fade in para cards
+        const cards = document.querySelectorAll('.card, .glass');
+        cards.forEach((card, index) => {
+          card.style.opacity = '0';
+          card.style.transform = 'translateY(20px)';
+          setTimeout(() => {
+            card.style.transition = 'all 0.6s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          }, index * 100);
+        });
+        
+        // Hover effects para botones
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(btn => {
+          btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.transition = 'all 0.2s ease';
+          });
+          btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+          });
+        });
+        
+        // Animación para modales
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+          modal.addEventListener('show.bs.modal', function() {
+            const modalDialog = this.querySelector('.modal-dialog');
+            modalDialog.style.transform = 'scale(0.8)';
+            modalDialog.style.opacity = '0';
+            setTimeout(() => {
+              modalDialog.style.transition = 'all 0.3s ease';
+              modalDialog.style.transform = 'scale(1)';
+              modalDialog.style.opacity = '1';
+            }, 50);
+          });
+        });
+        
+        // Loading states para formularios
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+          form.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+              const originalText = submitBtn.innerHTML;
+              submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
+              submitBtn.disabled = true;
+              
+              setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+              }, 2000);
+            }
+          });
+        });
+      });
+      
+      // Función global para animaciones de éxito
+      window.animateSuccess = function(element) {
+        element.style.transform = 'scale(1.05)';
+        element.style.transition = 'all 0.2s ease';
+        setTimeout(() => {
+          element.style.transform = 'scale(1)';
+        }, 200);
+      };
+      
+      // Función global para shake animation en errores
+      window.animateError = function(element) {
+        element.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => {
+          element.style.animation = '';
+        }, 500);
+      };
+    </script>
+    
+    <!-- CSS para animaciones -->
+    <style>
+      /* Evitar que el navbar fijo/sticky tape el contenido principal */
+      main.main-content { padding-top: 72px; }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+      }
+      
+      .fade-in {
+        animation: fadeIn 0.6s ease-in;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+      
+      .slide-in-right {
+        animation: slideInRight 0.5s ease;
+      }
+      
+      @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+    </style>
+
+    <!-- PWA Scripts -->
+    <script src="{% static 'js/pwa-register.js' %}" defer></script>
+    <script src="{% static 'js/pwa-diagnostic.js' %}" defer></script>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

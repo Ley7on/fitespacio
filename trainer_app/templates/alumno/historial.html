@@ -1,0 +1,769 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Historial - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header con Estadísticas -->
+    <div class="glass p-4 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 text-white mb-2">
+                    <i class="fa-solid fa-clock-rotate-left me-2"></i>Historial de Asistencia
+                </h1>
+                <p class="text-light-70 mb-0">Tu registro completo de visitas al gimnasio</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button class="btn btn-glass" onclick="exportarHistorial()">
+                    <i class="fa-solid fa-download me-2"></i>Exportar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas de Asistencia -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">{{ total_visitas|default:0 }}</div>
+                <div class="metric-label">Total Visitas</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="metric-card">
+                <div class="metric-value" id="visitasEsteMes">--</div>
+                <div class="metric-label">Este Mes</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="metric-card">
+                <div class="metric-value" id="visitasEstaSemana">--</div>
+                <div class="metric-label">Esta Semana</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="metric-card">
+                <div class="metric-value" id="promedioDiario">--</div>
+                <div class="metric-label">Promedio/Día</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="glass p-3 mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label-glass">Desde</label>
+                <input type="date" class="form-control form-control-glass" id="fechaDesde">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label-glass">Hasta</label>
+                <input type="date" class="form-control form-control-glass" id="fechaHasta">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label-glass">Tipo</label>
+                <select class="form-control form-control-glass" id="tipoFiltro">
+                    <option value="">Todos</option>
+                    <option value="entrada">Solo Entradas</option>
+                    <option value="salida">Solo Salidas</option>
+                    <option value="denegado">Accesos Denegados</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary-alumno w-100" onclick="aplicarFiltros()">
+                    <i class="fa-solid fa-filter me-2"></i>Filtrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Asistencia -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-chart-bar me-2"></i>Asistencia por Semana
+                </h5>
+                <div style="position: relative; height: 300px; width: 100%; max-width: 100%; overflow: hidden;">
+                    <canvas id="asistenciaChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Historial -->
+    <div class="glass p-4">
+        <h5 class="text-white mb-3">
+            <i class="fa-solid fa-list me-2"></i>Registro Detallado
+        </h5>
+        
+        {% if accesos %}
+            <div class="table-responsive">
+                <table class="table table-glass" id="historialTable">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Duración</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for acceso in accesos %}
+                        <tr data-fecha="{{ acceso.fecha_acceso|date:'Y-m-d' }}" data-tipo="{{ acceso.tipo_acceso }}">
+                            <td>
+                                <div class="fw-semibold">{{ acceso.fecha_acceso|date:"d/m/Y" }}</div>
+                                <small class="text-light-50">{{ acceso.fecha_acceso|date:"l" }}</small>
+                            </td>
+                            <td>
+                                <span class="fw-semibold">{{ acceso.fecha_acceso|time:"H:i" }}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ acceso.tipo_acceso }}">
+                                    {% if acceso.tipo_acceso == 'entrada' %}
+                                        <i class="fa-solid fa-sign-in-alt me-1"></i>Entrada
+                                    {% elif acceso.tipo_acceso == 'salida' %}
+                                        <i class="fa-solid fa-sign-out-alt me-1"></i>Salida
+                                    {% else %}
+                                        <i class="fa-solid fa-times me-1"></i>Denegado
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if acceso.tipo_acceso == 'entrada' %}
+                                    <span class="text-success">
+                                        <i class="fa-solid fa-check-circle me-1"></i>Exitoso
+                                    </span>
+                                {% elif acceso.tipo_acceso == 'salida' %}
+                                    <span class="text-info">
+                                        <i class="fa-solid fa-info-circle me-1"></i>Completado
+                                    </span>
+                                {% else %}
+                                    <span class="text-danger">
+                                        <i class="fa-solid fa-exclamation-circle me-1"></i>Fallido
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="text-light-70" id="duracion-{{ forloop.counter }}">--</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginación -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="text-light-50 small">
+                    Mostrando {{ accesos|length }} de {{ total_visitas|default:0 }} registros
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item">
+                            <a class="page-link bg-transparent border-light text-light" href="#">«</a>
+                        </li>
+                        <li class="page-item active">
+                            <span class="page-link bg-primary border-primary">1</span>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link bg-transparent border-light text-light" href="#">»</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fa-solid fa-clock text-light-50 fa-4x mb-3"></i>
+                <h6 class="text-light-70">No hay registros de asistencia</h6>
+                <p class="text-light-50">Tus visitas al gimnasio aparecerán aquí</p>
+                {% if error_message %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                        {{ error_message }}
+                    </div>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="/alumno/debug-admin/" class="btn btn-sm btn-outline-light">
+                        <i class="fa-solid fa-bug me-2"></i>Verificar Conexión
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Exportar -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content glass">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white">
+                    <i class="fa-solid fa-download me-2"></i>Exportar Historial
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label-glass">Formato</label>
+                    <select class="form-control form-control-glass" id="formatoExport">
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-glass">Período</label>
+                    <select class="form-control form-control-glass" id="periodoExport">
+                        <option value="todo">Todo el historial</option>
+                        <option value="mes">Último mes</option>
+                        <option value="trimestre">Último trimestre</option>
+                        <option value="año">Último año</option>
+                        <option value="filtros">Usar filtros actuales</option>
+                    </select>
+                </div>
+                <div class="alert alert-info" id="infoExport">
+                    <i class="fa-solid fa-info-circle me-2"></i>
+                    <span id="textoInfoExport">El reporte incluirá fechas, horarios y estadísticas de asistencia.</span>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary-alumno" onclick="confirmarExport()">
+                    <i class="fa-solid fa-download me-2"></i>Descargar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script>
+// Datos de asistencia
+const accesosData = [
+    {% for acceso in accesos %}
+    {
+        fecha: '{{ acceso.fecha_acceso|date:"Y-m-d H:i" }}',
+        tipo: '{{ acceso.tipo_acceso }}',
+        timestamp: new Date('{{ acceso.fecha_acceso|date:"Y-m-d H:i" }}').getTime()
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+// Calcular métricas
+calcularMetricas();
+
+// Configurar gráfico
+configurarGrafico();
+
+// Calcular duraciones
+calcularDuraciones();
+
+function calcularMetricas() {
+    const ahora = new Date();
+    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    const inicioSemana = new Date(ahora.setDate(ahora.getDate() - ahora.getDay()));
+    
+    const visitasEsteMes = accesosData.filter(a => 
+        new Date(a.fecha) >= inicioMes && a.tipo === 'entrada'
+    ).length;
+    
+    const visitasEstaSemana = accesosData.filter(a => 
+        new Date(a.fecha) >= inicioSemana && a.tipo === 'entrada'
+    ).length;
+    
+    const diasActivo = Math.max(1, Math.ceil((Date.now() - new Date('{{ perfil.fecha_inscripcion|date:"Y-m-d" }}').getTime()) / (1000 * 60 * 60 * 24)));
+    const promedioDiario = ({{ total_visitas|default:0 }} / diasActivo).toFixed(1);
+    
+    document.getElementById('visitasEsteMes').textContent = visitasEsteMes;
+    document.getElementById('visitasEstaSemana').textContent = visitasEstaSemana;
+    document.getElementById('promedioDiario').textContent = promedioDiario;
+}
+
+function configurarGrafico() {
+    const ctx = document.getElementById('asistenciaChart');
+    if (!ctx) return;
+    
+    // Destruir gráfico existente si existe
+    if (window.asistenciaChartInstance) {
+        window.asistenciaChartInstance.destroy();
+    }
+    
+    // Generar exactamente 8 semanas fijas
+    const labels = [];
+    const data = [];
+    const hoy = new Date();
+    
+    // Agrupar datos existentes por semana
+    const semanas = {};
+    accesosData.forEach(acceso => {
+        if (acceso.tipo !== 'entrada') return;
+        
+        const fecha = new Date(acceso.fecha);
+        const inicioSemana = new Date(fecha);
+        inicioSemana.setDate(fecha.getDate() - fecha.getDay());
+        const keySemana = inicioSemana.toISOString().split('T')[0];
+        
+        semanas[keySemana] = (semanas[keySemana] || 0) + 1;
+    });
+    
+    // Generar exactamente 8 semanas hacia atrás
+    for (let i = 7; i >= 0; i--) {
+        const fecha = new Date(hoy);
+        fecha.setDate(hoy.getDate() - (i * 7));
+        const inicioSemana = new Date(fecha);
+        inicioSemana.setDate(fecha.getDate() - fecha.getDay());
+        const keySemana = inicioSemana.toISOString().split('T')[0];
+        
+        labels.push(inicioSemana.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }));
+        data.push(semanas[keySemana] || 0);
+    }
+    
+    // Limitar a exactamente 8 elementos
+    labels.splice(8);
+    data.splice(8);
+    
+    window.asistenciaChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Visitas por Semana',
+                data: data,
+                backgroundColor: 'rgba(0, 123, 255, 0.8)',
+                borderColor: '#007bff',
+                borderWidth: 1,
+                borderRadius: 8,
+                maxBarThickness: 60
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    labels: { color: 'white' }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { 
+                        color: 'rgba(255,255,255,0.7)',
+                        maxTicksLimit: 8
+                    },
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    bounds: 'data'
+                },
+                y: {
+                    ticks: { 
+                        color: 'rgba(255,255,255,0.7)',
+                        stepSize: 1,
+                        precision: 0
+                    },
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    beginAtZero: true,
+                    max: Math.max(3, Math.max(...data) + 1)
+                }
+            },
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 10,
+                    top: 10,
+                    bottom: 10
+                }
+            }
+        }
+    });
+}
+
+function calcularDuraciones() {
+    // Calcular duración de sesiones (entrada -> salida)
+    const entradas = accesosData.filter(a => a.tipo === 'entrada').sort((a, b) => a.timestamp - b.timestamp);
+    const salidas = accesosData.filter(a => a.tipo === 'salida').sort((a, b) => a.timestamp - b.timestamp);
+    
+    entradas.forEach((entrada, index) => {
+        const salidaCorrespondiente = salidas.find(s => s.timestamp > entrada.timestamp);
+        if (salidaCorrespondiente) {
+            const duracion = Math.round((salidaCorrespondiente.timestamp - entrada.timestamp) / (1000 * 60));
+            const elemento = document.getElementById(`duracion-${index + 1}`);
+            if (elemento) {
+                elemento.textContent = `${Math.floor(duracion / 60)}h ${duracion % 60}m`;
+            }
+        }
+    });
+}
+
+function aplicarFiltros() {
+    const fechaDesde = document.getElementById('fechaDesde').value;
+    const fechaHasta = document.getElementById('fechaHasta').value;
+    const tipoFiltro = document.getElementById('tipoFiltro').value;
+    
+    const filas = document.querySelectorAll('#historialTable tbody tr');
+    
+    filas.forEach(fila => {
+        const fechaFila = fila.dataset.fecha;
+        const tipoFila = fila.dataset.tipo;
+        
+        let mostrar = true;
+        
+        if (fechaDesde && fechaFila < fechaDesde) mostrar = false;
+        if (fechaHasta && fechaFila > fechaHasta) mostrar = false;
+        if (tipoFiltro && tipoFila !== tipoFiltro) mostrar = false;
+        
+        fila.style.display = mostrar ? '' : 'none';
+    });
+}
+
+function exportarHistorial() {
+    const modal = new bootstrap.Modal(document.getElementById('exportModal'));
+    modal.show();
+    
+    // Actualizar preview de registros
+    actualizarPreviewExport();
+    
+    // Agregar listener para cambios en los selectores
+    document.getElementById('periodoExport').addEventListener('change', actualizarPreviewExport);
+    document.getElementById('formatoExport').addEventListener('change', actualizarPreviewExport);
+}
+
+function actualizarPreviewExport() {
+    const formato = document.getElementById('formatoExport').value;
+    const periodo = document.getElementById('periodoExport').value;
+    
+    // Simular obtención de datos para contar registros
+    const datosTemp = obtenerDatosFiltrados();
+    const totalRegistros = datosTemp.length;
+    
+    let textoPeriodo = '';
+    switch(periodo) {
+        case 'mes': textoPeriodo = 'del último mes'; break;
+        case 'trimestre': textoPeriodo = 'del último trimestre'; break;
+        case 'año': textoPeriodo = 'del último año'; break;
+        case 'filtros': textoPeriodo = 'con filtros actuales'; break;
+        default: textoPeriodo = 'de todo el historial';
+    }
+    
+    let textoFormato = '';
+    switch(formato) {
+        case 'pdf': textoFormato = 'PDF'; break;
+        case 'excel': textoFormato = 'CSV (compatible con Excel)'; break;
+        case 'csv': textoFormato = 'CSV'; break;
+    }
+    
+    document.getElementById('textoInfoExport').innerHTML = `
+        Se exportarán <strong>${totalRegistros} registros</strong> ${textoPeriodo} en formato <strong>${textoFormato}</strong>.
+        ${totalRegistros === 0 ? '<br><span class="text-warning">No hay registros para exportar con los filtros seleccionados.</span>' : ''}
+    `;
+    
+    // Deshabilitar botón si no hay registros
+    const botonDescargar = document.querySelector('#exportModal .btn-primary-alumno');
+    if (botonDescargar) {
+        botonDescargar.disabled = totalRegistros === 0;
+    }
+}
+
+function confirmarExport() {
+    const formato = document.getElementById('formatoExport').value;
+    const periodo = document.getElementById('periodoExport').value;
+    
+    showToast(`Exportando historial en formato ${formato.toUpperCase()}...`, 'info');
+    
+    // Generar archivo según formato
+    if (formato === 'pdf') {
+        generarPDFHistorial(periodo);
+    } else if (formato === 'excel') {
+        generarExcelHistorial(periodo);
+    } else if (formato === 'csv') {
+        generarCSVHistorial(periodo);
+    }
+    
+    // Cerrar modal
+    setTimeout(() => {
+        bootstrap.Modal.getInstance(document.getElementById('exportModal')).hide();
+    }, 500);
+}
+
+function generarPDFHistorial(periodo) {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Obtener datos filtrados
+        const datosExport = obtenerDatosFiltrados();
+        
+        // Configurar fuente
+        doc.setFont('helvetica');
+        
+        // Título
+        doc.setFontSize(20);
+        doc.setTextColor(40, 40, 40);
+        doc.text('Historial de Asistencia', 105, 20, { align: 'center' });
+        
+        // Subtítulo
+        doc.setFontSize(14);
+        doc.setTextColor(100, 100, 100);
+        doc.text('FitSpace - {{ user.get_full_name|default:user.username }}', 105, 30, { align: 'center' });
+        
+        // Información del reporte
+        doc.setFontSize(10);
+        doc.setTextColor(60, 60, 60);
+        doc.text(`Período: ${periodo}`, 20, 45);
+        doc.text(`Total de registros: ${datosExport.length}`, 20, 52);
+        doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-ES')}`, 20, 59);
+        
+        // Estadísticas
+        doc.setFontSize(12);
+        doc.setTextColor(40, 40, 40);
+        doc.text('Estadísticas:', 20, 72);
+        
+        doc.setFontSize(10);
+        const visitasMes = document.getElementById('visitasEsteMes').textContent;
+        const visitasSemana = document.getElementById('visitasEstaSemana').textContent;
+        const promedio = document.getElementById('promedioDiario').textContent;
+        
+        doc.text(`Este Mes: ${visitasMes}`, 30, 80);
+        doc.text(`Esta Semana: ${visitasSemana}`, 80, 80);
+        doc.text(`Promedio/Día: ${promedio}`, 130, 80);
+        
+        // Tabla de datos
+        if (datosExport.length > 0) {
+            const tableData = datosExport.map(registro => [
+                registro.fecha,
+                registro.hora,
+                registro.tipo,
+                registro.estado
+            ]);
+            
+            doc.autoTable({
+                head: [['Fecha', 'Hora', 'Tipo', 'Estado']],
+                body: tableData,
+                startY: 90,
+                styles: {
+                    fontSize: 9,
+                    cellPadding: 3
+                },
+                headStyles: {
+                    fillColor: [66, 139, 202],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                margin: { left: 20, right: 20 }
+            });
+        } else {
+            doc.setFontSize(12);
+            doc.setTextColor(150, 150, 150);
+            doc.text('No hay registros para mostrar', 105, 100, { align: 'center' });
+        }
+        
+        // Descargar PDF
+        const fileName = `historial-asistencia-${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(fileName);
+        
+        showToast('¡PDF descargado exitosamente!', 'success');
+        
+    } catch (error) {
+        console.error('Error generando PDF:', error);
+        showToast('Error generando el PDF. Intenta nuevamente.', 'error');
+    }
+}
+
+function generarExcelHistorial(periodo) {
+    try {
+        // Obtener datos filtrados
+        const datosExport = obtenerDatosFiltrados();
+        
+        // Crear contenido CSV compatible con Excel
+        let csvContent = '\uFEFF'; // BOM para UTF-8
+        csvContent += 'HISTORIAL DE ASISTENCIA - FITSPACE\n';
+        csvContent += `Usuario: {{ user.get_full_name|default:user.username }}\n`;
+        csvContent += `Período: ${periodo}\n`;
+        csvContent += `Fecha de generación: ${new Date().toLocaleDateString('es-ES')}\n`;
+        csvContent += `Total de registros: ${datosExport.length}\n\n`;
+        
+        // Estadísticas
+        csvContent += 'ESTADÍSTICAS\n';
+        csvContent += `Este Mes,${document.getElementById('visitasEsteMes').textContent}\n`;
+        csvContent += `Esta Semana,${document.getElementById('visitasEstaSemana').textContent}\n`;
+        csvContent += `Promedio Diario,${document.getElementById('promedioDiario').textContent}\n\n`;
+        
+        // Encabezados de tabla
+        csvContent += 'Fecha,Hora,Tipo,Estado\n';
+        
+        // Datos
+        datosExport.forEach(registro => {
+            csvContent += `"${registro.fecha}","${registro.hora}","${registro.tipo}","${registro.estado}"\n`;
+        });
+        
+        // Crear blob y descargar
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `historial-asistencia-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        showToast('¡Archivo Excel (CSV) descargado exitosamente!', 'success');
+        
+    } catch (error) {
+        console.error('Error generando Excel:', error);
+        showToast('Error generando el archivo. Intenta nuevamente.', 'error');
+    }
+}
+
+function generarCSVHistorial(periodo) {
+    try {
+        // Obtener datos filtrados
+        const datosExport = obtenerDatosFiltrados();
+        
+        // Crear contenido CSV
+        let csvContent = 'Fecha,Hora,Tipo,Estado\n';
+        
+        datosExport.forEach(registro => {
+            csvContent += `"${registro.fecha}","${registro.hora}","${registro.tipo}","${registro.estado}"\n`;
+        });
+        
+        // Crear blob y descargar
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `historial-asistencia-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        showToast('¡Archivo CSV descargado exitosamente!', 'success');
+        
+    } catch (error) {
+        console.error('Error generando CSV:', error);
+        showToast('Error generando el archivo. Intenta nuevamente.', 'error');
+    }
+}
+
+function obtenerDatosFiltrados() {
+    const periodo = document.getElementById('periodoExport').value;
+    const filas = document.querySelectorAll('#historialTable tbody tr');
+    const datos = [];
+    
+    // Si se selecciona "filtros", usar solo las filas visibles
+    if (periodo === 'filtros') {
+        filas.forEach(fila => {
+            if (fila.style.display !== 'none') {
+                const celdas = fila.querySelectorAll('td');
+                if (celdas.length >= 4) {
+                    datos.push({
+                        fecha: celdas[0].textContent.trim().split('\n')[0],
+                        hora: celdas[1].textContent.trim(),
+                        tipo: celdas[2].textContent.trim().replace(/\s+/g, ' '),
+                        estado: celdas[3].textContent.trim().replace(/\s+/g, ' ')
+                    });
+                }
+            }
+        });
+        return datos;
+    }
+    
+    // Calcular fecha límite según período
+    const hoy = new Date();
+    let fechaLimite = null;
+    
+    switch(periodo) {
+        case 'mes':
+            fechaLimite = new Date(hoy.getTime() - (30 * 24 * 60 * 60 * 1000));
+            break;
+        case 'trimestre':
+            fechaLimite = new Date(hoy.getTime() - (90 * 24 * 60 * 60 * 1000));
+            break;
+        case 'año':
+            fechaLimite = new Date(hoy.getTime() - (365 * 24 * 60 * 60 * 1000));
+            break;
+        default: // 'todo'
+            fechaLimite = null;
+    }
+    
+    // Procesar todas las filas aplicando filtro de período
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        if (celdas.length >= 4) {
+            const fechaFila = fila.dataset.fecha;
+            
+            // Aplicar filtro de período si es necesario
+            if (fechaLimite && fechaFila) {
+                const fechaRegistro = new Date(fechaFila);
+                if (fechaRegistro < fechaLimite) {
+                    return; // Saltar este registro
+                }
+            }
+            
+            datos.push({
+                fecha: celdas[0].textContent.trim().split('\n')[0],
+                hora: celdas[1].textContent.trim(),
+                tipo: celdas[2].textContent.trim().replace(/\s+/g, ' '),
+                estado: celdas[3].textContent.trim().replace(/\s+/g, ' ')
+            });
+        }
+    });
+    
+    return datos;
+}
+
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center border-0 show`;
+    toast.setAttribute('role', 'alert');
+    
+    const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+    toast.classList.add(bgClass);
+    
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body text-white">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => toast.remove(), 5000);
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+    document.body.appendChild(container);
+    return container;
+}
+
+// Inicializar fechas por defecto
+document.addEventListener('DOMContentLoaded', function() {
+    const hoy = new Date().toISOString().split('T')[0];
+    const hace30dias = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    document.getElementById('fechaHasta').value = hoy;
+    document.getElementById('fechaDesde').value = hace30dias;
+});
+</script>
+{% endblock %}

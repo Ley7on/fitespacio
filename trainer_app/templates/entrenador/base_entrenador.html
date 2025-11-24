@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <!-- Trainer shared styles: dashboard + entrenador visuals -->
+    <link rel="stylesheet" href="{% static 'css/ui-dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/entrenador-dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard_simple.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+        {% block entrenador_content %}{% endblock %}
+</div>
+{% endblock %}

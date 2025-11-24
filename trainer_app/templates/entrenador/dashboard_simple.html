@@ -1,0 +1,246 @@
+{% extends "entrenador/base_entrenador.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Entrenador{% endblock %}
+
+{% block extra_css %}
+  {{ block.super }}
+<link rel="stylesheet" href="{% static 'css/dashboard_simple.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="gradient-bg" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); min-height: 100vh; padding: 30px 0;">
+  <div class="container-fluid px-4">
+    
+    <!-- Header con bienvenida -->
+    <div style="margin-bottom: 30px;">
+      <h1 style="color: #fff; font-size: 2.2rem; font-weight: 700; margin-bottom: 5px;">¡Hola, {{ nombre_entrenador }}!</h1>
+      <p style="color: #aaa; font-size: 0.95rem;">Bienvenido a tu panel de entrenador</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
+      <a href="{% url 'calendario' %}" style="background: #475569; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; text-decoration: none;">
+        <i class="bi bi-calendar"></i> Calendario
+      </a>
+      <form method="post" action="{% url 'logout' %}" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" style="background: #dc2626; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+        </button>
+      </form>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <!-- Stat Card: Alumnos Activos -->
+      <div style="background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(75, 85, 99, 0.3); border-radius: 12px; padding: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <p style="color: #aaa; font-size: 0.85rem; margin-bottom: 8px;">Alumnos Activos</p>
+            <p id="totalAlumnos" style="color: #fff; font-size: 2rem; font-weight: 700; margin: 0;">{{ alumnos_activos }}</p>
+            <p style="color: #10b981; font-size: 0.8rem; margin-top: 5px;"><i class="bi bi-graph-up"></i> +{{ nuevos_esta_semana }} esta semana</p>
+          </div>
+          <div style="background: rgba(59, 130, 246, 0.2); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.8rem;">
+            <i class="bi bi-people-fill"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stat Card: Rutinas Creadas -->
+      <div style="background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(75, 85, 99, 0.3); border-radius: 12px; padding: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <p style="color: #aaa; font-size: 0.85rem; margin-bottom: 8px;">Rutinas Creadas</p>
+            <p id="rutinasActivas" style="color: #fff; font-size: 2rem; font-weight: 700; margin: 0;">{{ rutinas_asignadas }}</p>
+            <p style="color: #aaa; font-size: 0.8rem; margin-top: 5px;">{{ rutinas_activas }} activas</p>
+          </div>
+          <div style="background: rgba(236, 72, 153, 0.2); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; color: #ec4899; font-size: 1.8rem;">
+            <i class="bi bi-file-earmark-check"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stat Card: Personalizados -->
+      <div style="background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(75, 85, 99, 0.3); border-radius: 12px; padding: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <p style="color: #aaa; font-size: 0.85rem; margin-bottom: 8px;">Personalizados</p>
+            <p style="color: #fff; font-size: 2rem; font-weight: 700; margin: 0;">{{ alumnos_personalizados }}</p>
+            <p style="color: #aaa; font-size: 0.8rem; margin-top: 5px;">con rutinas activas</p>
+          </div>
+          <div style="background: rgba(168, 85, 247, 0.2); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; color: #a855f7; font-size: 1.8rem;">
+            <i class="bi bi-star-fill"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stat Card: Sesiones Hoy -->
+      <div style="background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(75, 85, 99, 0.3); border-radius: 12px; padding: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <p style="color: #aaa; font-size: 0.85rem; margin-bottom: 8px;">Rutinas Completadas</p>
+            <p style="color: #fff; font-size: 2rem; font-weight: 700; margin: 0;">{{ rutinas_completadas }}</p>
+            <p style="color: #aaa; font-size: 0.8rem; margin-top: 5px;">finalizadas</p>
+          </div>
+          <div style="background: rgba(34, 197, 94, 0.2); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; color: #22c55e; font-size: 1.8rem;">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts & Content Row -->
+    <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 30px;">
+      
+      <!-- Asistencia del Mes Chart -->
+      <div style="background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(75, 85, 99, 0.3); border-radius: 12px; padding: 20px;">
+        <h3 style="color: #fff; margin: 0 0 15px 0; font-size: 1.1rem; font-weight: 600;">Asistencia de Alumnos</h3>
+        <p style="color: #aaa; font-size: 0.8rem; margin-bottom: 15px;">Total mensual (últimas 4 semanas)</p>
+        <canvas id="asistenciaChart" height="80"></canvas>
+      </div>
+
+      <!-- Progreso de Rutinas Chart -->
+      <div style="background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(75, 85, 99, 0.3); border-radius: 12px; padding: 20px;">
+        <h3 style="color: #fff; margin: 0 0 15px 0; font-size: 1.1rem; font-weight: 600;">Progreso de Rutinas</h3>
+        <p style="color: #aaa; font-size: 0.8rem; margin-bottom: 15px;">Completadas vs Pendientes</p>
+        <canvas id="rutinasChart" height="80"></canvas>
+      </div>
+
+      <!-- Próximas Sesiones & Acciones Rápidas Row -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        
+        <!-- Próximas Sesiones -->
+        <div style="background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(75, 85, 99, 0.3); border-radius: 12px; padding: 20px;">
+          <h4 style="color: #fff; margin: 0 0 15px 0; font-size: 1rem; font-weight: 600;">Próximas Sesiones</h4>
+          <div id="proximasSesiones" style="text-align: center; color: #aaa; padding: 20px 0;">
+            <i class="bi bi-calendar-x" style="font-size: 2rem; color: #666; margin-bottom: 10px; display: block;"></i>
+            <p style="margin: 0;">No tienes sesiones próximas</p>
+          </div>
+          <a href="{% url 'calendario' %}" style="display: block; background: #2563eb; color: #fff; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; margin-top: 10px;">Ver calendario completo</a>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div style="background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(75, 85, 99, 0.3); border-radius: 12px; padding: 20px;">
+          <h4 style="color: #fff; margin: 0 0 15px 0; font-size: 1rem; font-weight: 600;">Acciones Rápidas</h4>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="{% url 'alumnos_list' %}" style="background: #334155; color: #fff; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#334155'">
+              <i class="bi bi-people"></i> Mis Alumnos
+            </a>
+            <a href="{% url 'rutinas_plantillas' %}" style="background: #2563eb; color: #fff; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+              <i class="bi bi-plus-lg"></i> Gestionar Rutinas
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mis Alumnos Table -->
+    <div style="background: rgba(31, 41, 55, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(75, 85, 99, 0.3); border-radius: 12px; padding: 20px;">
+      <h3 style="color: #fff; margin: 0 0 20px 0; font-size: 1.1rem; font-weight: 600;">Mis Alumnos</h3>
+      <div id="contenidoAlumnos" style="text-align: center; color: #3b82f6;">
+        <i class="bi bi-arrow-clockwise" style="font-size: 2rem; animation: spin 1s linear infinite; display: block; margin-bottom: 10px;"></i>
+        <p style="margin: 0;">Cargando alumnos...</p>
+      </div>
+      <div id="tablaWrap" style="display: none; overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 1px solid rgba(75, 85, 99, 0.3);">
+              <th style="color: #aaa; padding: 12px; text-align: left; font-weight: 600;">Alumno</th>
+              <th style="color: #aaa; padding: 12px; text-align: left; font-weight: 600;">Email</th>
+              <th style="color: #aaa; padding: 12px; text-align: left; font-weight: 600; display: none;" class="hidden-mobile">Teléfono</th>
+              <th style="color: #aaa; padding: 12px; text-align: left; font-weight: 600;">Membresía</th>
+              <th style="color: #aaa; padding: 12px; text-align: left; font-weight: 600;">Rutinas</th>
+            </tr>
+          </thead>
+          <tbody id="tablaAlumnos"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  table tbody tr:hover {
+    background-color: rgba(75, 85, 99, 0.1);
+  }
+</style>
+
+<!-- Scripts -->
+<script>
+  window.INITIAL_ALUMNOS = {{ alumnos_lista|default:'null'|safe }};
+  window.ASISTENCIA_SEMANAS = {{ asistencia_semanas|default:'[0,0,0,0]'|safe }};
+  window.RUTINAS_COMPLETADAS = {{ rutinas_completadas|default:'0' }};
+  window.RUTINAS_ACTIVAS = {{ rutinas_activas|default:'0' }};
+  
+  // Crear gráficos
+  document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de Asistencia
+    const asistenciaCtx = document.getElementById('asistenciaChart').getContext('2d');
+    new Chart(asistenciaCtx, {
+      type: 'line',
+      data: {
+        labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+        datasets: [{
+          label: 'Asistencias de Alumnos',
+          data: window.ASISTENCIA_SEMANAS,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: '#3b82f6',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { labels: { color: '#aaa' } }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { color: '#aaa' }, grid: { color: 'rgba(75, 85, 99, 0.2)' } },
+          x: { ticks: { color: '#aaa' }, grid: { display: false } }
+        }
+      }
+    });
+
+    // Gráfico de Rutinas
+    const rutinasCtx = document.getElementById('rutinasChart').getContext('2d');
+    new Chart(rutinasCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Completadas', 'Activas'],
+        datasets: [{
+          label: 'Rutinas',
+          data: [window.RUTINAS_COMPLETADAS, window.RUTINAS_ACTIVAS],
+          backgroundColor: ['#22c55e', '#f59e0b'],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        indexAxis: 'y',
+        plugins: {
+          legend: { labels: { color: '#aaa' } }
+        },
+        scales: {
+          x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(75, 85, 99, 0.2)' } },
+          y: { ticks: { color: '#aaa' }, grid: { display: false } }
+        }
+      }
+    });
+  });
+</script>
+
+<script src="{% static 'js/dashboard_simple.js' %}"></script>
+{% endblock %}

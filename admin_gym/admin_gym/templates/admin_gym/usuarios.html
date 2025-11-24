@@ -1,0 +1,225 @@
+{% extends "admin_gym/base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Enhanced Header -->
+    <div class="mb-8 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-8 text-white shadow-xl">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold mb-2">
+                    <i class="fas fa-users mr-3"></i>Gestión de Clientes
+                </h1>
+                <p class="text-emerald-100 text-lg">Administra y monitorea todos los clientes del gimnasio</p>
+                <div class="flex items-center mt-3 space-x-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-plus mr-2 text-emerald-200"></i>
+                        <span class="text-sm text-emerald-200">Agregar nuevos clientes</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-edit mr-2 text-emerald-200"></i>
+                        <span class="text-sm text-emerald-200">Gestionar membresías</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hidden md:block">
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <i class="fas fa-user-friends text-4xl text-white/80"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Form -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 mb-8 overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
+            <div class="flex items-center">
+                <div class="bg-emerald-100 rounded-full p-2 mr-3">
+                    <i class="fas fa-user-plus text-emerald-600"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Agregar Nuevo Cliente</h2>
+                    <p class="text-gray-600 text-sm">Complete la información del cliente</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-8">
+            <form method="post" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% csrf_token %}
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-user mr-2 text-emerald-600"></i>Nombre Completo
+                    </label>
+                    {{ form.nombre }}
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-envelope mr-2 text-emerald-600"></i>Email
+                    </label>
+                    {{ form.email }}
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-id-card mr-2 text-emerald-600"></i>RUT
+                    </label>
+                    {{ form.rut }}
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-phone mr-2 text-emerald-600"></i>Teléfono
+                    </label>
+                    {{ form.telefono }}
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">
+                        <i class="fas fa-credit-card mr-2 text-emerald-600"></i>Tipo de Membresía
+                    </label>
+                    {{ form.membresia }}
+                </div>
+                <!-- 'Suspendido' field removed from admin UI per request -->
+                <div class="md:col-span-2 pt-4">
+                    <button type="submit" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-plus mr-2"></i>Agregar Cliente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enhanced Client List -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-5 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="bg-emerald-100 rounded-full p-2 mr-3">
+                        <i class="fas fa-list text-emerald-600"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Lista de Clientes</h2>
+                        <p class="text-gray-600 text-sm">{{ usuarios|length }} cliente{{ usuarios|length|pluralize }} registrado{{ usuarios|length|pluralize }}</p>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg hover:bg-emerald-200 transition-colors">
+                        <i class="fas fa-search mr-2"></i>Buscar
+                    </button>
+                    <button class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg hover:bg-emerald-200 transition-colors">
+                        <i class="fas fa-filter mr-2"></i>Filtrar
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gradient-to-r from-emerald-50 to-teal-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                            <i class="fas fa-user mr-2"></i>Cliente
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                            <i class="fas fa-envelope mr-2"></i>Contacto
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                            <i class="fas fa-check-circle mr-2"></i>Estado
+                        </th>
+
+                        <th class="px-6 py-4 text-left text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                            <i class="fas fa-clock mr-2"></i>Asistencia
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                            <i class="fas fa-cogs mr-2"></i>Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    {% for usuario in usuarios %}
+                    <tr class="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-300 group">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="h-12 w-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                    <span class="text-sm font-bold text-white">{{ usuario.nombre|first|upper }}</span>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-base font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors">{{ usuario.nombre }}</div>
+                                    <div class="text-sm text-gray-500 flex items-center">
+                                        <i class="fas fa-id-card mr-1 text-gray-400"></i>
+                                        {{ usuario.rut }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900 flex items-center">
+                                <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                                {{ usuario.email }}
+                            </div>
+                            <div class="text-sm text-gray-500 flex items-center mt-1">
+                                <i class="fas fa-phone mr-2 text-gray-400"></i>
+                                {{ usuario.telefono|default:"No registrado" }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full {% if usuario.estado_membresia == 'activa' %}bg-green-100 text-green-800{% elif usuario.estado_membresia == 'vencida' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                <i class="fas {% if usuario.estado_membresia == 'activa' %}fa-check-circle{% elif usuario.estado_membresia == 'vencida' %}fa-times-circle{% else %}fa-exclamation-circle{% endif %} mr-1"></i>
+                                {{ usuario.get_estado_membresia_display }}
+                            </span>
+                        </td>
+
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if usuario.asistio_hoy %}
+                                <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-user-check mr-1"></i>Presente
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    <i class="fas fa-user-times mr-1"></i>Ausente
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'usuario_detalle' usuario.id %}" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200 transition-colors" title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'modificar_usuario' usuario.id %}" class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-lg hover:bg-yellow-200 transition-colors" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'marcar_asistencia' usuario.id %}" class="bg-green-100 text-green-700 px-3 py-1 rounded-lg hover:bg-green-200 transition-colors" title="Marcar asistencia">
+                                    <i class="fas fa-check"></i>
+                                </a>
+                                <form method="post" action="{% url 'eliminar_usuario' usuario.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200 transition-colors" title="Eliminar" onclick="return confirm('¿Estas seguro de eliminar definitivamente a {{ usuario.nombre }}? Esta acción no se puede deshacer.');">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                                    <i class="fas fa-users text-2xl text-gray-400"></i>
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">No hay clientes registrados</h3>
+                                <p class="text-gray-500">Agrega el primer cliente usando el formulario de arriba</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    input, select, textarea {
+        @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-gray-50 hover:bg-white;
+    }
+    input:focus, select:focus, textarea:focus {
+        @apply bg-white shadow-lg transform scale-105;
+    }
+</style>
+{% endblock %}

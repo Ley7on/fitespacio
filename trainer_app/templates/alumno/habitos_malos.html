@@ -1,0 +1,309 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Hábitos a Mejorar - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <h1 class="h4 text-white mb-2">
+                    <i class="fa-solid fa-exclamation-triangle me-2"></i>Hábitos a Mejorar
+                </h1>
+                <p class="text-light-70 mb-0">Registra y reflexiona sobre los hábitos que quieres cambiar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hábitos a Seguir -->
+    <div class="row g-4 mb-4">
+        {% for habito in habitos %}
+        <div class="col-md-6 col-lg-4">
+            <div class="glass p-4 border-warning">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="text-white mb-1">{{ habito.nombre }}</h6>
+                        <small class="text-warning">{{ habito.get_tipo_display }}</small>
+                    </div>
+                    <div class="habit-icon">
+                        {% if habito.tipo == 'alimentacion' %}
+                            <i class="fa-solid fa-burger text-warning"></i>
+                        {% elif habito.tipo == 'sueno' %}
+                            <i class="fa-solid fa-moon text-warning"></i>
+                        {% elif habito.tipo == 'procrastinacion' %}
+                            <i class="fa-solid fa-clock text-warning"></i>
+                        {% elif habito.tipo == 'sedentarismo' %}
+                            <i class="fa-solid fa-couch text-warning"></i>
+                        {% elif habito.tipo == 'estres' %}
+                            <i class="fa-solid fa-face-frown text-warning"></i>
+                        {% else %}
+                            <i class="fa-solid fa-exclamation text-warning"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Estadísticas -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between text-sm mb-2">
+                        <span class="text-light-70">Esta semana:</span>
+                        <span class="text-warning">3 veces</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-sm">
+                        <span class="text-light-70">Último registro:</span>
+                        <span class="text-light-50">Hace 2 días</span>
+                    </div>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="d-flex gap-2">
+                    <button class="btn btn-warning btn-sm flex-fill" onclick="registrarHabitoMalo({{ habito.id }}, '{{ habito.nombre }}')">
+                        <i class="fa-solid fa-pen me-1"></i>Registrar
+                    </button>
+                    <button class="btn btn-glass btn-sm" onclick="verAnalisis({{ habito.id }})">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </button>
+                        <div class="btn-group">
+                            <a href="{% url 'alumno:editar_habito_malo' habito.id %}" class="btn btn-sm btn-outline-light">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <form method="post" action="{% url 'alumno:eliminar_habito_malo' habito.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Eliminar hábito?')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Añadir nuevo hábito -->
+        <div class="col-md-6 col-lg-4">
+            <div class="glass p-4 text-center add-habit-card border-warning" onclick="mostrarFormulario()">
+                <i class="fa-solid fa-plus fa-2x text-warning mb-3"></i>
+                <h6 class="text-warning">Añadir Hábito</h6>
+                <p class="text-light-50 small mb-0">Identifica un hábito a mejorar</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registros Recientes removed (no-op) -->
+
+    <!-- Consejos de Autocrítica Constructiva -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="glass p-4 border-info">
+                <h5 class="text-info mb-3">
+                    <i class="fa-solid fa-lightbulb me-2"></i>Consejos para la Autocrítica Constructiva
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="tip-card">
+                            <h6 class="text-white">1. Sé específico</h6>
+                            <p class="text-light-70 small">Describe exactamente qué pasó, cuándo y por qué.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tip-card">
+                            <h6 class="text-white">2. Sin juicios</h6>
+                            <p class="text-light-70 small">Observa sin castigarte. El objetivo es aprender.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tip-card">
+                            <h6 class="text-white">3. Busca patrones</h6>
+                            <p class="text-light-70 small">¿Hay situaciones o emociones que disparan este hábito?</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tip-card">
+                            <h6 class="text-white">4. Plan de acción</h6>
+                            <p class="text-light-70 small">¿Qué harás diferente la próxima vez?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Registrar Hábito Malo -->
+<div class="modal fade" id="registrarModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content glass">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white">
+                    <i class="fa-solid fa-pen me-2"></i>Registrar Hábito
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="registrarForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-white">Intensidad</label>
+                        <select class="form-select" name="intensidad" required>
+                            {% for value, label in intensidades %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">¿Qué pasó? <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="descripcion_situacion" rows="3" required 
+                                  placeholder="Describe la situación: ¿dónde estabas? ¿qué sentías? ¿qué te llevó a este comportamiento?"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Reflexión y Plan de Mejora</label>
+                        <textarea class="form-control" name="reflexion" rows="4" 
+                                  placeholder="• ¿Por qué crees que pasó?&#10;• ¿Qué podrías hacer diferente la próxima vez?&#10;• ¿Hay algo que puedas cambiar en tu entorno o rutina?"></textarea>
+                        <small class="text-light-50">La reflexión te ayuda a identificar patrones y crear estrategias de mejora</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Registrar y Reflexionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Hábito Malo -->
+<div class="modal fade" id="nuevoHabitoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content glass">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-white">
+                    <i class="fa-solid fa-exclamation-triangle me-2"></i>Nuevo Hábito a Mejorar
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-white">Categoría</label>
+                        <select class="form-select" name="tipo" required>
+                            {% for value, label in tipos_habito %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Nombre del Hábito</label>
+                        <input type="text" class="form-control" name="nombre" required 
+                               placeholder="Ej: Comer comida chatarra cuando estoy estresado">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white">Descripción (opcional)</label>
+                        <textarea class="form-control" name="descripcion" rows="3" 
+                                  placeholder="Describe más detalles sobre este hábito que quieres mejorar"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Añadir para Seguimiento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentHabitoId = null;
+
+function mostrarFormulario() {
+    new bootstrap.Modal(document.getElementById('nuevoHabitoModal')).show();
+}
+
+function registrarHabitoMalo(habitoId, habitoNombre) {
+    currentHabitoId = habitoId;
+    document.querySelector('#registrarModal .modal-title').innerHTML = 
+        `<i class="fa-solid fa-pen me-2"></i>Registrar: ${habitoNombre}`;
+    new bootstrap.Modal(document.getElementById('registrarModal')).show();
+}
+
+document.getElementById('registrarForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(`/alumno/habitos-malos/${currentHabitoId}/registrar/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('registrarModal')).hide();
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+function verAnalisis(habitoId) {
+    if (window.showNotification) {
+        window.showNotification('Análisis', 'Funcionalidad en desarrollo', 'info');
+    }
+}
+</script>
+
+<style>
+.add-habit-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px dashed rgba(255,193,7,0.3);
+}
+
+.add-habit-card:hover {
+    border-color: rgba(255,193,7,0.6);
+    transform: translateY(-2px);
+}
+
+.habit-icon {
+    font-size: 1.5rem;
+}
+
+.registro-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 1rem;
+    border-left: 4px solid #ffc107;
+}
+
+.reflexion-box {
+    background: rgba(13,202,240,0.1);
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.tip-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.badge-intensity-1 { background-color: #198754; }
+.badge-intensity-2 { background-color: #ffc107; color: #000; }
+.badge-intensity-3 { background-color: #dc3545; }
+
+.border-warning {
+    border-left: 4px solid #ffc107 !important;
+}
+
+.border-info {
+    border-left: 4px solid #0dcaf0 !important;
+}
+</style>
+{% endblock %}

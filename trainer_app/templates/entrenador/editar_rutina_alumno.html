@@ -1,0 +1,181 @@
+{% extends "entrenador/base_entrenador.html" %}
+{% load static %}
+
+{% block extra_css %}
+  {{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    padding-top: 80px !important;
+  }
+
+  .glass-card {
+    background: #1a2332;
+    border: 1px solid #0d9488;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-primary {
+    background: #0d9488;
+    color: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background: #0a7a6f;
+  }
+
+  .btn-secondary {
+    background: #6b7280;
+    color: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-secondary:hover {
+    background: #4b5563;
+  }
+
+  .ejercicio-card {
+    background: #2d3748;
+    border-left: 3px solid #0d9488;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <div class="glass-card p-6 mb-6">
+      <div class="flex items-center gap-4 mb-4">
+        <a href="{% url 'alumno_detalle' alumno.user.id %}" class="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg transition-colors">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div>
+          <h1 class="text-3xl font-bold text-white">Editar Rutina</h1>
+          <p class="text-slate-300">{{ rutina.nombre }}</p>
+          <p class="text-slate-400 text-sm">Alumno: {{ alumno.user.get_full_name }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <form method="post" class="glass-card p-6">
+      {% csrf_token %}
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="block text-slate-300 text-sm font-medium mb-2">Nombre de la Rutina</label>
+          <input type="text" name="nombre" value="{{ rutina.nombre }}" required class="w-full py-2 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 text-sm font-medium mb-2">Objetivo</label>
+          <select name="objetivo" class="w-full py-2 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
+            <option value="fuerza" {% if rutina.objetivo == 'fuerza' %}selected{% endif %}>Fuerza</option>
+            <option value="hipertrofia" {% if rutina.objetivo == 'hipertrofia' %}selected{% endif %}>Hipertrofia</option>
+            <option value="resistencia" {% if rutina.objetivo == 'resistencia' %}selected{% endif %}>Resistencia</option>
+            <option value="perdida_grasa" {% if rutina.objetivo == 'perdida_grasa' %}selected{% endif %}>Pérdida de grasa</option>
+            <option value="funcional" {% if rutina.objetivo == 'funcional' %}selected{% endif %}>Funcional</option>
+            <option value="rehabilitacion" {% if rutina.objetivo == 'rehabilitacion' %}selected{% endif %}>Rehabilitación</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-slate-300 text-sm font-medium mb-2">Descripción</label>
+        <textarea name="descripcion" rows="3" class="w-full py-2 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-400">{{ rutina.descripcion }}</textarea>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-slate-300 text-sm font-medium mb-2">Día de Inicio</label>
+        <select name="dia_asignado" class="w-full py-2 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
+          <option value="">-- Sin día específico --</option>
+          <option value="lunes" {% if rutina.dia_asignado == 'lunes' %}selected{% endif %}>Lunes</option>
+          <option value="martes" {% if rutina.dia_asignado == 'martes' %}selected{% endif %}>Martes</option>
+          <option value="miercoles" {% if rutina.dia_asignado == 'miercoles' %}selected{% endif %}>Miércoles</option>
+          <option value="jueves" {% if rutina.dia_asignado == 'jueves' %}selected{% endif %}>Jueves</option>
+          <option value="viernes" {% if rutina.dia_asignado == 'viernes' %}selected{% endif %}>Viernes</option>
+          <option value="sabado" {% if rutina.dia_asignado == 'sabado' %}selected{% endif %}>Sábado</option>
+          <option value="domingo" {% if rutina.dia_asignado == 'domingo' %}selected{% endif %}>Domingo</option>
+        </select>
+      </div>
+
+      <div class="flex gap-3">
+        <button type="submit" class="btn-primary">
+          <i class="fa-solid fa-save mr-2"></i>Guardar Cambios
+        </button>
+        <a href="{% url 'alumno_detalle' alumno.user.id %}" class="btn-secondary">
+          <i class="fa-solid fa-times mr-2"></i>Cancelar
+        </a>
+      </div>
+    </form>
+
+    <!-- Ejercicios -->
+    <div class="glass-card p-6 mt-6">
+      <h2 class="text-2xl font-bold text-white mb-4">
+        <i class="fa-solid fa-dumbbell text-teal-400 mr-2"></i>Ejercicios ({{ ejercicios.count }})
+      </h2>
+
+      {% if ejercicios %}
+        <div class="space-y-3">
+          {% for ejercicio in ejercicios %}
+            <div class="ejercicio-card">
+              <div class="flex justify-between items-start mb-2">
+                <div class="flex-1">
+                  <h3 class="text-lg font-semibold text-white">{{ ejercicio.nombre }}</h3>
+                </div>
+                <span class="bg-teal-600 text-white px-2 py-1 rounded text-sm font-semibold">{{ ejercicio.orden }}</span>
+              </div>
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-slate-300">
+                <div>
+                  <span class="text-slate-400">Series:</span>
+                  <p class="font-semibold">{{ ejercicio.series }}</p>
+                </div>
+                <div>
+                  <span class="text-slate-400">Reps:</span>
+                  <p class="font-semibold">{{ ejercicio.repeticiones }}</p>
+                </div>
+                <div>
+                  <span class="text-slate-400">Peso:</span>
+                  <p class="font-semibold">{{ ejercicio.peso|default:"—" }}</p>
+                </div>
+                <div>
+                  <span class="text-slate-400">Descanso:</span>
+                  <p class="font-semibold">{{ ejercicio.descanso|default:"60s" }}</p>
+                </div>
+              </div>
+
+              {% if ejercicio.notas %}
+                <div class="mt-2 pt-2 border-t border-slate-600">
+                  <p class="text-slate-400 text-sm"><strong>Notas:</strong> {{ ejercicio.notas }}</p>
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-slate-400 text-center py-8">
+          <i class="fa-solid fa-inbox text-3xl mb-2"></i><br>
+          Esta rutina no tiene ejercicios asignados
+        </p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

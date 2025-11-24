@@ -1,0 +1,247 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}{{ ejercicio.nombre }} - FitSpace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <button class="btn btn-glass me-3" onclick="history.back()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div>
+                        <h1 class="h4 text-white mb-1">{{ ejercicio.nombre }}</h1>
+                        <p class="text-light-70 mb-0">{{ ejercicio.categoria }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Informaci\u00f3n del Ejercicio -->
+        <div class="col-lg-8">
+            <div class="glass p-4 mb-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="ejercicio-imagen-grande">
+                            <img src="{% static 'img/ejercicios/' %}{{ ejercicio.imagen }}" alt="{{ ejercicio.nombre }}"
+                                 onerror="this.src='{% static 'img/ejercicios/default.jpg' %}'">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-white mb-3">Informaci\u00f3n del Ejercicio</h5>
+                        
+                        <div class="info-item mb-3">
+                            <div class="info-label">M\u00e1quina/Equipo:</div>
+                            <div class="info-value">{{ ejercicio.maquina }}</div>
+                        </div>
+                        
+                        <div class="info-item mb-3">
+                            <div class="info-label">M\u00fasculos Principales:</div>
+                            <div class="info-value">{{ ejercicio.musculos }}</div>
+                        </div>
+                        
+                        <div class="info-item mb-3">
+                            <div class="info-label">Repeticiones esta semana:</div>
+                            <div class="info-value text-success">{{ ejercicio.repeticiones_semana }} reps</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Descripci\u00f3n -->
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-info-circle me-2"></i>C\u00f3mo Realizar el Ejercicio
+                </h5>
+                <p class="text-light-70">{{ ejercicio.descripcion }}</p>
+                
+                <div class="consejos-box mt-4">
+                    <h6 class="text-info mb-2">
+                        <i class="fa-solid fa-lightbulb me-2"></i>Consejos Importantes
+                    </h6>
+                    <ul class="text-light-70 small">
+                        <li>Mant\u00e9n una t\u00e9cnica correcta en todo momento</li>
+                        <li>Controla el movimiento tanto en la fase conc\u00e9ntrica como exc\u00e9ntrica</li>
+                        <li>Respira adecuadamente durante el ejercicio</li>
+                        <li>Si sientes dolor, det\u00e9n el ejercicio inmediatamente</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Registro -->
+        <div class="col-lg-4">
+            <div class="glass p-4">
+                <h5 class="text-white mb-3">
+                    <i class="fa-solid fa-plus me-2"></i>Registrar Ejercicio
+                </h5>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label text-white">Series</label>
+                        <input type="number" class="form-control" name="series" min="1" max="10" value="3" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-white">Repeticiones por serie</label>
+                        <input type="number" class="form-control" name="repeticiones" min="1" max="50" value="10" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-white">Peso (kg) - Opcional</label>
+                        <input type="number" class="form-control" name="peso" step="0.5" placeholder="Ej: 50.5">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label text-white">Notas (opcional)</label>
+                        <textarea class="form-control" name="notas" rows="3" placeholder="C\u00f3mo te sientes, dificultad, etc."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fa-solid fa-check me-2"></i>Registrar Ejercicio
+                    </button>
+                </form>
+            </div>
+
+            <!-- Historial Reciente -->
+            <div class="glass p-4 mt-4">
+                <h6 class="text-white mb-3">
+                    <i class="fa-solid fa-history me-2"></i>Historial Reciente
+                </h6>
+                
+                <div class="historial-item">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-light-70">Ayer</span>
+                        <span class="text-white">3x12 - 45kg</span>
+                    </div>
+                </div>
+                
+                <div class="historial-item">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-light-70">Hace 3 d\u00edas</span>
+                        <span class="text-white">4x10 - 42.5kg</span>
+                    </div>
+                </div>
+                
+                <div class="historial-item">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-light-70">Hace 1 semana</span>
+                        <span class="text-white">3x8 - 40kg</span>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button class="btn btn-glass btn-sm" onclick="proximamente()">
+                        Ver Historial Completo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Estad\u00edsticas -->
+            <div class="glass p-4 mt-4">
+                <h6 class="text-white mb-3">
+                    <i class="fa-solid fa-chart-bar me-2"></i>Estad\u00edsticas
+                </h6>
+                
+                <div class="stat-row">
+                    <span class="text-light-70">Total esta semana:</span>
+                    <span class="text-success">{{ ejercicio.repeticiones_semana }} reps</span>
+                </div>
+                
+                <div class="stat-row">
+                    <span class="text-light-70">Mejor marca:</span>
+                    <span class="text-warning">50kg x 8</span>
+                </div>
+                
+                <div class="stat-row">
+                    <span class="text-light-70">Veces realizado:</span>
+                    <span class="text-info">15 sesiones</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function proximamente() {
+    if (window.showNotification) {
+        window.showNotification('Pr\u00f3ximamente', 'Funcionalidad en desarrollo', 'info');
+    }
+}
+</script>
+
+<style>
+.ejercicio-imagen-grande {
+    width: 100%;
+    height: 250px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #262626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ejercicio-imagen-grande img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.info-item {
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.75rem;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    color: #fff;
+    font-weight: 500;
+}
+
+.consejos-box {
+    background: rgba(13, 202, 240, 0.1);
+    border-left: 4px solid #0dcaf0;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.historial-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #333;
+}
+
+.historial-item:last-child {
+    border-bottom: none;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #333;
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+</style>
+{% endblock %}

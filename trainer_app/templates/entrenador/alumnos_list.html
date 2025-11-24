@@ -1,0 +1,299 @@
+{% extends "entrenador/base_entrenador.html" %}
+{% load static %}
+
+{% block extra_css %}
+  {{ block.super }}
+<link rel="stylesheet" href="{% static 'css/ui-alumnos.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .glass-card {
+    background: rgba(31, 41, 55, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(75, 85, 99, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  .gradient-bg {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  }
+  .student-card {
+    transition: all 0.3s ease;
+  }
+  .student-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen gradient-bg">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="glass-card p-6 mb-6">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center gap-4">
+          <div class="bg-gray-600 p-3 rounded-full">
+            <i class="fa-solid fa-users text-2xl text-gray-300"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-white mb-1">Mis Alumnos</h1>
+            <p class="text-gray-300">{{ total_alumnos }} alumno{{ total_alumnos|pluralize }} registrado{{ total_alumnos|pluralize }}</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <a href="{% url 'rutinas_plantillas' %}" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+            <i class="fa-solid fa-list-check"></i>
+            <span class="hidden md:inline">Plantillas</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="glass-card p-6 mb-6">
+      <form class="grid grid-cols-1 md:grid-cols-4 gap-4" method="get">
+        <div class="md:col-span-2">
+          <label class="block text-gray-400 text-sm font-medium mb-2">Buscar Alumno</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
+            </div>
+            <input type="text" name="q" value="{{ query }}" 
+                   class="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent" 
+                   placeholder="Nombre, email o teléfono">
+          </div>
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm font-medium mb-2">Estado</label>
+          <select name="estado" class="w-full py-2 px-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gray-500">
+            <option value="">Todos</option>
+            <option value="activo" {% if request.GET.estado == 'activo' %}selected{% endif %}>Activo</option>
+            <option value="inactivo" {% if request.GET.estado == 'inactivo' %}selected{% endif %}>Inactivo</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm font-medium mb-2">Plan</label>
+          <div class="flex gap-2">
+            <select name="plan" class="flex-1 py-2 px-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gray-500">
+              <option value="">Todos</option>
+              <option value="mensual" {% if request.GET.plan == 'mensual' %}selected{% endif %}>Mensual</option>
+              <option value="3m" {% if request.GET.plan == '3m' %}selected{% endif %}>3 Meses</option>
+              <option value="6m" {% if request.GET.plan == '6m' %}selected{% endif %}>6 Meses</option>
+              <option value="anual" {% if request.GET.plan == 'anual' %}selected{% endif %}>Anual</option>
+            </select>
+            <button type="submit" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+              <i class="fa-solid fa-filter"></i>
+              <span class="hidden md:inline">Filtrar</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Lista de Alumnos -->
+    {% if error_message %}
+    <div class="glass-card p-6 border-l-4 border-red-500">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-exclamation-triangle text-red-400 text-xl"></i>
+        <p class="text-red-200">{{ error_message }}</p>
+      </div>
+    </div>
+    {% elif alumnos %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for alumno in alumnos %}
+      <div class="glass-card p-6 student-card">
+        <div class="flex items-start gap-4 mb-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+            {% if alumno.foto_perfil %}
+              <img src="{{ alumno.foto_perfil }}" alt="{{ alumno.nombre_completo }}" class="w-full h-full rounded-full object-cover">
+            {% else %}
+              {{ alumno.nombre_completo|first|upper }}
+            {% endif %}
+          </div>
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-white mb-1">{{ alumno.nombre_completo }}</h3>
+            <p class="text-blue-200 text-sm mb-1">{{ alumno.email }}</p>
+            {% if alumno.telefono %}
+            <p class="text-blue-300 text-sm flex items-center gap-1">
+              <i class="fa-solid fa-phone text-xs"></i>
+              {{ alumno.telefono }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="flex gap-2 mb-4">
+          <span class="px-3 py-1 text-xs rounded-full {% if alumno.plan == 'anual' %}bg-yellow-500/20 text-yellow-300{% elif alumno.plan == '6m' %}bg-blue-500/20 text-blue-300{% elif alumno.plan == '3m' %}bg-green-500/20 text-green-300{% else %}bg-gray-500/20 text-gray-300{% endif %}">
+            {{ alumno.get_plan_display }}
+          </span>
+          <span class="px-3 py-1 text-xs rounded-full {% if alumno.estado == 'activo' %}bg-green-500/20 text-green-300{% else %}bg-red-500/20 text-red-300{% endif %}">
+            {{ alumno.get_estado_display }}
+          </span>
+        </div>
+        
+        <div class="text-blue-200 text-sm mb-4">
+          <p class="flex items-center gap-2">
+            <i class="fa-solid fa-calendar-plus text-blue-300"></i>
+            Inscrito: {{ alumno.fecha_inscripcion|date:"d/m/Y" }}
+          </p>
+          {% if alumno.fecha_vencimiento %}
+          <p class="flex items-center gap-2 mt-1">
+            <i class="fa-solid fa-calendar-xmark text-yellow-300"></i>
+            Vence: {{ alumno.fecha_vencimiento|date:"d/m/Y" }}
+          </p>
+          {% endif %}
+        </div>
+        
+        <div class="flex justify-center">
+          <a href="{% url 'alumno_detalle' alumno.user.id %}" 
+             class="w-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm">
+            <i class="fa-solid fa-eye"></i>
+            <span>Ver</span>
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass-card p-12 text-center">
+      <div class="mb-4">
+        <i class="fa-solid fa-users text-6xl text-blue-300/50"></i>
+      </div>
+      <h3 class="text-xl font-semibold text-white mb-2">No hay alumnos registrados</h3>
+      <p class="text-blue-200 mb-6">Aún no tienes alumnos asignados en tu lista.</p>
+      <a href="{% url 'dashboard' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors duration-200 inline-flex items-center gap-2">
+        <i class="fa-solid fa-arrow-left"></i>
+        Volver al Dashboard
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Modal Rutina -->
+<div id="modalRutina" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="glass-card p-6 w-full max-w-md">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-dumbbell text-green-400"></i>
+          Rutina de <span id="modalRutinaNombre">Alumno</span>
+        </h3>
+        <button onclick="cerrarModalRutina()" class="text-white/60 hover:text-white transition-colors">
+          <i class="fa-solid fa-times text-xl"></i>
+        </button>
+      </div>
+      <form id="formRutina" class="space-y-4">
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">Plantilla</label>
+          <select id="selPlantilla" name="plantilla" class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option value="">Seleccionar plantilla...</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">Fecha de Inicio</label>
+          <input type="date" id="rutinaInicio" name="inicio" class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">Notas</label>
+          <textarea id="rutinaNota" name="nota" rows="3" placeholder="Indicaciones para el alumno..." class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+        </div>
+        <div class="flex gap-3">
+          <button type="button" onclick="cerrarModalRutina()" class="flex-1 bg-gray-500/20 hover:bg-gray-500/30 text-gray-200 py-2 px-4 rounded-lg transition-colors duration-200">
+            Cancelar
+          </button>
+          <button type="submit" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane"></i>
+            Asignar
+          </button>
+        </div>
+        <input type="hidden" id="rutinaAlumnoId">
+      </form>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Funciones para manejar modales
+function abrirRutina(alumnoId, nombre) {
+  document.getElementById('rutinaAlumnoId').value = alumnoId;
+  document.getElementById('modalRutinaNombre').textContent = nombre;
+  document.getElementById('modalRutina').classList.remove('hidden');
+  cargarPlantillas();
+}
+
+function cerrarModalRutina() {
+  document.getElementById('modalRutina').classList.add('hidden');
+  document.getElementById('formRutina').reset();
+}
+
+
+
+// Cargar plantillas disponibles
+function cargarPlantillas() {
+  fetch('/obtener-rutinas/')
+    .then(response => response.json())
+    .then(data => {
+      const select = document.getElementById('selPlantilla');
+      select.innerHTML = '<option value="">Seleccionar plantilla...</option>';
+      
+      if (Array.isArray(data)) {
+        data.filter(rutina => rutina.es_plantilla || rutina.tipo === 'plantilla')
+             .forEach(rutina => {
+               const option = document.createElement('option');
+               option.value = rutina.id;
+               option.textContent = `${rutina.nombre} (${rutina.objetivo})`;
+               select.appendChild(option);
+             });
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando plantillas:', error);
+    });
+}
+
+// Manejar envío de rutina
+document.getElementById('formRutina').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  const alumnoId = document.getElementById('rutinaAlumnoId').value;
+  
+  fetch('/asignar-rutina/', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Rutina asignada exitosamente');
+      cerrarModalRutina();
+    } else {
+      alert('Error al asignar rutina: ' + (data.message || 'Error desconocido'));
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error de conexión al asignar rutina');
+  });
+});
+
+
+
+// Cerrar modales al hacer clic fuera
+document.getElementById('modalRutina').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModalRutina();
+});
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,308 @@
+{% extends "entrenador/base_entrenador.html" %}
+{% load static %}
+
+{% block extra_css %}
+  {{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="{% static 'css/entrenador-perfil.css' %}">
+<style>
+  /* Tailwind CSS override - ensure navbar priority */
+  nav.navbar {
+    z-index: 9999 !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen gradient-bg">
+  <div class="container mx-auto px-4 py-8">
+    
+    <!-- Mensajes Flash -->
+    {% if messages %}
+    <div class="mb-6 space-y-3">
+      {% for message in messages %}
+        <div class="glass-card p-4 border-l-4 {% if message.tags == 'success' %}border-green-500{% elif message.tags == 'error' %}border-red-500{% else %}border-blue-500{% endif %}">
+          <div class="flex items-center gap-2">
+            {% if message.tags == 'success' %}
+              <i class="fa-solid fa-check-circle text-green-400"></i>
+              <p class="text-green-200">{{ message }}</p>
+            {% elif message.tags == 'error' %}
+              <i class="fa-solid fa-exclamation-triangle text-red-400"></i>
+              <p class="text-red-200">{{ message }}</p>
+            {% else %}
+              <i class="fa-solid fa-info-circle text-blue-400"></i>
+              <p class="text-blue-200">{{ message }}</p>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Header -->
+    <div class="glass-card p-6 mb-6">
+      <div class="flex items-center gap-4">
+        <a href="{% url 'dashboard' %}" class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-lg transition-colors duration-200">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+          {{ user.first_name|first|upper|default:user.username|first|upper }}
+        </div>
+        <div class="flex-1">
+          <h1 class="text-3xl font-bold text-white mb-1">Mi Perfil</h1>
+          <p class="text-blue-200">Información personal y estadísticas</p>
+        </div>
+        <button onclick="editarPerfil()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+          <i class="fa-solid fa-edit"></i>
+          <span>Editar</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Información Personal -->
+      <div class="lg:col-span-2">
+        <div class="glass-card p-6 mb-6">
+          <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+            <i class="fa-solid fa-user text-blue-300"></i>
+            Información Personal
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-blue-200 text-sm font-medium mb-2">Nombre de Usuario</label>
+              <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                <p class="text-white">{{ user.username }}</p>
+              </div>
+            </div>
+            <div>
+              <label class="block text-blue-200 text-sm font-medium mb-2">Email</label>
+              <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                <p class="text-white">{{ user.email|default:"No especificado" }}</p>
+              </div>
+            </div>
+            <div>
+              <label class="block text-blue-200 text-sm font-medium mb-2">Nombre</label>
+              <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                <p class="text-white">{{ user.first_name|default:"No especificado" }}</p>
+              </div>
+            </div>
+            <div>
+              <label class="block text-blue-200 text-sm font-medium mb-2">Apellido</label>
+              <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                <p class="text-white">{{ user.last_name|default:"No especificado" }}</p>
+              </div>
+            </div>
+            <div>
+              <label class="block text-blue-200 text-sm font-medium mb-2">Fecha de Registro</label>
+              <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                <p class="text-white">{{ user.date_joined|date:"d/m/Y H:i" }}</p>
+              </div>
+            </div>
+            <div>
+              <label class="block text-blue-200 text-sm font-medium mb-2">Último Acceso</label>
+              <div class="bg-white/10 rounded-lg p-3 border border-white/20">
+                <p class="text-white">{{ user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuración de Cuenta -->
+        <div class="glass-card p-6">
+          <h2 class="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+            <i class="fa-solid fa-cog text-purple-300"></i>
+            Configuración de Cuenta
+          </h2>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-white/10 rounded-lg border border-white/20">
+              <div>
+                <h3 class="font-semibold text-white">Cambiar Contraseña</h3>
+                <p class="text-blue-200 text-sm">Actualiza tu contraseña de acceso</p>
+              </div>
+              <button onclick="cambiarContrasena()" class="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-200 px-4 py-2 rounded-lg transition-colors duration-200">
+                <i class="fa-solid fa-key mr-2"></i>Cambiar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel Lateral -->
+      <div class="space-y-6">
+        <!-- Estadísticas -->
+        <div class="glass-card p-6">
+          <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-chart-bar text-green-300"></i>
+            Mis Estadísticas
+          </h2>
+          <div class="space-y-4">
+            <div class="bg-white/10 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-blue-200 text-sm">Total Alumnos</p>
+                  <p class="text-2xl font-bold text-white">{{ estadisticas.total_alumnos }}</p>
+                </div>
+                <div class="bg-blue-500/30 p-2 rounded-lg">
+                  <i class="fa-solid fa-users text-blue-200"></i>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white/10 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-blue-200 text-sm">Rutinas Creadas</p>
+                  <p class="text-2xl font-bold text-white">{{ estadisticas.total_rutinas }}</p>
+                </div>
+                <div class="bg-green-500/30 p-2 rounded-lg">
+                  <i class="fa-solid fa-dumbbell text-green-200"></i>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white/10 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-blue-200 text-sm">Asistencias (Mes)</p>
+                  <p class="text-2xl font-bold text-white">{{ estadisticas.asistencias_mes }}</p>
+                </div>
+                <div class="bg-purple-500/30 p-2 rounded-lg">
+                  <i class="fa-solid fa-calendar-check text-purple-200"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="glass-card p-6">
+          <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-bolt text-yellow-300"></i>
+            Acciones Rápidas
+          </h2>
+          <div class="space-y-3">
+            <a href="{% url 'alumnos_list' %}" class="flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200 text-white">
+              <i class="fa-solid fa-users text-blue-300"></i>
+              <span>Ver Mis Alumnos</span>
+            </a>
+            <a href="{% url 'rutinas_plantillas' %}" class="flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200 text-white">
+              <i class="fa-solid fa-dumbbell text-green-300"></i>
+              <span>Gestionar Rutinas</span>
+            </a>
+            <!-- Asistencia removed: link deleted because view/url not available -->
+            <a href="{% url 'calendario' %}" class="flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200 text-white">
+              <i class="fa-solid fa-calendar text-yellow-300"></i>
+              <span>Calendario</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Información del Sistema -->
+        <div class="glass-card p-6">
+          <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-info-circle text-blue-300"></i>
+            Información
+          </h2>
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between">
+              <span class="text-blue-200">Rol:</span>
+              <span class="text-white">Entrenador</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-blue-200">Estado:</span>
+              <span class="text-green-300">{% if user.is_active %}Activo{% else %}Inactivo{% endif %}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-blue-200">Permisos:</span>
+              <span class="text-white">{% if user.is_staff %}Staff{% else %}Usuario{% endif %}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-blue-200">ID Usuario:</span>
+              <span class="text-white">{{ user.id }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Perfil -->
+<div id="modalEditarPerfil" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="glass-card p-6 w-full max-w-md">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-semibold text-white">Editar Perfil</h3>
+        <button onclick="cerrarModalEditar()" class="text-white/60 hover:text-white transition-colors">
+          <i class="fa-solid fa-times text-xl"></i>
+        </button>
+      </div>
+      <form id="formEditarPerfil" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">Nombre</label>
+          <input type="text" id="editNombre" name="first_name" value="{{ user.first_name }}" class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">Apellido</label>
+          <input type="text" id="editApellido" name="last_name" value="{{ user.last_name }}" class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">Email</label>
+          <input type="email" id="editEmail" name="email" value="{{ user.email }}" class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="flex gap-3">
+          <button type="button" onclick="cerrarModalEditar()" class="flex-1 bg-gray-500/20 hover:bg-gray-500/30 text-gray-200 py-2 px-4 rounded-lg transition-colors duration-200">
+            Cancelar
+          </button>
+          <button type="submit" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-save"></i>
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cambiar Contraseña -->
+<div id="modalCambiarContrasena" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="glass-card p-6 w-full max-w-md">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-semibold text-white">Cambiar Contraseña</h3>
+        <button onclick="cerrarModalContrasena()" class="text-white/60 hover:text-white transition-colors">
+          <i class="fa-solid fa-times text-xl"></i>
+        </button>
+      </div>
+      <form id="formCambiarContrasena" method="POST" action="{% url 'change_password' %}" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">Contraseña Actual</label>
+          <input type="password" name="old_password" required class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ingresa tu contraseña actual">
+        </div>
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">Nueva Contraseña</label>
+          <input type="password" name="new_password1" required class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Mínimo 8 caracteres">
+        </div>
+        <div>
+          <label class="block text-blue-200 text-sm font-medium mb-2">Confirmar Nueva Contraseña</label>
+          <input type="password" name="new_password2" required class="w-full py-2 px-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Repite la nueva contraseña">
+        </div>
+        <div class="flex gap-3">
+          <button type="button" onclick="cerrarModalContrasena()" class="flex-1 bg-gray-500/20 hover:bg-gray-500/30 text-gray-200 py-2 px-4 rounded-lg transition-colors duration-200">
+            Cancelar
+          </button>
+          <button type="submit" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-key"></i>
+            Cambiar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/entrenador-perfil.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,366 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Mi Perfil - Fitspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass p-4">
+                <h1 class="h4 text-white mb-2">
+                    <i class="fa-solid fa-user me-2"></i>Mi Perfil
+                </h1>
+                <p class="text-light-70 mb-0">Personaliza tu información y redes sociales</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Información del Perfil -->
+        <div class="col-lg-4">
+            <div class="glass p-4 text-center">
+                <div class="profile-photo-container mb-3">
+                    {% if perfil.foto_perfil %}
+                        <img src="{{ perfil.foto_perfil.url }}" alt="Foto de perfil" class="profile-photo">
+                    {% else %}
+                        <div class="profile-photo-placeholder">
+                            <i class="fa-solid fa-user fa-4x text-light-50"></i>
+                        </div>
+                    {% endif %}
+                    <button class="btn btn-primary btn-sm profile-photo-btn" onclick="document.getElementById('fotoInput').click()">
+                        <i class="fa-solid fa-camera"></i>
+                    </button>
+                </div>
+                
+                <h4 class="text-white mb-1">{{ info_alumno.nombre_completo|default:user.get_full_name }}</h4>
+                <p class="text-light-70 mb-3">@{{ user.username }}</p>
+                
+                <div class="profile-stats">
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <div class="stat-number">{{ total_visitas|default:0 }}</div>
+                                <div class="stat-label">Entrenamientos</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <div class="stat-number">0</div>
+                                <div class="stat-label">Metas</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-item">
+                                <div class="stat-number">0</div>
+                                <div class="stat-label">Racha</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Redes Sociales removed per user request -->
+        </div>
+
+        <!-- Formulario de Edición -->
+        <div class="col-lg-8">
+            <div class="glass p-4">
+                <h5 class="text-white mb-4">
+                    <i class="fa-solid fa-edit me-2"></i>Editar Información
+                </h5>
+                
+                <form method="post" enctype="multipart/form-data" id="perfilForm">
+                    {% csrf_token %}
+                    
+                    <h6 class="text-white mb-3">🧾 Datos Personales Básicos</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Nombre Completo *</label>
+                            <input type="text" class="form-control" name="nombre_completo" 
+                                   value="{{ info_alumno.nombre_completo|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" name="fecha_nacimiento" 
+                                   value="{{ info_alumno.fecha_nacimiento|date:'Y-m-d'|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Género *</label>
+                            <select class="form-select" name="genero" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="masculino" {% if info_alumno.genero == 'masculino' %}selected{% endif %}>Masculino</option>
+                                <option value="femenino" {% if info_alumno.genero == 'femenino' %}selected{% endif %}>Femenino</option>
+                                <option value="otro" {% if info_alumno.genero == 'otro' %}selected{% endif %}>Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Teléfono</label>
+                            <input type="tel" class="form-control" name="telefono" 
+                                   value="{{ info_alumno.telefono|default:'' }}" placeholder="+56 9 1234 5678">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 mt-3">
+                        <label class="form-label text-white">Email</label>
+                        <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                        <small class="text-muted">Este campo no se puede modificar aquí</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-white">Dirección</label>
+                        <textarea class="form-control" name="direccion" rows="2" 
+                                  placeholder="Calle, número, comuna, ciudad">{{ info_alumno.direccion|default:'' }}</textarea>
+                    </div>
+                    
+                    <h6 class="text-white mb-3 mt-4">⚖️ Datos Físicos</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label text-white">Altura</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" name="altura" 
+                                       value="{{ info_alumno.altura|default:'' }}" 
+                                       step="0.1" min="100" max="250" placeholder="170">
+                                <span class="input-group-text">cm</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-white">Peso Actual</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" name="peso_actual" 
+                                       value="{{ info_alumno.peso_actual|default:'' }}" 
+                                       step="0.1" min="30" max="300" placeholder="70">
+                                <span class="input-group-text">kg</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-white">% Grasa Corporal</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" name="porcentaje_grasa" 
+                                       value="{{ info_alumno.porcentaje_grasa|default:'' }}" 
+                                       step="0.1" min="5" max="50" placeholder="15">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if info_alumno.imc %}
+                    <div class="alert alert-info mt-3">
+                        <strong>💡 IMC Calculado:</strong> {{ info_alumno.imc|floatformat:1 }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-save me-2"></i>Guardar Cambios
+                        </button>
+                        <button type="button" class="btn btn-glass" onclick="resetForm()">
+                            <i class="fa-solid fa-undo me-2"></i>Restablecer
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Cambio de Contraseña -->
+            <div class="glass p-4 mt-4">
+                <h5 class="text-white mb-4">
+                    <i class="fa-solid fa-key me-2"></i>Cambiar Contraseña
+                </h5>
+                
+                <form method="post" action="{% url 'change_password' %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label text-white">Contraseña actual</label>
+                            <input type="password" name="old_password" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Nueva contraseña</label>
+                            <input type="password" name="new_password1" class="form-control" required minlength="8">
+                            <small class="text-light-50">Mínimo 8 caracteres</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-white">Confirmar nueva</label>
+                            <input type="password" name="new_password2" class="form-control" required minlength="8">
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-outline-primary" type="submit">
+                                <i class="fa-solid fa-key me-2"></i>Actualizar contraseña
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Privacidad y Datos -->
+            <div class="glass p-4 mt-4">
+                <h6 class="text-white mb-3">
+                    <i class="fa-solid fa-shield-halved me-2"></i>Privacidad y Datos
+                </h6>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'privacy_center' %}" class="btn btn-glass">
+                        <i class="fa-solid fa-shield-halved me-2"></i>Centro de privacidad
+                    </a>
+                    <a href="{% url 'download_data' %}" class="btn btn-glass">
+                        <i class="fa-solid fa-download me-2"></i>Descargar mis datos (ARCO)
+                    </a>
+                    <button class="btn btn-outline-danger" onclick="confirmarEliminacionAlumno()">
+                        <i class="fa-solid fa-trash me-2"></i>Solicitar eliminación de cuenta
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para alumno -->
+<div class="modal fade" id="modalEliminacionAlumno" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-white">Confirmar eliminación de cuenta</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                    <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                </div>
+                <p class="text-white">¿Estás seguro de que deseas solicitar la eliminación de tu cuenta?</p>
+                <p class="text-light">Se eliminarán todos tus datos: progreso, rutinas, historial y información personal.</p>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" action="{% url 'delete_account' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Confirmar eliminación</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function previewFoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const container = document.querySelector('.profile-photo-container');
+            const existingImg = container.querySelector('.profile-photo');
+            const placeholder = container.querySelector('.profile-photo-placeholder');
+            
+            if (existingImg) {
+                existingImg.src = e.target.result;
+            } else if (placeholder) {
+                placeholder.innerHTML = `<img src="${e.target.result}" alt="Foto de perfil" class="profile-photo">`;
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function resetForm() {
+    document.getElementById('perfilForm').reset();
+    location.reload();
+}
+
+// Confirmación de eliminación para alumno
+function confirmarEliminacionAlumno() {
+    new bootstrap.Modal(document.getElementById('modalEliminacionAlumno')).show();
+}
+
+// Animación para el formulario
+document.getElementById('perfilForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Guardando...';
+    submitBtn.disabled = true;
+    
+    // Simular guardado
+    setTimeout(() => {
+        submitBtn.innerHTML = '<i class="fa-solid fa-check me-2"></i>¡Guardado!';
+        submitBtn.classList.remove('btn-success');
+        submitBtn.classList.add('btn-success');
+        
+        setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            
+            if (window.showNotification) {
+                window.showNotification('Perfil actualizado', 'Tus cambios han sido guardados exitosamente', 'success');
+            }
+        }, 1000);
+    }, 1500);
+});
+</script>
+
+<style>
+.profile-photo-container {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-photo, .profile-photo-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #00d4aa;
+}
+
+.profile-photo-placeholder {
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-photo-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-stats {
+    margin-top: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #00d4aa;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #888;
+}
+</style>
+{% endblock %}

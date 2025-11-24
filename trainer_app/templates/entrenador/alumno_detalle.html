@@ -1,0 +1,435 @@
+{% extends "entrenador/base_entrenador.html" %}
+{% load static %}
+
+{% block extra_css %}
+  {{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    padding-top: 80px !important;
+  }
+
+  .glass-card {
+    background: #1a2332;
+    border: 1px solid #0d9488;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-primary {
+    background: #0d9488;
+    color: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background: #0a7a6f;
+  }
+
+  .rutina-card {
+    background: #2d3748;
+    border-left: 4px solid #0d9488;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+  }
+
+  .ejercicio-item {
+    background: #3d4959;
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    border-radius: 4px;
+    border-left: 3px solid #00d4aa;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal-content {
+    background: #1a2332;
+    border: 1px solid #0d9488;
+    border-radius: 10px;
+    padding: 2rem;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    
+    <!-- Header -->
+    <div class="glass-card p-6 mb-6">
+      <div class="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4">
+        <a href="{% url 'alumnos_list' %}" class="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg transition-colors">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        
+        <div class="w-16 h-16 bg-gradient-to-br from-teal-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+          {{ alumno_user.first_name|first|upper }}
+        </div>
+        
+        <div class="flex-1">
+          <h1 class="text-3xl font-bold text-white">{{ alumno_user.get_full_name }}</h1>
+          <p class="text-slate-300">{{ alumno_user.email }}</p>
+          <p class="text-slate-400 text-sm mt-1">Plan: <span class="text-teal-300 font-semibold">{{ alumno.get_plan_display }}</span></p>
+        </div>
+        
+        <button onclick="abrirModalAsignar()" class="btn-primary flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i>
+          Asignar Rutina
+        </button>
+      </div>
+    </div>
+
+    <!-- Información del Alumno -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="glass-card p-4">
+        <div class="flex items-center gap-3">
+          <div class="text-teal-400 text-2xl">
+            <i class="fa-solid fa-dumbbell"></i>
+          </div>
+          <div>
+            <p class="text-slate-400 text-sm">Rutinas Activas</p>
+            <p class="text-white text-2xl font-bold">{{ total_rutinas }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="glass-card p-4">
+        <div class="flex items-center gap-3">
+          <div class="text-blue-400 text-2xl">
+            <i class="fa-solid fa-calendar"></i>
+          </div>
+          <div>
+            <p class="text-slate-400 text-sm">Inscrito</p>
+            <p class="text-white text-lg font-bold">{{ alumno.fecha_inscripcion|date:"d/m/Y" }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="glass-card p-4">
+        <div class="flex items-center gap-3">
+          <div class="{% if alumno.estado == 'activo' %}text-green-400{% else %}text-red-400{% endif %} text-2xl">
+            <i class="fa-solid fa-check-circle"></i>
+          </div>
+          <div>
+            <p class="text-slate-400 text-sm">Estado</p>
+            <p class="text-white text-lg font-bold capitalize">{{ alumno.get_estado_display }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rutinas del Alumno -->
+    <div class="glass-card p-6">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+        <i class="fa-solid fa-list-check text-teal-400"></i>
+        Rutinas Asignadas
+      </h2>
+      
+      {% if rutinas_alumno %}
+        <div class="space-y-4">
+          {% for rutina in rutinas_alumno %}
+            <div class="rutina-card" data-rutina-id="{{ rutina.id }}">
+              <div class="flex flex-col md:flex-row md:items-center justify-between mb-3">
+                <div>
+                  <h3 class="text-lg font-semibold text-white">{{ rutina.nombre }}</h3>
+                  <div class="flex gap-3 mt-2 text-sm text-slate-300">
+                    <span class="flex items-center gap-1" data-objetivo="{{ rutina.get_objetivo_display }}">
+                      <i class="fa-solid fa-bullseye text-teal-400"></i>
+                      {{ rutina.get_objetivo_display }}
+                    </span>
+                    <span class="flex items-center gap-1" data-tipo="{% if rutina.tipo == 'asignada' %}Asignada{% else %}Personal{% endif %}">
+                      <i class="fa-solid fa-user-tie text-blue-400"></i>
+                      {% if rutina.tipo == 'asignada' %}
+                        Asignada
+                      {% else %}
+                        Personal
+                      {% endif %}
+                    </span>
+                    {% if rutina.dia_asignado %}
+                    <span class="flex items-center gap-1">
+                      <i class="fa-solid fa-calendar-days text-green-400"></i>
+                      {{ rutina.get_dia_asignado_display }}
+                    </span>
+                    {% endif %}
+                  </div>
+                </div>
+                
+                <div class="flex gap-2 mt-4 md:mt-0">
+                  <button onclick="verRutina({{ rutina.id }})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-1">
+                    <i class="fa-solid fa-eye"></i> Ver Rutina
+                  </button>
+                  <button onclick="eliminarRutina({{ rutina.id }})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-1">
+                    <i class="fa-solid fa-trash"></i> Eliminar
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Ejercicios -->
+              {% if rutina.ejercicios.all %}
+                <div class="mt-4 pl-2 border-l-2 border-slate-600">
+                  <p class="text-slate-400 text-sm mb-2 font-semibold">Ejercicios ({{ rutina.ejercicios.count }})</p>
+                  <div class="space-y-2">
+                    {% for ejercicio in rutina.ejercicios.all|dictsort:"orden" %}
+                      <div class="ejercicio-item">
+                        <div class="flex justify-between items-start">
+                          <div class="flex-1">
+                            <p class="text-white font-medium">{{ ejercicio.nombre }}</p>
+                            <div class="text-slate-300 text-sm mt-1 space-y-0.5">
+                              <p><span class="text-teal-300">Series:</span> {{ ejercicio.series }}</p>
+                              <p><span class="text-teal-300">Reps:</span> {{ ejercicio.repeticiones }}</p>
+                              {% if ejercicio.peso %}<p><span class="text-teal-300">Peso:</span> {{ ejercicio.peso }}</p>{% endif %}
+                              {% if ejercicio.descanso %}<p><span class="text-teal-300">Descanso:</span> {{ ejercicio.descanso }}</p>{% endif %}
+                            </div>
+                          </div>
+                          {% if ejercicio.notas %}
+                            <div class="ml-4 text-slate-400 text-xs italic">
+                              {{ ejercicio.notas|truncatewords:15 }}
+                            </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% else %}
+                <p class="text-slate-400 text-sm italic">Sin ejercicios asignados</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-12">
+          <i class="fa-solid fa-inbox text-6xl text-slate-600 mb-4"></i>
+          <p class="text-slate-400 text-lg">No hay rutinas asignadas</p>
+          <p class="text-slate-500 text-sm mt-2">Asigna una rutina para que el alumno comience su entrenamiento</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Asignar Rutina -->
+<div id="modalAsignar" class="modal-overlay">
+  <div class="modal-content">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-dumbbell text-teal-400"></i>
+        Asignar Rutina
+      </h2>
+      <button onclick="cerrarModal()" class="text-slate-400 hover:text-white text-2xl">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+
+    <form id="formAsignarRutina" class="space-y-4">
+      {% csrf_token %}
+      
+      <div>
+        <label class="block text-slate-300 text-sm font-medium mb-2">Seleccionar Rutina</label>
+        <select id="plantillaSelect" name="plantilla" required class="w-full py-2 px-3 bg-slate-700 border border-teal-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
+          <option value="">-- Elegir rutina --</option>
+          {% for rutina in rutinas_disponibles %}
+            <option value="{{ rutina.id }}">{{ rutina.nombre }} ({{ rutina.tipo|title }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-slate-300 text-sm font-medium mb-2">Día de Inicio (Opcional)</label>
+        <select name="dia_asignado" class="w-full py-2 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
+          <option value="">-- Sin día específico --</option>
+          <option value="lunes">Lunes</option>
+          <option value="martes">Martes</option>
+          <option value="miercoles">Miércoles</option>
+          <option value="jueves">Jueves</option>
+          <option value="viernes">Viernes</option>
+          <option value="sabado">Sábado</option>
+          <option value="domingo">Domingo</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-slate-300 text-sm font-medium mb-2">Notas (Opcional)</label>
+        <textarea name="notas" rows="3" class="w-full py-2 px-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-400" placeholder="Notas especiales para el alumno..."></textarea>
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="button" onclick="cerrarModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 px-4 rounded-lg transition-colors">
+          Cancelar
+        </button>
+        <button type="submit" class="flex-1 btn-primary">
+          <i class="fa-solid fa-check"></i> Asignar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function abrirModalAsignar() {
+  document.getElementById('modalAsignar').classList.add('active');
+}
+
+function cerrarModal() {
+  document.getElementById('modalAsignar').classList.remove('active');
+}
+
+function verRutina(rutinaId) {
+  // Mostrar detalles de la rutina en modal
+  const rutina = document.querySelector(`[data-rutina-id="${rutinaId}"]`);
+  if (!rutina) return;
+  
+  // Obtener información de la rutina
+  const nombre = rutina.querySelector('h3').textContent;
+  const objetivo = rutina.querySelector('[data-objetivo]')?.textContent || 'General';
+  const tipo = rutina.querySelector('[data-tipo]')?.textContent || 'Personal';
+  
+  // Obtener ejercicios
+  let ejerciciosHtml = '';
+  const ejercicios = rutina.querySelectorAll('.ejercicio-item');
+  if (ejercicios.length > 0) {
+    ejerciciosHtml = Array.from(ejercicios).map(ej => {
+      const nombre = ej.querySelector('.font-medium')?.textContent || '';
+      const detalles = ej.querySelector('.text-slate-300')?.innerHTML || '';
+      return `<div class="ejercicio-item"><p class="text-white font-medium mb-2">${nombre}</p><div class="text-slate-300 text-sm">${detalles}</div></div>`;
+    }).join('');
+  } else {
+    ejerciciosHtml = '<p class="text-slate-400">Sin ejercicios asignados</p>';
+  }
+  
+  // Crear modal
+  const modalHtml = `
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target === this) document.getElementById('modalDetalle').remove()">
+      <div class="bg-slate-900 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-white">${nombre}</h2>
+          <button onclick="document.getElementById('modalDetalle').remove()" class="text-slate-400 hover:text-white text-2xl">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <p class="text-slate-400 text-sm">Objetivo</p>
+            <p class="text-white font-semibold">${objetivo}</p>
+          </div>
+          <div>
+            <p class="text-slate-400 text-sm">Tipo</p>
+            <p class="text-white font-semibold">${tipo}</p>
+          </div>
+          <div>
+            <p class="text-slate-400 text-sm mb-2">Ejercicios</p>
+            <div class="space-y-2">${ejerciciosHtml}</div>
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end">
+          <button onclick="document.getElementById('modalDetalle').remove()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const modal = document.createElement('div');
+  modal.id = 'modalDetalle';
+  modal.innerHTML = modalHtml;
+  document.body.appendChild(modal);
+}
+
+function eliminarRutina(rutinaId) {
+  if (confirm('¿Estás seguro de que deseas eliminar esta rutina?')) {
+    fetch(`/api/rutina/${rutinaId}/eliminar/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message || 'Rutina eliminada');
+        location.reload();
+      } else {
+        alert('Error: ' + (data.message || 'No se pudo eliminar'));
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error al eliminar la rutina');
+    });
+  }
+}
+
+document.getElementById('formAsignarRutina').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const plantillaId = document.getElementById('plantillaSelect').value;
+  if (!plantillaId) {
+    alert('Por favor selecciona una plantilla');
+    return;
+  }
+
+  const formData = new FormData(this);
+  const alumnoId = {{ alumno_user.id }};
+
+  fetch(`/api/alumno/${alumnoId}/asignar-rutina/`, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Rutina asignada correctamente');
+      location.reload();
+    } else {
+      alert('Error: ' + (data.message || 'No se pudo asignar la rutina'));
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error al asignar la rutina');
+  });
+});
+
+// Cerrar modal al hacer click fuera
+document.getElementById('modalAsignar').addEventListener('click', function(e) {
+  if (e.target === this) {
+    cerrarModal();
+  }
+});
+</script>
+{% endblock %}

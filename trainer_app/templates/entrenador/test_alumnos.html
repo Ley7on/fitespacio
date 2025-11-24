@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Alumnos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1f2937;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #60a5fa;
+        }
+        .error {
+            text-align: center;
+            padding: 20px;
+            color: #ef4444;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #374151;
+        }
+        th {
+            background: #374151;
+            color: #d1d5db;
+        }
+        .btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #059669;
+        }
+        .debug {
+            background: #374151;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test de Carga de Alumnos</h1>
+        
+        <div class="debug" id="debugInfo">
+            <strong>Debug Info:</strong><br>
+            <span id="debugText">Iniciando...</span>
+        </div>
+        
+        <button class="btn" onclick="cargarAlumnos()">Cargar Alumnos</button>
+        <button class="btn" onclick="limpiarTabla()">Limpiar</button>
+        
+        <div id="contenido">
+            <div class="loading">
+                <p>Haz clic en "Cargar Alumnos" para probar</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function log(mensaje) {
+            const debugText = document.getElementById('debugText');
+            const timestamp = new Date().toLocaleTimeString();
+            debugText.innerHTML += `<br>[${timestamp}] ${mensaje}`;
+            console.log(mensaje);
+        }
+
+        function cargarAlumnos() {
+            log('=== INICIANDO CARGA ===');
+            
+            const contenido = document.getElementById('contenido');
+            contenido.innerHTML = '<div class="loading">Cargando alumnos...</div>';
+            
+            log('Haciendo fetch a /api/alumnos/');
+            
+            fetch('/api/alumnos/')
+                .then(response => {
+                    log(`Response status: ${response.status}`);
+                    log(`Response ok: ${response.ok}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    return response.json();
+                })
+                .then(data => {
+                    log(`Datos recibidos: ${JSON.stringify(data, null, 2)}`);
+                    log(`Tipo: ${typeof data}`);
+                    log(`Es array: ${Array.isArray(data)}`);
+                    log(`Longitud: ${data ? data.length : 'N/A'}`);
+                    
+                    mostrarAlumnos(data);
+                })
+                .catch(error => {
+                    log(`ERROR: ${error.message}`);
+                    contenido.innerHTML = `
+                        <div class="error">
+                            <h3>Error</h3>
+                            <p>${error.message}</p>
+                            <button class="btn" onclick="cargarAlumnos()">Reintentar</button>
+                        </div>
+                    `;
+                });
+        }
+
+        function mostrarAlumnos(alumnos) {
+            log('=== MOSTRANDO ALUMNOS ===');
+            
+            const contenido = document.getElementById('contenido');
+            
+            if (!alumnos || alumnos.length === 0) {
+                log('No hay alumnos para mostrar');
+                contenido.innerHTML = '<div class="error">No hay alumnos disponibles</div>';
+                return;
+            }
+            
+            log(`Creando tabla para ${alumnos.length} alumnos`);
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Membresía</th>
+                            <th>Rutinas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            alumnos.forEach((alumno, index) => {
+                log(`Procesando alumno ${index + 1}: ${alumno.nombre}`);
+                
+                html += `
+                    <tr>
+                        <td>${alumno.id || 'N/A'}</td>
+                        <td>${alumno.nombre || 'Sin nombre'}</td>
+                        <td>${alumno.email || 'Sin email'}</td>
+                        <td>${alumno.telefono || 'Sin teléfono'}</td>
+                        <td>${alumno.membresia || 'Sin membresía'}</td>
+                        <td>${alumno.rutinas_asignadas || 0}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            contenido.innerHTML = html;
+            log('=== TABLA CREADA EXITOSAMENTE ===');
+        }
+
+        function limpiarTabla() {
+            document.getElementById('contenido').innerHTML = '<div class="loading">Tabla limpiada</div>';
+            document.getElementById('debugText').innerHTML = 'Debug limpiado';
+            log('Tabla y debug limpiados');
+        }
+
+        // Auto-cargar al inicio
+        document.addEventListener('DOMContentLoaded', function() {
+            log('DOM cargado - Página lista');
+        });
+    </script>
+</body>
+</html>

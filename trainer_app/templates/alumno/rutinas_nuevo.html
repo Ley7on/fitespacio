@@ -1,0 +1,506 @@
+{% extends "alumno/base_alumno.html" %}
+{% load static %}
+
+{% block title %}Mis Rutinas - FitSpace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .glass-card {
+    background: rgba(31, 41, 55, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(75, 85, 99, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  .gradient-bg {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  }
+  .rutina-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  .rutina-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+  .tab-button {
+    color: rgba(255, 255, 255, 0.6);
+    background: transparent;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  .tab-button.active {
+    color: white;
+    background: rgba(16, 185, 129, 0.2);
+  }
+  .tab-button:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen gradient-bg">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="glass-card p-6 mb-6">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center gap-4">
+          <div class="bg-emerald-600 p-3 rounded-full">
+            <i class="fa-solid fa-dumbbell text-2xl text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-white mb-1">Mis Rutinas</h1>
+            <p class="text-gray-300">Gestiona tus entrenamientos y rutinas personalizadas</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="abrirModalCrearRutina()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nueva Rutina</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="glass-card p-1 mb-6">
+      <div class="flex gap-1">
+        <button class="tab-button active" data-tab="asignadas" onclick="cambiarTab('asignadas')">
+          <i class="fa-solid fa-user-tie me-2"></i>
+          Rutinas del Entrenador
+          <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full ml-2" id="badgeAsignadas">0</span>
+        </button>
+        <button class="tab-button" data-tab="personales" onclick="cambiarTab('personales')">
+          <i class="fa-solid fa-user me-2"></i>
+          Mis Rutinas
+          <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full ml-2" id="badgePersonales">0</span>
+        </button>
+        <button class="tab-button" data-tab="calendario" onclick="cambiarTab('calendario')">
+          <i class="fa-solid fa-calendar me-2"></i>
+          Calendario Semanal
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido de Tabs -->
+    <div id="tabContent">
+      <!-- Tab Rutinas Asignadas -->
+      <div id="asignadas" class="tab-content active">
+        <div id="rutinasAsignadasContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Las rutinas asignadas se cargarán aquí -->
+        </div>
+        
+        <div id="noRutinasAsignadas" class="text-center py-12" style="display: none;">
+          <i class="fa-solid fa-user-tie text-6xl text-gray-500 mb-4"></i>
+          <h3 class="text-xl text-gray-300 mb-2">No tienes rutinas asignadas</h3>
+          <p class="text-gray-400">Tu entrenador aún no te ha asignado ninguna rutina</p>
+        </div>
+      </div>
+
+      <!-- Tab Rutinas Personales -->
+      <div id="personales" class="tab-content">
+        <div id="rutinasPersonalesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Las rutinas personales se cargarán aquí -->
+        </div>
+        
+        <div id="noRutinasPersonales" class="text-center py-12" style="display: none;">
+          <i class="fa-solid fa-plus text-6xl text-gray-500 mb-4"></i>
+          <h3 class="text-xl text-gray-300 mb-2">No has creado rutinas</h3>
+          <p class="text-gray-400 mb-4">Crea tu primera rutina personalizada</p>
+          <button onclick="abrirModalCrearRutina()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 mx-auto">
+            <i class="fa-solid fa-plus"></i>
+            <span>Crear Mi Primera Rutina</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab Calendario Semanal -->
+      <div id="calendario" class="tab-content">
+        <div class="glass-card p-6">
+          <h3 class="text-xl font-bold text-white mb-4">Organiza tus Rutinas por Día</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
+            <div class="day-column" data-day="lunes">
+              <h4 class="text-center text-white font-semibold mb-3 p-2 bg-gray-700 rounded">Lunes</h4>
+              <div class="day-rutinas min-h-32 border-2 border-dashed border-gray-600 rounded-lg p-2" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <!-- Rutinas del lunes -->
+              </div>
+            </div>
+            
+            <div class="day-column" data-day="martes">
+              <h4 class="text-center text-white font-semibold mb-3 p-2 bg-gray-700 rounded">Martes</h4>
+              <div class="day-rutinas min-h-32 border-2 border-dashed border-gray-600 rounded-lg p-2" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <!-- Rutinas del martes -->
+              </div>
+            </div>
+            
+            <div class="day-column" data-day="miercoles">
+              <h4 class="text-center text-white font-semibold mb-3 p-2 bg-gray-700 rounded">Miércoles</h4>
+              <div class="day-rutinas min-h-32 border-2 border-dashed border-gray-600 rounded-lg p-2" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <!-- Rutinas del miércoles -->
+              </div>
+            </div>
+            
+            <div class="day-column" data-day="jueves">
+              <h4 class="text-center text-white font-semibold mb-3 p-2 bg-gray-700 rounded">Jueves</h4>
+              <div class="day-rutinas min-h-32 border-2 border-dashed border-gray-600 rounded-lg p-2" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <!-- Rutinas del jueves -->
+              </div>
+            </div>
+            
+            <div class="day-column" data-day="viernes">
+              <h4 class="text-center text-white font-semibold mb-3 p-2 bg-gray-700 rounded">Viernes</h4>
+              <div class="day-rutinas min-h-32 border-2 border-dashed border-gray-600 rounded-lg p-2" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <!-- Rutinas del viernes -->
+              </div>
+            </div>
+            
+            <div class="day-column" data-day="sabado">
+              <h4 class="text-center text-white font-semibold mb-3 p-2 bg-gray-700 rounded">Sábado</h4>
+              <div class="day-rutinas min-h-32 border-2 border-dashed border-gray-600 rounded-lg p-2" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <!-- Rutinas del sábado -->
+              </div>
+            </div>
+            
+            <div class="day-column" data-day="domingo">
+              <h4 class="text-center text-white font-semibold mb-3 p-2 bg-gray-700 rounded">Domingo</h4>
+              <div class="day-rutinas min-h-32 border-2 border-dashed border-gray-600 rounded-lg p-2" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <!-- Rutinas del domingo -->
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+            <h4 class="text-blue-200 font-semibold mb-2">
+              <i class="fa-solid fa-info-circle mr-2"></i>
+              Cómo usar el calendario
+            </h4>
+            <ul class="text-blue-100 text-sm space-y-1">
+              <li>• Arrastra las rutinas desde las pestañas anteriores hasta el día que desees</li>
+              <li>• Puedes asignar múltiples rutinas al mismo día</li>
+              <li>• Haz clic en una rutina del calendario para ver sus detalles</li>
+              <li>• Los cambios se guardan automáticamente</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let tabActual = 'asignadas';
+let rutinasAsignadas = [];
+let rutinasPersonales = [];
+
+function cambiarTab(tab) {
+  // Actualizar botones
+  document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  
+  // Actualizar contenido
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  
+  tabActual = tab;
+  
+  if (tab === 'asignadas') {
+    cargarRutinasAsignadas();
+  } else if (tab === 'personales') {
+    cargarRutinasPersonales();
+  } else if (tab === 'calendario') {
+    cargarCalendarioSemanal();
+  }
+}
+
+function cargarRutinasAsignadas() {
+  fetch('/alumno/api/rutinas-asignadas/')
+    .then(response => response.json())
+    .then(data => {
+      rutinasAsignadas = data.rutinas || [];
+      mostrarRutinasAsignadas();
+      document.getElementById('badgeAsignadas').textContent = rutinasAsignadas.length;
+    })
+    .catch(error => {
+      console.error('Error cargando rutinas asignadas:', error);
+      mostrarErrorRutinasAsignadas();
+    });
+}
+
+function cargarRutinasPersonales() {
+  fetch('/alumno/api/rutinas-personales/')
+    .then(response => response.json())
+    .then(data => {
+      rutinasPersonales = data.rutinas || [];
+      mostrarRutinasPersonales();
+      document.getElementById('badgePersonales').textContent = rutinasPersonales.length;
+    })
+    .catch(error => {
+      console.error('Error cargando rutinas personales:', error);
+      mostrarErrorRutinasPersonales();
+    });
+}
+
+function mostrarRutinasAsignadas() {
+  const container = document.getElementById('rutinasAsignadasContainer');
+  const noRutinas = document.getElementById('noRutinasAsignadas');
+  
+  if (rutinasAsignadas.length === 0) {
+    container.style.display = 'none';
+    noRutinas.style.display = 'block';
+    return;
+  }
+  
+  container.style.display = 'grid';
+  noRutinas.style.display = 'none';
+  
+  container.innerHTML = rutinasAsignadas.map(rutina => `
+    <div class="rutina-card glass-card p-6" draggable="true" ondragstart="drag(event)" data-rutina-id="${rutina.id}" data-tipo="asignada">
+      <div class="flex justify-between items-start mb-4">
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-500 p-2 rounded-lg">
+            <i class="fa-solid fa-user-tie text-white"></i>
+          </div>
+          <div>
+            <h3 class="text-white font-semibold">${rutina.nombre}</h3>
+            <p class="text-blue-200 text-sm">Por: ${rutina.entrenador}</p>
+          </div>
+        </div>
+        <span class="px-2 py-1 text-xs rounded-full ${rutina.activa ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'}">
+          ${rutina.activa ? 'Activa' : 'Completada'}
+        </span>
+      </div>
+      
+      <div class="space-y-2 mb-4">
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Objetivo:</span>
+          <span class="text-white">${rutina.objetivo}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Ejercicios:</span>
+          <span class="text-white">${rutina.ejercicios_count || 0}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Asignada:</span>
+          <span class="text-white">${rutina.fecha_asignacion}</span>
+        </div>
+      </div>
+      
+      ${rutina.notas ? `
+        <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3 mb-4">
+          <p class="text-blue-100 text-sm">${rutina.notas}</p>
+        </div>
+      ` : ''}
+      
+      <div class="flex gap-2">
+        <button onclick="verDetalleRutina(${rutina.id}, 'asignada')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors text-sm">
+          <i class="fa-solid fa-eye mr-2"></i>Ver Detalle
+        </button>
+        ${rutina.activa ? `
+          <button onclick="iniciarRutina(${rutina.id})" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors text-sm">
+            <i class="fa-solid fa-play mr-2"></i>Iniciar
+          </button>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function mostrarRutinasPersonales() {
+  const container = document.getElementById('rutinasPersonalesContainer');
+  const noRutinas = document.getElementById('noRutinasPersonales');
+  
+  if (rutinasPersonales.length === 0) {
+    container.style.display = 'none';
+    noRutinas.style.display = 'block';
+    return;
+  }
+  
+  container.style.display = 'grid';
+  noRutinas.style.display = 'none';
+  
+  container.innerHTML = rutinasPersonales.map(rutina => `
+    <div class="rutina-card glass-card p-6" draggable="true" ondragstart="drag(event)" data-rutina-id="${rutina.id}" data-tipo="personal">
+      <div class="flex justify-between items-start mb-4">
+        <div class="flex items-center gap-3">
+          <div class="bg-green-500 p-2 rounded-lg">
+            <i class="fa-solid fa-user text-white"></i>
+          </div>
+          <div>
+            <h3 class="text-white font-semibold">${rutina.nombre}</h3>
+            <p class="text-green-200 text-sm">Rutina Personal</p>
+          </div>
+        </div>
+        <div class="flex gap-1">
+          <button onclick="editarRutina(${rutina.id})" class="text-gray-400 hover:text-white p-1">
+            <i class="fa-solid fa-edit"></i>
+          </button>
+          <button onclick="eliminarRutina(${rutina.id})" class="text-gray-400 hover:text-red-400 p-1">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="space-y-2 mb-4">
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Objetivo:</span>
+          <span class="text-white">${rutina.objetivo}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Ejercicios:</span>
+          <span class="text-white">${rutina.ejercicios_count || 0}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Creada:</span>
+          <span class="text-white">${rutina.fecha_creacion}</span>
+        </div>
+      </div>
+      
+      <div class="flex gap-2">
+        <button onclick="verDetalleRutina(${rutina.id}, 'personal')" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors text-sm">
+          <i class="fa-solid fa-eye mr-2"></i>Ver Detalle
+        </button>
+        <button onclick="iniciarRutina(${rutina.id})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors text-sm">
+          <i class="fa-solid fa-play mr-2"></i>Iniciar
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function mostrarErrorRutinasAsignadas() {
+  document.getElementById('rutinasAsignadasContainer').innerHTML = `
+    <div class="col-span-full text-center py-12">
+      <i class="fa-solid fa-exclamation-triangle text-6xl text-red-500 mb-4"></i>
+      <h3 class="text-xl text-red-300 mb-2">Error cargando rutinas</h3>
+      <p class="text-red-400">No se pudieron cargar las rutinas asignadas</p>
+    </div>
+  `;
+}
+
+function mostrarErrorRutinasPersonales() {
+  document.getElementById('rutinasPersonalesContainer').innerHTML = `
+    <div class="col-span-full text-center py-12">
+      <i class="fa-solid fa-exclamation-triangle text-6xl text-red-500 mb-4"></i>
+      <h3 class="text-xl text-red-300 mb-2">Error cargando rutinas</h3>
+      <p class="text-red-400">No se pudieron cargar tus rutinas personales</p>
+    </div>
+  `;
+}
+
+// Funciones de drag and drop para el calendario
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+function drag(ev) {
+  ev.dataTransfer.setData("text", ev.target.dataset.rutinaId + '|' + ev.target.dataset.tipo);
+}
+
+function drop(ev) {
+  ev.preventDefault();
+  const data = ev.dataTransfer.getData("text").split('|');
+  const rutinaId = data[0];
+  const tipo = data[1];
+  const day = ev.target.closest('.day-column').dataset.day;
+  
+  asignarRutinaADia(rutinaId, tipo, day);
+}
+
+function asignarRutinaADia(rutinaId, tipo, dia) {
+  fetch('/alumno/api/asignar-rutina-dia/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+    },
+    body: JSON.stringify({
+      rutina_id: rutinaId,
+      tipo: tipo,
+      dia: dia
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      cargarCalendarioSemanal();
+    } else {
+      alert('Error asignando rutina al día');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error asignando rutina al día');
+  });
+}
+
+function cargarCalendarioSemanal() {
+  fetch('/alumno/api/calendario-semanal/')
+    .then(response => response.json())
+    .then(data => {
+      mostrarCalendarioSemanal(data.calendario || {});
+    })
+    .catch(error => {
+      console.error('Error cargando calendario:', error);
+    });
+}
+
+function mostrarCalendarioSemanal(calendario) {
+  const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+  
+  dias.forEach(dia => {
+    const container = document.querySelector(`[data-day="${dia}"] .day-rutinas`);
+    const rutinas = calendario[dia] || [];
+    
+    container.innerHTML = rutinas.map(rutina => `
+      <div class="bg-gray-700 p-2 rounded mb-2 cursor-pointer" onclick="verDetalleRutina(${rutina.id}, '${rutina.tipo}')">
+        <div class="text-white text-sm font-semibold">${rutina.nombre}</div>
+        <div class="text-gray-300 text-xs">${rutina.ejercicios_count || 0} ejercicios</div>
+      </div>
+    `).join('');
+  });
+}
+
+function abrirModalCrearRutina() {
+  alert('Función crear rutina personal - En desarrollo');
+}
+
+function verDetalleRutina(id, tipo) {
+  alert(`Ver detalle de rutina ${tipo} ID: ${id}`);
+}
+
+function iniciarRutina(id) {
+  alert(`Iniciar rutina ID: ${id}`);
+}
+
+function editarRutina(id) {
+  alert(`Editar rutina ID: ${id}`);
+}
+
+function eliminarRutina(id) {
+  // Use global showConfirm (shim guarantees availability)
+  window.showConfirm('¿Estás seguro de que quieres eliminar esta rutina?', { title: 'Eliminar rutina', confirmText: 'Eliminar', cancelText: 'Cancelar', danger: true }).then(ok => {
+    if (ok) alert(`Eliminar rutina ID: ${id}`);
+  });
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+  cargarRutinasAsignadas();
+});
+</script>
+
+{% csrf_token %}
+{% endblock %}
