@@ -1,11 +1,16 @@
 Django>=4.2,<5.0
-django-pwa==1.0.10
-pyotp==2.9.0
+django-cors-headers>=4.0.0
+django-widget-tweaks>=1.4.12
+pymysql>=1.1.0
 qrcode[pil]==7.4.2
 Pillow==10.0.1
-pymysql>=1.1.0
-django-crispy-forms==2.0
-crispy-bootstrap5==0.7
 python-dotenv>=1.0.0
+reportlab>=4.0.0
+openpyxl>=3.1.0
 gunicorn>=21.2.0
 whitenoise>=6.6.0
+
+# Configuracion adicional para GCP y Produccion
+django-storages
+google-cloud-storage
+tzdata
