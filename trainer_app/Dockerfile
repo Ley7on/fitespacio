@@ -1,7 +1,7 @@
-# Usa una imagen base de Python
+# Usa una imagen base de Python ligera
 FROM python:3.11-slim
 
-# Instala dependencias del sistema necesarias para la base de datos
+# Instala dependencias del sistema necesarias
 RUN apt-get update && apt-get install -y \
     gcc \
     default-libmysqlclient-dev \
@@ -15,17 +15,17 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
-# Copia todo el código de la aplicación (solo la subcarpeta trainer_app)
+# Copia todo el código de la aplicación (solo la subcarpeta trainer_app que se está construyendo)
 COPY . .
 
 # Crea los directorios para archivos estáticos, media y logs
 RUN mkdir -p /app/media/qr_codes /app/media/exports /app/logs /app/static
 
-# Recopila archivos estáticos (asegurando que manage.py se ejecute en el contexto correcto)
-# Aquí está la clave: Django necesita saber dónde está su settings.
-# Asegúrate de que el módulo settings esté configurado correctamente para la app.
-# En tu settings.py ya manejamos la variable DJANGO_SETTINGS_MODULE
+# Configura la variable de entorno para que Django sepa dónde están los settings.
+# Esto es CRÍTICO para collectstatic y el servidor web.
 ENV DJANGO_SETTINGS_MODULE=trainer_app.settings
+
+# Recopila archivos estáticos
 RUN python manage.py collectstatic --noinput
 
 # Expone el puerto que usará Gunicorn
