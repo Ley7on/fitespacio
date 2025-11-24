@@ -9,7 +9,7 @@ reportlab>=4.0.0
 openpyxl>=3.1.0
 gunicorn>=21.2.0
 whitenoise>=6.6.0
-
+django-crispy-forms
 # Configuracion adicional para GCP y Produccion
 django-storages
 google-cloud-storage
