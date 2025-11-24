@@ -1,0 +1,39 @@
+steps:
+  # Paso 1: Compila la imagen Docker
+  # El contexto de compilación es './trainer_app', lo que significa que
+  # el Dockerfile debe estar en './trainer_app/Dockerfile'
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/trainer-app-image:latest',
+      './trainer_app' # Contexto de compilación: usa la carpeta trainer_app
+    ]
+
+  # Paso 2: Sube la imagen a Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/trainer-app-image:latest']
+
+  # Paso 3: Despliega la imagen al servicio de Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: [
+      'run',
+      'deploy',
+      'trainer-app-service', # Nombre del servicio de Cloud Run
+      '--image', 'gcr.io/$PROJECT_ID/trainer-app-image:latest',
+      '--platform', 'managed',
+      '--region', 'southamerica-west1',
+      '--allow-unauthenticated',
+      '--add-cloudsql-instances', 'fitspace-478618:southamerica-west1:free-trial-first-project',
+      '--set-env-vars', 
+        'DB_HOST=/cloudsql/fitspace-478618:southamerica-west1:free-trial-first-project',
+        'DB_NAME=fitspace',
+        'DB_USER=[TU_USUARIO_BD]',
+        'DB_PASSWORD=[TU_PASSWORD_BD]',
+        'SECRET_KEY=[TU_CLAVE_SECRETA_DJANGO]',
+        'GS_BUCKET_NAME=[TU_BUCKET_GCS]'
+    ]
+
+# Opciones globales de Cloud Build
+options:
+  logging: CLOUD_LOGGING_ONLY # Soluciona el error de "invalid argument"
+  timeout: '1200s' # Aumenta el tiempo de espera por si acaso
